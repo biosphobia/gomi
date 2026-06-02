@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>🗑️ 大阪市ごみ分別ゲーム — Osaka Support</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗑️</text></svg>" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+  /* Game-specific overrides on top of the shared site styles */
+  html, body { overflow: hidden; }
+  body {
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    overscroll-behavior: none;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+  }
+
+  .site-header { flex-shrink: 0; }
+
+  .app {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--c-panel);
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    gap: 8px;
+  }
+  .title {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+    flex: 1;
+    min-width: 0;
+  }
+  .title .sub {
+    display: block;
+    font-size: 10px;
+    color: var(--c-muted);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+  .lang-toggle {
+    background: var(--c-bg);
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--c-text);
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .lang-toggle:hover { background: #f0ebe2; }
+
+  .stats { display: flex; gap: 10px; }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 44px;
+  }
+  .stat-label { font-size: 9px; color: var(--c-muted); letter-spacing: 0.5px; }
+  .stat-value { font-size: 18px; font-weight: 700; line-height: 1.2; }
+  .stat-value.lives { font-size: 13px; letter-spacing: 1px; }
+
+  /* Play area */
+  .play-area {
+    flex: 1;
+    background: var(--c-panel);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+    min-height: 240px;
+  }
+  .hint {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--c-muted);
+    font-size: 12px;
+    text-align: center;
+    padding: 5px 14px;
+    background: var(--c-bg);
+    border-radius: 999px;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .streak-badge {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: #fff3e8;
+    color: var(--c-accent);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid #ffd5c0;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: all 0.2s ease;
+    pointer-events: none;
+  }
+  .streak-badge.show { opacity: 1; transform: scale(1); }
+
+  /* Item */
+  .item {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    z-index: 50;
+    touch-action: none;
+    will-change: transform, left, top;
+    border: 1px solid var(--c-line);
+  }
+  .item.shown { display: flex; }
+  .item.dragging {
+    cursor: grabbing;
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--c-accent);
+  }
+  .item.return {
+    transition: left 0.28s cubic-bezier(.34,1.56,.64,1), top 0.28s cubic-bezier(.34,1.56,.64,1);
+  }
+  .item-icon { font-size: 52px; line-height: 1; margin-bottom: 6px; pointer-events: none; }
+  .item-name {
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    padding: 0 6px;
+    pointer-events: none;
+    color: #444;
+    line-height: 1.25;
+  }
+
+  /* Bins */
+  .bins {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .bin {
+    background: var(--c-panel);
+    border-radius: var(--radius);
+    padding: 12px 6px 10px;
+    box-shadow: var(--shadow-sm);
+    border-top: 4px solid transparent;
+    text-align: center;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    min-height: 108px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bin.burnable { border-top-color: var(--c-burnable); }
+  .bin.recycle  { border-top-color: var(--c-recycle); }
+  .bin.plastic  { border-top-color: var(--c-plastic); }
+  .bin.hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+  .bin.hover.burnable { background: #fff5f5; }
+  .bin.hover.recycle  { background: #fff8eb; }
+  .bin.hover.plastic  { background: #f0f6fc; }
+  .bin-icon { font-size: 32px; line-height: 1; }
+  .bin-name { font-size: 13px; font-weight: 700; color: #333; line-height: 1.2; }
+  .bin-sub { font-size: 9.5px; color: var(--c-muted); line-height: 1.35; font-weight: 500; }
+
+  /* Feedback */
+  .feedback {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.85);
+    background: white;
+    padding: 18px 22px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+    z-index: 60;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.22s ease;
+    max-width: calc(100% - 32px);
+    width: 300px;
+    border: 1px solid var(--c-line);
+  }
+  .feedback.show {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .feedback-emoji { font-size: 40px; display: block; margin-bottom: 4px; line-height: 1; }
+  .feedback-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .feedback.correct .feedback-title { color: #2e7d32; }
+  .feedback.wrong .feedback-title { color: #c62828; }
+  .feedback-answer { font-size: 13px; color: #333; margin: 4px 0; line-height: 1.4; }
+  .feedback-answer b { color: var(--c-accent); }
+  .feedback-tip {
+    font-size: 11px;
+    color: var(--c-muted);
+    line-height: 1.5;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--c-line);
+  }
+  .points {
+    display: inline-block;
+    background: #fff3e8;
+    color: var(--c-accent);
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+  .feedback-btn {
+    background: var(--c-accent);
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 9px 30px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 12px;
+    font-family: inherit;
+    box-shadow: 0 3px 8px rgba(255, 106, 77, 0.3);
+  }
+  .feedback-btn:active { transform: translateY(1px); }
+
+  /* Overlays */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(250, 246, 240, 0.97);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 24px 20px;
+    text-align: center;
+    overflow-y: auto;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .overlay.hidden { display: none; }
+
+  .lang-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  .lang-btn {
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--c-text);
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+  .lang-btn:hover { background: #f5f0e7; }
+  .lang-btn.active {
+    background: var(--c-accent);
+    color: white;
+    border-color: var(--c-accent);
+  }
+
+  .overlay h1 { font-size: 24px; margin-bottom: 6px; line-height: 1.3; }
+  .overlay h2 { font-size: 22px; margin-bottom: 10px; line-height: 1.3; }
+  .overlay .lead { font-size: 13px; color: #555; margin-bottom: 14px; max-width: 440px; line-height: 1.6; }
+  .rules {
+    background: var(--c-panel);
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    text-align: left;
+    max-width: 440px;
+    box-shadow: var(--shadow-sm);
+    width: 100%;
+    border: 1px solid var(--c-line);
+  }
+  .rules h3 {
+    font-size: 13px;
+    margin-bottom: 8px;
+    color: #444;
+    border-bottom: 1px solid var(--c-line);
+    padding-bottom: 6px;
+  }
+  .rules ul { list-style: none; padding: 0; font-size: 12px; }
+  .rules li { padding: 5px 0; line-height: 1.5; }
+  .rules li .tag {
+    display: inline-block;
+    color: white;
+    font-weight: 700;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    margin-right: 4px;
+  }
+  .rules li .tag.burnable { background: var(--c-burnable); }
+  .rules li .tag.recycle  { background: var(--c-recycle); }
+  .rules li .tag.plastic  { background: var(--c-plastic); }
+
+  .btn {
+    background: var(--c-accent);
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 13px 38px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(255, 106, 77, 0.3);
+    font-family: inherit;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+  .btn:active { transform: translateY(2px); box-shadow: 0 2px 4px rgba(255, 106, 77, 0.3); }
+
+  .score-big {
+    font-size: 52px;
+    font-weight: 800;
+    color: var(--c-accent);
+    margin: 4px 0;
+    line-height: 1;
+  }
+  .score-label { font-size: 11px; color: var(--c-muted); letter-spacing: 2px; }
+  .rank { font-size: 20px; font-weight: 700; margin: 12px 0 8px; }
+  .end-stats { display: flex; gap: 18px; margin: 8px 0 16px; color: #555; font-size: 12px; }
+  .end-stats div b { color: #333; font-size: 16px; display: block; }
+  .footer-note {
+    font-size: 10px;
+    color: var(--c-muted);
+    margin-top: 14px;
+    line-height: 1.5;
+    max-width: 380px;
+  }
+
+  @keyframes popIn {
+    0%   { transform: scale(0.4); opacity: 0; }
+    70%  { transform: scale(1.06); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  .item.spawning { animation: popIn 0.32s ease-out; }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+  .play-area.shake { animation: shake 0.35s ease; }
+
+  @media (max-width: 380px) {
+    .item { width: 104px; height: 104px; }
+    .item-icon { font-size: 44px; }
+    .bin-icon { font-size: 28px; }
+    .bin-name { font-size: 11.5px; }
+    .bin-sub { font-size: 9px; }
+    .title { font-size: 13px; }
+    .stat-value { font-size: 16px; }
+    .lang-btn { font-size: 12px; padding: 5px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="site-brand">🏯 大阪サポート</a>
+  <nav class="site-nav">
+    <a href="index.html"  class="nav-link" data-page="home"   data-nav="home">ホーム</a>
+    <a href="game.html"   class="nav-link" data-page="game"   data-nav="game">ごみゲーム</a>
+    <a href="videos.html" class="nav-link" data-page="videos" data-nav="videos">動画</a>
+  </nav>
+  <button class="site-lang-toggle" type="button">🌐 日本語</button>
+</header>
+
+<div class="app" id="app">
+  <header class="header">
+    <div class="title">
+      <span id="hdrTitle">🗑️ 大阪市ごみ分別ゲーム</span>
+      <span class="sub" id="hdrSub">Osaka Trash Sorting</span>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label" id="lblScore">スコア</div>
+        <div class="stat-value" id="score">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label" id="lblRemaining">残り</div>
+        <div class="stat-value" id="remaining">20</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label" id="lblLives">ライフ</div>
+        <div class="stat-value lives" id="lives">❤️❤️❤️</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="play-area" id="playArea">
+    <div class="hint" id="hint">下のごみ箱にドラッグしてね</div>
+    <div class="streak-badge" id="streakBadge"></div>
+    <div class="feedback" id="feedback"></div>
+  </main>
+
+  <section class="bins">
+    <div class="bin burnable" data-type="burnable">
+      <div class="bin-icon">🔥</div>
+      <div class="bin-name" id="binName_burnable">普通ごみ</div>
+      <div class="bin-sub" id="binSub_burnable">生ごみ・紙くず<br>革・木くず・おむつ</div>
+    </div>
+    <div class="bin recycle" data-type="recycle">
+      <div class="bin-icon">♻️</div>
+      <div class="bin-name" id="binName_recycle">資源ごみ</div>
+      <div class="bin-sub" id="binSub_recycle">空き缶・空きびん<br>ペットボトル</div>
+    </div>
+    <div class="bin plastic" data-type="plastic">
+      <div class="bin-icon">🛍️</div>
+      <div class="bin-name" id="binName_plastic">容器包装プラスチック</div>
+      <div class="bin-sub" id="binSub_plastic">プラマーク付きの<br>容器・包装</div>
+    </div>
+  </section>
+
+  <div class="item" id="item">
+    <div class="item-icon" id="itemIcon"></div>
+    <div class="item-name" id="itemName"></div>
+  </div>
+
+  <!-- Start overlay -->
+  <div class="overlay" id="startOverlay">
+    <div class="lang-bar" id="langBar"></div>
+    <h1 id="startTitle">🗑️ 大阪市ごみ分別ゲーム</h1>
+    <p class="lead" id="startLead"></p>
+    <div class="rules">
+      <h3 id="rulesTitle"></h3>
+      <ul id="rulesList"></ul>
+    </div>
+    <p class="lead" id="startChallenge"></p>
+    <button class="btn" id="startBtn">スタート</button>
+    <p class="footer-note" id="startNote"></p>
+  </div>
+
+  <!-- End overlay -->
+  <div class="overlay hidden" id="endOverlay">
+    <h2 id="endTitle"></h2>
+    <div class="score-label" id="endScoreLabel">SCORE</div>
+    <div class="score-big" id="finalScore">0</div>
+    <div class="rank" id="rank"></div>
+    <div class="end-stats">
+      <div><span id="endLblCorrect"></span><b id="endCorrect">0</b></div>
+      <div><span id="endLblWrong"></span><b id="endWrong">0</b></div>
+      <div><span id="endLblStreak"></span><b id="endStreak">0</b></div>
+    </div>
+    <p class="lead" id="endMessage"></p>
+    <button class="btn" id="restartBtn">もう一度</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ============ Languages ============
+  const LANGS = [
+    { code: 'ja', name: '日本語' },
+    { code: 'en', name: 'English' },
+    { code: 'zh', name: '中文' },
+    { code: 'ko', name: '한국어' },
+    { code: 'my', name: 'မြန်မာ' },
+    { code: 'vi', name: 'Tiếng Việt' },
+  ];
+
+  // ============ Reasons (shared tips per category/scenario) ============
+  // Order: ja, en, zh, ko, my, vi
+  const REASONS = {
+    kitchen: {
+      ja: '生ごみは水気を切ってから普通ごみへ。',
+      en: 'Drain kitchen waste and put it in burnable trash.',
+      zh: '厨余沥干水分后投入普通垃圾。',
+      ko: '음식물 쓰레기는 물기를 빼고 일반 쓰레기로.',
+      my: 'အစားအသောက်အကြွင်းကို ရေစစ်ပြီး ပုံမှန်အမှိုက်ထဲ ထည့်ပါ။',
+      vi: 'Rác bếp vắt khô nước rồi bỏ vào rác thông thường.',
+    },
+    leather: {
+      ja: '革・ゴム製品は普通ごみへ。',
+      en: 'Leather and rubber items go in burnable trash.',
+      zh: '皮革和橡胶制品属于普通垃圾。',
+      ko: '가죽·고무 제품은 일반 쓰레기.',
+      my: 'သားရေနှင့်ရာဘာပစ္စည်းသည် ပုံမှန်အမှိုက်။',
+      vi: 'Đồ da và cao su là rác thông thường.',
+    },
+    no_pla_mark: {
+      ja: 'プラマークが無いプラ製品は普通ごみへ。',
+      en: 'Plastic without the プラ mark goes in burnable trash.',
+      zh: '无プラ标志的塑料属于普通垃圾。',
+      ko: 'プラ 마크가 없는 플라스틱은 일반 쓰레기.',
+      my: 'プラ အမှတ်မပါသော ပလပ်စတစ်သည် ပုံမှန်အမှိုက်။',
+      vi: 'Nhựa không có dấu プラ là rác thông thường.',
+    },
+    paper_burnable: {
+      ja: '加工・汚れた紙はリサイクル不可、普通ごみへ。',
+      en: 'Coated or soiled paper cannot be recycled — burnable trash.',
+      zh: '加工或弄脏的纸不可回收，属于普通垃圾。',
+      ko: '코팅·오염된 종이는 재활용 불가, 일반 쓰레기.',
+      my: 'အပေါ်ယံပိုးပြီး၊ ညစ်ပတ်နေသောစက္ကူသည် ပုံမှန်အမှိုက်။',
+      vi: 'Giấy tráng phủ hoặc bẩn không tái chế — rác thông thường.',
+    },
+    small_wood: {
+      ja: '小さな木製品は普通ごみへ。',
+      en: 'Small wooden items go in burnable trash.',
+      zh: '小型木制品属于普通垃圾。',
+      ko: '작은 목제품은 일반 쓰레기.',
+      my: 'သစ်သားပစ္စည်းငယ်များသည် ပုံမှန်အမှိုက်။',
+      vi: 'Đồ gỗ nhỏ là rác thông thường.',
+    },
+    misc_burnable: {
+      ja: '普通ごみに分類されます。',
+      en: 'This belongs in burnable / general trash.',
+      zh: '属于普通（可燃）垃圾。',
+      ko: '일반 쓰레기로 분류됩니다.',
+      my: 'ပုံမှန်အမှိုက်အဖြစ် ခွဲခြားသည်။',
+      vi: 'Thuộc rác thông thường (rác cháy được).',
+    },
+    broken_glass: {
+      ja: '割れた陶器・ガラスは紙で包んで普通ごみへ。',
+      en: 'Wrap broken ceramics or glass in paper, then burnable trash.',
+      zh: '破碎陶瓷或玻璃用纸包好后投入普通垃圾。',
+      ko: '깨진 도자기·유리는 종이로 싸서 일반 쓰레기.',
+      my: 'ကွဲသွားသည့်ဖန်/အိုးခွက်ကို စက္ကူဖြင့်ထုပ်ပြီး ပုံမှန်အမှိုက်ထဲ။',
+      vi: 'Gói gốm/thủy tinh vỡ trong giấy rồi bỏ vào rác thông thường.',
+    },
+    bulb: {
+      ja: '蛍光灯や電球は紙で包んで普通ごみへ。',
+      en: 'Wrap bulbs and tubes in paper, then burnable trash.',
+      zh: '灯泡和荧光灯管用纸包好后投入普通垃圾。',
+      ko: '전구·형광등은 종이로 싸서 일반 쓰레기.',
+      my: 'မီးသီးနှင့်မီးချောင်းကို စက္ကူဖြင့်ထုပ်ပြီး ပုံမှန်အမှိုက်ထဲ။',
+      vi: 'Gói bóng đèn/đèn huỳnh quang trong giấy rồi bỏ vào rác thông thường.',
+    },
+    can: {
+      ja: '中を軽くすすいで資源ごみへ。',
+      en: 'Rinse and put in recyclables (cans / bottles / PET).',
+      zh: '内部冲洗后投入资源垃圾。',
+      ko: '안을 헹군 뒤 자원 쓰레기로.',
+      my: 'အတွင်းပိုင်းကို ဆေးကြောပြီး အရင်းအမြစ်အမှိုက်ထဲ။',
+      vi: 'Rửa sạch bên trong rồi bỏ vào rác tài nguyên.',
+    },
+    glass_bottle: {
+      ja: 'キャップを外して中をすすぎ、資源ごみへ。',
+      en: 'Remove the cap, rinse, then put in recyclables.',
+      zh: '取下瓶盖、清洗后投入资源垃圾。',
+      ko: '뚜껑을 빼고 헹군 뒤 자원 쓰레기로.',
+      my: 'အဖုံးကို ဖြုတ်ပြီး ဆေးကြောကာ အရင်းအမြစ်အမှိုက်ထဲ။',
+      vi: 'Tháo nắp, rửa sạch rồi bỏ vào rác tài nguyên.',
+    },
+    pet_bottle: {
+      ja: 'キャップとラベルを外し、中をすすいで資源ごみへ。',
+      en: 'Remove cap and label, rinse, then put in recyclables.',
+      zh: '取下瓶盖和标签、冲洗后投入资源垃圾。',
+      ko: '뚜껑과 라벨을 떼고 헹군 뒤 자원 쓰레기로.',
+      my: 'အဖုံးနှင့်တံဆိပ်ကို ဖြုတ်ပြီး ဆေးကြောကာ အရင်းအမြစ်အမှိုက်ထဲ။',
+      vi: 'Tháo nắp và nhãn, rửa sạch rồi bỏ vào rác tài nguyên.',
+    },
+    plastic_bag: {
+      ja: 'プラマーク付きの袋は容器包装プラスチックへ。',
+      en: 'Bags with the プラ mark go in plastic packaging.',
+      zh: '带プラ标志的袋子属于容器包装塑料。',
+      ko: 'プラ 마크 봉지는 용기 포장 플라스틱.',
+      my: 'プラ အမှတ်ပါ အိတ်များသည် ထုပ်ပိုးပလပ်စတစ်။',
+      vi: 'Túi có dấu プラ là nhựa bao bì.',
+    },
+    plastic_container: {
+      ja: '中を軽くすすいで容器包装プラスチックへ。',
+      en: 'Rinse and put in plastic packaging.',
+      zh: '冲洗后投入容器包装塑料。',
+      ko: '안을 헹군 뒤 용기 포장 플라스틱.',
+      my: 'အတွင်းပိုင်းကို ဆေးကြောပြီး ထုပ်ပိုးပလပ်စတစ်ထဲ။',
+      vi: 'Rửa sạch rồi bỏ vào nhựa bao bì.',
+    },
+    plastic_tray: {
+      ja: '食品トレイは容器包装プラスチックへ。',
+      en: 'Food trays go in plastic packaging.',
+      zh: '食品托盘属于容器包装塑料。',
+      ko: '식품 트레이는 용기 포장 플라스틱.',
+      my: 'အစားအသောက်ဗန်းသည် ထုပ်ပိုးပလပ်စတစ်။',
+      vi: 'Khay thực phẩm là nhựa bao bì.',
+    },
+    plastic_packaging: {
+      ja: 'プラマーク付きの包装は容器包装プラスチックへ。',
+      en: 'Packaging with the プラ mark goes in plastic packaging.',
+      zh: '带プラ标志的包装属于容器包装塑料。',
+      ko: 'プラ 마크 포장은 용기 포장 플라스틱.',
+      my: 'プラ အမှတ်ပါ ထုပ်ပိုးသည် ထုပ်ပိုးပလပ်စတစ်။',
+      vi: 'Bao bì có dấu プラ là nhựa bao bì.',
+    },
+    pet_cap_label: {
+      ja: 'ペットボトルのキャップやラベルは容器包装プラスチックへ。',
+      en: 'PET bottle caps and labels go in plastic packaging.',
+      zh: '宝特瓶盖与标签属于容器包装塑料。',
+      ko: '페트병 뚜껑과 라벨은 용기 포장 플라스틱.',
+      my: 'PET ပုလင်းအဖုံးနှင့်တံဆိပ်သည် ထုပ်ပိုးပလပ်စတစ်။',
+      vi: 'Nắp và nhãn chai PET là nhựa bao bì.',
+    },
+    styrofoam: {
+      ja: '発泡スチロール・緩衝材は容器包装プラスチックへ。',
+      en: 'Styrofoam and bubble wrap go in plastic packaging.',
+      zh: '泡沫塑料和气泡膜属于容器包装塑料。',
+      ko: '스티로폼·뽁뽁이는 용기 포장 플라스틱.',
+      my: 'ဖော့ပလပ်စတစ်နှင့်လေပူဖော်ပ်ပလပ်စတစ်သည် ထုပ်ပိုးပလပ်စတစ်။',
+      vi: 'Xốp và màng bóng khí là nhựa bao bì.',
+    },
+  };
+
+  // ============ 100 trash items (Osaka City rules) ============
+  // i = icon, t = type, r = reason key, n = name in each language
+  const ITEMS = [
+    // ----- 普通ごみ (burnable) — 40 items -----
+    { i:'🍌', t:'burnable', r:'kitchen', n:{ja:'バナナの皮', en:'Banana peel', zh:'香蕉皮', ko:'바나나 껍질', my:'ငှက်ပျောသီးအခွံ', vi:'Vỏ chuối'} },
+    { i:'🍎', t:'burnable', r:'kitchen', n:{ja:'りんごの芯', en:'Apple core', zh:'苹果核', ko:'사과 속심', my:'ပန်းသီးအတွင်းသား', vi:'Lõi táo'} },
+    { i:'🍗', t:'burnable', r:'kitchen', n:{ja:'鶏の骨', en:'Chicken bone', zh:'鸡骨头', ko:'닭 뼈', my:'ကြက်အရိုး', vi:'Xương gà'} },
+    { i:'🐟', t:'burnable', r:'kitchen', n:{ja:'魚の骨', en:'Fish bone', zh:'鱼骨', ko:'생선 뼈', my:'ငါးအရိုး', vi:'Xương cá'} },
+    { i:'🥚', t:'burnable', r:'kitchen', n:{ja:'卵の殻', en:'Eggshell', zh:'蛋壳', ko:'달걀 껍질', my:'ဥခွံ', vi:'Vỏ trứng'} },
+    { i:'🫖', t:'burnable', r:'kitchen', n:{ja:'お茶の出がらし', en:'Used tea leaves', zh:'茶叶渣', ko:'차 찌꺼기', my:'လက်ဖက်ရည်အကြွင်း', vi:'Bã trà'} },
+    { i:'☕', t:'burnable', r:'kitchen', n:{ja:'コーヒーかす', en:'Coffee grounds', zh:'咖啡渣', ko:'커피 찌꺼기', my:'ကော်ဖီအကြွင်း', vi:'Bã cà phê'} },
+    { i:'🥬', t:'burnable', r:'kitchen', n:{ja:'野菜くず', en:'Vegetable scraps', zh:'蔬菜残渣', ko:'채소 부스러기', my:'ဟင်းသီးဟင်းရွက်အကြွင်း', vi:'Rau vụn'} },
+    { i:'🍞', t:'burnable', r:'kitchen', n:{ja:'パンの耳', en:'Bread crust', zh:'面包边', ko:'빵 가장자리', my:'ပေါင်မုန့်အနား', vi:'Vỏ bánh mì'} },
+    { i:'🚬', t:'burnable', r:'misc_burnable', n:{ja:'たばこの吸い殻', en:'Cigarette butt', zh:'烟头', ko:'담배꽁초', my:'ဆေးလိပ်တိုက်', vi:'Đầu lọc thuốc lá'} },
+    { i:'🧻', t:'burnable', r:'paper_burnable', n:{ja:'使用済みティッシュ', en:'Used tissue', zh:'用过的纸巾', ko:'사용한 휴지', my:'သုံးပြီးတစ်ရှူး', vi:'Khăn giấy đã dùng'} },
+    { i:'👶', t:'burnable', r:'misc_burnable', n:{ja:'紙おむつ', en:'Disposable diaper', zh:'纸尿裤', ko:'종이 기저귀', my:'သေးထိန်းအဝတ်', vi:'Tã giấy'} },
+    { i:'🩹', t:'burnable', r:'misc_burnable', n:{ja:'生理用品', en:'Sanitary products', zh:'卫生用品', ko:'생리용품', my:'အမျိုးသမီးသုံးပစ္စည်း', vi:'Sản phẩm vệ sinh phụ nữ'} },
+    { i:'😷', t:'burnable', r:'misc_burnable', n:{ja:'使い捨てマスク', en:'Disposable mask', zh:'一次性口罩', ko:'일회용 마스크', my:'တစ်ခါသုံးနှာခေါင်းစည်း', vi:'Khẩu trang dùng một lần'} },
+    { i:'👞', t:'burnable', r:'leather', n:{ja:'革靴', en:'Leather shoes', zh:'皮鞋', ko:'가죽 구두', my:'သားရေဖိနပ်', vi:'Giày da'} },
+    { i:'👜', t:'burnable', r:'leather', n:{ja:'革のバッグ', en:'Leather bag', zh:'皮包', ko:'가죽 가방', my:'သားရေအိတ်', vi:'Túi da'} },
+    { i:'🧤', t:'burnable', r:'leather', n:{ja:'ゴム手袋', en:'Rubber gloves', zh:'橡胶手套', ko:'고무 장갑', my:'ရာဘာလက်အိတ်', vi:'Găng tay cao su'} },
+    { i:'⚪', t:'burnable', r:'leather', n:{ja:'輪ゴム', en:'Rubber band', zh:'橡皮筋', ko:'고무줄', my:'ရာဘာကြိုး', vi:'Dây thun'} },
+    { i:'💿', t:'burnable', r:'misc_burnable', n:{ja:'CD・DVD', en:'CD / DVD', zh:'CD/DVD 光盘', ko:'CD・DVD', my:'CD/DVD ပြားများ', vi:'CD / DVD'} },
+    { i:'📼', t:'burnable', r:'misc_burnable', n:{ja:'カセットテープ', en:'Cassette tape', zh:'盒式录音带', ko:'카세트테이프', my:'ကက်ဆက်တိပ်', vi:'Băng cassette'} },
+    { i:'📹', t:'burnable', r:'misc_burnable', n:{ja:'ビデオテープ', en:'VHS tape', zh:'录像带', ko:'비디오테이프', my:'ဗီဒီယိုတိပ်', vi:'Băng video'} },
+    { i:'🖼️', t:'burnable', r:'misc_burnable', n:{ja:'写真', en:'Photograph', zh:'照片', ko:'사진', my:'ဓာတ်ပုံ', vi:'Ảnh chụp'} },
+    { i:'🧸', t:'burnable', r:'misc_burnable', n:{ja:'ぬいぐるみ', en:'Stuffed toy', zh:'毛绒玩具', ko:'봉제 인형', my:'အရုပ်ပျော့', vi:'Thú nhồi bông'} },
+    { i:'✏️', t:'burnable', r:'small_wood', n:{ja:'鉛筆', en:'Pencil', zh:'铅笔', ko:'연필', my:'ခဲတံ', vi:'Bút chì'} },
+    { i:'🥢', t:'burnable', r:'small_wood', n:{ja:'割り箸', en:'Disposable chopsticks', zh:'一次性筷子', ko:'일회용 젓가락', my:'တစ်ခါသုံးတူ', vi:'Đũa dùng một lần'} },
+    { i:'🍢', t:'burnable', r:'small_wood', n:{ja:'焼き鳥の串', en:'Yakitori skewer', zh:'烤串竹签', ko:'대나무 꼬치', my:'ဝါးတံ', vi:'Que xiên nướng'} },
+    { i:'🪵', t:'burnable', r:'small_wood', n:{ja:'木の枝', en:'Tree branch', zh:'树枝', ko:'나뭇가지', my:'သစ်ကိုင်း', vi:'Cành cây'} },
+    { i:'🖍️', t:'burnable', r:'misc_burnable', n:{ja:'クレヨン', en:'Crayon', zh:'蜡笔', ko:'크레용', my:'ဖယောင်းချောင်း', vi:'Bút sáp'} },
+    { i:'🪥', t:'burnable', r:'no_pla_mark', n:{ja:'歯ブラシ', en:'Toothbrush', zh:'牙刷', ko:'칫솔', my:'သွားတိုက်တံ', vi:'Bàn chải đánh răng'} },
+    { i:'🖊️', t:'burnable', r:'no_pla_mark', n:{ja:'ボールペン', en:'Ballpoint pen', zh:'圆珠笔', ko:'볼펜', my:'ဘောပင်', vi:'Bút bi'} },
+    { i:'🥤', t:'burnable', r:'no_pla_mark', n:{ja:'ストロー', en:'Drinking straw', zh:'吸管', ko:'빨대', my:'ဖျော်ရည်စုပ်တံ', vi:'Ống hút'} },
+    { i:'🔥', t:'burnable', r:'misc_burnable', n:{ja:'ライター（使い切り）', en:'Used lighter', zh:'用完的打火机', ko:'다 쓴 라이터', my:'ကုန်ပြီးမီးခြစ်လိုက်တာ', vi:'Bật lửa đã hết ga'} },
+    { i:'🪒', t:'burnable', r:'misc_burnable', n:{ja:'カミソリ', en:'Razor', zh:'剃须刀', ko:'면도기', my:'မုတ်ဆိတ်ရိတ်စက်', vi:'Dao cạo'} },
+    { i:'🍶', t:'burnable', r:'broken_glass', n:{ja:'割れた陶器', en:'Broken ceramics', zh:'破碎陶器', ko:'깨진 도자기', my:'ကွဲသွားသည့်အိုးခွက်', vi:'Đồ gốm vỡ'} },
+    { i:'🥃', t:'burnable', r:'broken_glass', n:{ja:'割れたガラスのコップ', en:'Broken glass cup', zh:'破碎玻璃杯', ko:'깨진 유리컵', my:'ကွဲသွားသည့်ဖန်ခွက်', vi:'Cốc thủy tinh vỡ'} },
+    { i:'💡', t:'burnable', r:'bulb', n:{ja:'蛍光灯', en:'Fluorescent tube', zh:'荧光灯管', ko:'형광등', my:'ပလပ်စပ်မီးချောင်း', vi:'Đèn huỳnh quang'} },
+    { i:'💡', t:'burnable', r:'bulb', n:{ja:'電球', en:'Light bulb', zh:'灯泡', ko:'전구', my:'မီးသီး', vi:'Bóng đèn'} },
+    { i:'🧾', t:'burnable', r:'paper_burnable', n:{ja:'レシート', en:'Receipt', zh:'收据', ko:'영수증', my:'ပြေစာ', vi:'Hóa đơn'} },
+    { i:'🥤', t:'burnable', r:'paper_burnable', n:{ja:'紙コップ', en:'Paper cup', zh:'纸杯', ko:'종이컵', my:'စက္ကူခွက်', vi:'Cốc giấy'} },
+    { i:'🧯', t:'burnable', r:'misc_burnable', n:{ja:'使い捨てカイロ', en:'Disposable hand warmer', zh:'一次性暖宝宝', ko:'일회용 핫팩', my:'တစ်ခါသုံးနွေးချောင်း', vi:'Túi giữ nhiệt dùng một lần'} },
+
+    // ----- 資源ごみ (recycle) — 22 items -----
+    { i:'🥫', t:'recycle', r:'can', n:{ja:'アルミ缶', en:'Aluminum can', zh:'铝罐', ko:'알루미늄 캔', my:'အလူမီနီယံဘူး', vi:'Lon nhôm'} },
+    { i:'🥫', t:'recycle', r:'can', n:{ja:'スチール缶', en:'Steel can', zh:'钢罐', ko:'스틸 캔', my:'သံဘူး', vi:'Lon thép'} },
+    { i:'🧃', t:'recycle', r:'can', n:{ja:'ジュースの缶', en:'Juice can', zh:'果汁罐', ko:'주스 캔', my:'ဖျော်ရည်ဘူး', vi:'Lon nước trái cây'} },
+    { i:'🍺', t:'recycle', r:'can', n:{ja:'ビールの缶', en:'Beer can', zh:'啤酒罐', ko:'맥주 캔', my:'ဘီယာဘူး', vi:'Lon bia'} },
+    { i:'🍵', t:'recycle', r:'can', n:{ja:'お茶の缶', en:'Tea can', zh:'茶饮料罐', ko:'차 캔', my:'လက်ဖက်ရည်ဘူး', vi:'Lon trà'} },
+    { i:'☕', t:'recycle', r:'can', n:{ja:'コーヒーの缶', en:'Coffee can', zh:'咖啡罐', ko:'커피 캔', my:'ကော်ဖီဘူး', vi:'Lon cà phê'} },
+    { i:'🐟', t:'recycle', r:'can', n:{ja:'ツナ缶', en:'Tuna can', zh:'金枪鱼罐头', ko:'참치 캔', my:'တူနာငါးဘူး', vi:'Lon cá ngừ'} },
+    { i:'🍅', t:'recycle', r:'can', n:{ja:'トマト缶', en:'Tomato can', zh:'番茄罐头', ko:'토마토 캔', my:'ခရမ်းချဉ်သီးဘူး', vi:'Lon cà chua'} },
+    { i:'🍶', t:'recycle', r:'glass_bottle', n:{ja:'ガラスびん', en:'Glass bottle', zh:'玻璃瓶', ko:'유리병', my:'ဖန်ပုလင်း', vi:'Chai thủy tinh'} },
+    { i:'🍺', t:'recycle', r:'glass_bottle', n:{ja:'ビールびん', en:'Beer bottle', zh:'啤酒瓶', ko:'맥주병', my:'ဘီယာပုလင်း', vi:'Chai bia'} },
+    { i:'🍷', t:'recycle', r:'glass_bottle', n:{ja:'ワインのびん', en:'Wine bottle', zh:'葡萄酒瓶', ko:'와인 병', my:'ဝိုင်ပုလင်း', vi:'Chai rượu vang'} },
+    { i:'🍶', t:'recycle', r:'glass_bottle', n:{ja:'日本酒のびん', en:'Sake bottle', zh:'清酒瓶', ko:'사케 병', my:'ဆာကေပုလင်း', vi:'Chai rượu sake'} },
+    { i:'🍯', t:'recycle', r:'glass_bottle', n:{ja:'ジャムのびん', en:'Jam jar', zh:'果酱瓶', ko:'잼 병', my:'ဂျမ်းပုလင်း', vi:'Hũ mứt'} },
+    { i:'🍯', t:'recycle', r:'glass_bottle', n:{ja:'はちみつのびん', en:'Honey jar', zh:'蜂蜜瓶', ko:'꿀병', my:'ပျားရည်ပုလင်း', vi:'Hũ mật ong'} },
+    { i:'🥃', t:'recycle', r:'glass_bottle', n:{ja:'ウイスキーのびん', en:'Whiskey bottle', zh:'威士忌瓶', ko:'위스키 병', my:'ဝီစကီပုလင်း', vi:'Chai whisky'} },
+    { i:'🍶', t:'recycle', r:'glass_bottle', n:{ja:'醤油のびん（ガラス）', en:'Soy sauce bottle (glass)', zh:'酱油瓶（玻璃）', ko:'간장 병(유리)', my:'ပဲငံပြာရည်ဖန်ပုလင်း', vi:'Chai nước tương thủy tinh'} },
+    { i:'💧', t:'recycle', r:'pet_bottle', n:{ja:'水のペットボトル', en:'Water PET bottle', zh:'矿泉水瓶', ko:'생수 페트병', my:'ရေသန့်ပလပ်စတစ်ပုလင်း', vi:'Chai nước PET'} },
+    { i:'🍵', t:'recycle', r:'pet_bottle', n:{ja:'お茶のペットボトル', en:'Tea PET bottle', zh:'茶饮料瓶', ko:'차 페트병', my:'လက်ဖက်ရည်ပလပ်စတစ်ပုလင်း', vi:'Chai trà PET'} },
+    { i:'🧃', t:'recycle', r:'pet_bottle', n:{ja:'ジュースのペットボトル', en:'Juice PET bottle', zh:'果汁瓶', ko:'주스 페트병', my:'ဖျော်ရည်ပလပ်စတစ်ပုလင်း', vi:'Chai nước trái cây PET'} },
+    { i:'🏃', t:'recycle', r:'pet_bottle', n:{ja:'スポーツドリンク', en:'Sports drink bottle', zh:'运动饮料瓶', ko:'스포츠 음료 페트병', my:'အားကစားဖျော်ရည်ပုလင်း', vi:'Chai nước thể thao PET'} },
+    { i:'🥤', t:'recycle', r:'pet_bottle', n:{ja:'炭酸飲料のペットボトル', en:'Soda PET bottle', zh:'汽水瓶', ko:'탄산음료 페트병', my:'အာရက်ပါသောဖျော်ရည်ပုလင်း', vi:'Chai nước có ga PET'} },
+    { i:'🧂', t:'recycle', r:'pet_bottle', n:{ja:'醤油のペットボトル', en:'Soy sauce PET bottle', zh:'酱油瓶（塑料）', ko:'간장 페트병', my:'ပဲငံပြာရည်ပလပ်စတစ်ပုလင်း', vi:'Chai nước tương PET'} },
+
+    // ----- 容器包装プラスチック (plastic) — 38 items -----
+    { i:'🛍️', t:'plastic', r:'plastic_bag', n:{ja:'レジ袋', en:'Shopping bag', zh:'塑料购物袋', ko:'비닐봉지', my:'ပလပ်စတစ်အိတ်', vi:'Túi nilon'} },
+    { i:'🍞', t:'plastic', r:'plastic_bag', n:{ja:'パンの袋', en:'Bread bag', zh:'面包袋', ko:'빵 봉지', my:'ပေါင်မုန့်အိတ်', vi:'Túi bánh mì'} },
+    { i:'🍫', t:'plastic', r:'plastic_bag', n:{ja:'お菓子の袋', en:'Snack bag', zh:'零食袋', ko:'과자 봉지', my:'မုန့်အိတ်', vi:'Túi bánh kẹo'} },
+    { i:'🧊', t:'plastic', r:'plastic_bag', n:{ja:'冷凍食品の袋', en:'Frozen food bag', zh:'冷冻食品袋', ko:'냉동식품 봉지', my:'အအေးခံအစားအစာအိတ်', vi:'Túi thực phẩm đông lạnh'} },
+    { i:'🍜', t:'plastic', r:'plastic_bag', n:{ja:'インスタント麺の袋', en:'Instant noodle bag', zh:'方便面袋', ko:'라면 봉지', my:'ခေါက်ဆွဲခြောက်အိတ်', vi:'Túi mì ăn liền'} },
+    { i:'🍚', t:'plastic', r:'plastic_bag', n:{ja:'米袋', en:'Rice bag', zh:'米袋', ko:'쌀 봉지', my:'ဆန်အိတ်', vi:'Túi gạo'} },
+    { i:'🍬', t:'plastic', r:'plastic_packaging', n:{ja:'キャンディの包み', en:'Candy wrapper', zh:'糖果包装纸', ko:'사탕 포장지', my:'သကြားလုံးထုပ်', vi:'Giấy gói kẹo'} },
+    { i:'🥚', t:'plastic', r:'plastic_container', n:{ja:'卵のパック', en:'Egg carton (plastic)', zh:'鸡蛋盒（塑料）', ko:'달걀 팩', my:'ဥထုပ်ပိုး', vi:'Hộp trứng nhựa'} },
+    { i:'🍱', t:'plastic', r:'plastic_container', n:{ja:'弁当の容器', en:'Bento container', zh:'便当盒', ko:'도시락 용기', my:'ထမင်းဘူး', vi:'Hộp cơm hộp'} },
+    { i:'🍜', t:'plastic', r:'plastic_container', n:{ja:'カップ麺の容器', en:'Cup noodle container', zh:'杯面容器', ko:'컵라면 용기', my:'ခွက်ခေါက်ဆွဲဘူး', vi:'Cốc mì ly'} },
+    { i:'🍦', t:'plastic', r:'plastic_container', n:{ja:'ヨーグルトのカップ', en:'Yogurt cup', zh:'酸奶杯', ko:'요거트 컵', my:'ဒိန်ချဉ်ခွက်', vi:'Cốc sữa chua'} },
+    { i:'🍮', t:'plastic', r:'plastic_container', n:{ja:'プリンのカップ', en:'Pudding cup', zh:'布丁杯', ko:'푸딩 컵', my:'ပူတင်းခွက်', vi:'Cốc pudding'} },
+    { i:'🍨', t:'plastic', r:'plastic_container', n:{ja:'アイスクリームのカップ', en:'Ice cream cup', zh:'冰淇淋杯', ko:'아이스크림 컵', my:'ရေခဲမုန့်ခွက်', vi:'Cốc kem'} },
+    { i:'🥡', t:'plastic', r:'plastic_container', n:{ja:'豆腐の容器', en:'Tofu container', zh:'豆腐盒', ko:'두부 용기', my:'တိုဖူးဘူး', vi:'Hộp đậu phụ'} },
+    { i:'🫘', t:'plastic', r:'plastic_container', n:{ja:'納豆の容器', en:'Natto container', zh:'纳豆盒', ko:'낫토 용기', my:'နတ်တိုဘူး', vi:'Hộp natto'} },
+    { i:'🧈', t:'plastic', r:'plastic_container', n:{ja:'マーガリンの容器', en:'Margarine tub', zh:'人造黄油盒', ko:'마가린 통', my:'မာဂျရင်းဘူး', vi:'Hộp bơ thực vật'} },
+    { i:'🍇', t:'plastic', r:'plastic_container', n:{ja:'ゼリーの容器', en:'Jelly cup', zh:'果冻杯', ko:'젤리 컵', my:'ဂျယ်လီခွက်', vi:'Cốc thạch'} },
+    { i:'🔘', t:'plastic', r:'pet_cap_label', n:{ja:'ペットボトルのフタ', en:'PET bottle cap', zh:'宝特瓶盖', ko:'페트병 뚜껑', my:'PET ပုလင်းအဖုံး', vi:'Nắp chai PET'} },
+    { i:'🏷️', t:'plastic', r:'pet_cap_label', n:{ja:'ペットボトルのラベル', en:'PET bottle label', zh:'宝特瓶标签', ko:'페트병 라벨', my:'PET ပုလင်းတံဆိပ်', vi:'Nhãn chai PET'} },
+    { i:'🥩', t:'plastic', r:'plastic_tray', n:{ja:'肉のトレイ', en:'Meat tray', zh:'肉品托盘', ko:'고기 트레이', my:'အသားဗန်း', vi:'Khay thịt'} },
+    { i:'🍣', t:'plastic', r:'plastic_tray', n:{ja:'刺身のトレイ', en:'Sashimi tray', zh:'生鱼片托盘', ko:'사시미 트레이', my:'ငါးစိမ်းဗန်း', vi:'Khay sashimi'} },
+    { i:'🍱', t:'plastic', r:'plastic_tray', n:{ja:'食品トレイ', en:'Food tray', zh:'食品托盘', ko:'식품 트레이', my:'အစားအသောက်ဗန်း', vi:'Khay thực phẩm'} },
+    { i:'📦', t:'plastic', r:'plastic_tray', n:{ja:'弁当の透明な蓋', en:'Clear bento lid', zh:'便当透明盖', ko:'도시락 투명 뚜껑', my:'ထမင်းဘူးအဖုံးကြည်', vi:'Nắp trong hộp cơm'} },
+    { i:'🧴', t:'plastic', r:'plastic_container', n:{ja:'シャンプーボトル', en:'Shampoo bottle', zh:'洗发水瓶', ko:'샴푸 통', my:'ခေါင်းလျှော်ရည်ပုလင်း', vi:'Chai dầu gội'} },
+    { i:'🧴', t:'plastic', r:'plastic_container', n:{ja:'リンスのボトル', en:'Conditioner bottle', zh:'护发素瓶', ko:'컨디셔너 통', my:'ဆံပင်ပျော့ဖျော်ရည်ပုလင်း', vi:'Chai dầu xả'} },
+    { i:'🧼', t:'plastic', r:'plastic_container', n:{ja:'洗剤のボトル', en:'Detergent bottle', zh:'洗涤剂瓶', ko:'세제 통', my:'ဆပ်ပြာရည်ပုလင်း', vi:'Chai nước giặt'} },
+    { i:'🧴', t:'plastic', r:'plastic_container', n:{ja:'漂白剤のボトル', en:'Bleach bottle', zh:'漂白剂瓶', ko:'표백제 통', my:'အရောင်ချွတ်ဆေးပုလင်း', vi:'Chai thuốc tẩy'} },
+    { i:'🍅', t:'plastic', r:'plastic_container', n:{ja:'ケチャップのボトル', en:'Ketchup bottle', zh:'番茄酱瓶', ko:'케첩 통', my:'ခရမ်းချဉ်ဆော့စ်ပုလင်း', vi:'Chai tương cà'} },
+    { i:'🥚', t:'plastic', r:'plastic_container', n:{ja:'マヨネーズのボトル', en:'Mayonnaise bottle', zh:'蛋黄酱瓶', ko:'마요네즈 통', my:'မေယိုနိစ်ပုလင်း', vi:'Chai sốt mayonnaise'} },
+    { i:'🧴', t:'plastic', r:'plastic_container', n:{ja:'ハンドソープのボトル', en:'Hand soap bottle', zh:'洗手液瓶', ko:'핸드워시 통', my:'လက်ဆေးဆပ်ပြာရည်ပုလင်း', vi:'Chai nước rửa tay'} },
+    { i:'🌶️', t:'plastic', r:'plastic_container', n:{ja:'ソースのボトル', en:'Sauce bottle', zh:'酱料瓶', ko:'소스 통', my:'ဆော့စ်ပုလင်း', vi:'Chai nước sốt'} },
+    { i:'💄', t:'plastic', r:'plastic_container', n:{ja:'化粧品の容器', en:'Cosmetic container', zh:'化妆品瓶', ko:'화장품 용기', my:'အလှကုန်ဘူး', vi:'Hộp mỹ phẩm'} },
+    { i:'🦷', t:'plastic', r:'plastic_container', n:{ja:'歯磨き粉のチューブ', en:'Toothpaste tube', zh:'牙膏管', ko:'치약 튜브', my:'သွားတိုက်ဆေးပြွန်', vi:'Tuýp kem đánh răng'} },
+    { i:'🫧', t:'plastic', r:'styrofoam', n:{ja:'緩衝材（プチプチ）', en:'Bubble wrap', zh:'气泡膜', ko:'뽁뽁이', my:'လေပူဖော်ပ်ပလပ်စတစ်', vi:'Màng xốp hơi'} },
+    { i:'⬜', t:'plastic', r:'styrofoam', n:{ja:'発泡スチロール', en:'Styrofoam', zh:'泡沫塑料', ko:'스티로폼', my:'ဖော့ပလပ်စတစ်', vi:'Xốp'} },
+    { i:'🧀', t:'plastic', r:'plastic_packaging', n:{ja:'チーズの個包装', en:'Cheese wrapper', zh:'奶酪独立包装', ko:'치즈 낱개 포장', my:'ချိစ်တစ်ထုပ်ချင်း', vi:'Bao bì phô mai lẻ'} },
+    { i:'🥓', t:'plastic', r:'plastic_packaging', n:{ja:'ハムのパッケージ', en:'Ham packaging', zh:'火腿包装', ko:'햄 포장', my:'ဝက်ပေါင်ခြောက်ထုပ်', vi:'Bao bì giăm bông'} },
+    { i:'🌾', t:'plastic', r:'plastic_bag', n:{ja:'ふりかけの袋', en:'Furikake bag', zh:'拌饭料袋', ko:'후리카케 봉지', my:'ဖူရိကာကဲအိတ်', vi:'Túi gia vị rắc cơm'} },
+  ];
+
+  // ============ I18N UI strings ============
+  const I18N = {
+    ja: {
+      title: '🗑️ 大阪市ごみ分別ゲーム', sub: 'Osaka Trash Sorting',
+      score: 'スコア', remaining: '残り', lives: 'ライフ',
+      hint: '下のごみ箱にドラッグしてね',
+      streak: (n) => `🔥 連続正解 ×${n}`,
+      bin: {
+        burnable: { name: '普通ごみ', sub: '生ごみ・紙くず<br>革・木くず・おむつ' },
+        recycle:  { name: '資源ごみ', sub: '空き缶・空きびん<br>ペットボトル' },
+        plastic:  { name: '容器包装プラスチック', sub: 'プラマーク付きの<br>容器・包装' },
+      },
+      typeLabel: {
+        burnable: '普通ごみ',
+        recycle:  '資源ごみ（缶・びん・ペットボトル）',
+        plastic:  '容器包装プラスチック',
+      },
+      start: {
+        lead: '大阪市の分別ルールに従って、ごみを正しいごみ箱にドラッグしよう！',
+        rulesTitle: '🚮 大阪市のごみの種類',
+        rules: [
+          { tagKey: 'burnable', tagText: '普通ごみ', body: '週2回｜生ごみ・紙くず・革・ゴム・小さな木くず・おむつ・CDなど' },
+          { tagKey: 'recycle',  tagText: '資源ごみ', body: '週1回｜空き缶・空きびん・ペットボトル（中身をすすぐ）' },
+          { tagKey: 'plastic',  tagText: '容器包装プラスチック', body: '週1回｜プラマーク♻️の付いた容器や包装' },
+        ],
+        challenge: '全20問・ミスは3回まで！がんばって！',
+        btn: 'スタート',
+        note: '※ 本ゲームは大阪市環境局の家庭ごみ分別ルールに基づいています。実際の分別は最新の公式情報をご確認ください。',
+      },
+      fb: {
+        correct: '正解！', wrong: '不正解…',
+        is: (name, type) => `${name}は<b>${type}</b>`,
+        isWrong: (name, type) => `${name}は<b>${type}</b>です`,
+      },
+      end: {
+        scoreLabel: 'SCORE',
+        correct: '正解', wrong: '不正解', maxStreak: '最高連続',
+        gameOver: '💔 ゲームオーバー', clear: '🎊 全問クリア！',
+        ranks: { master: '🏆 ごみ分別マスター', gold: '🥇 上級者', silver: '🥈 中級者', bronze: '🥉 初級者', fail: '残念…' },
+        msgs: {
+          master: '完璧！大阪市民の鑑です！',
+          gold: 'すばらしい！分別をよく知っているね。',
+          silver: 'いい感じ！もう少しでマスター！',
+          bronze: 'これからも分別をがんばろう！',
+          fail: 'ミスが3回になりました。もう一度チャレンジしよう！',
+        },
+        restart: 'もう一度',
+      },
+      continueBtn: '次へ',
+    },
+
+    en: {
+      title: '🗑️ Osaka Trash Sorting Game', sub: 'Osaka Gomi Bunbetsu',
+      score: 'Score', remaining: 'Left', lives: 'Lives',
+      hint: 'Drag the trash to the right bin',
+      streak: (n) => `🔥 Streak ×${n}`,
+      bin: {
+        burnable: { name: '普通ごみ', sub: 'Burnable / general<br>kitchen waste, paper, leather' },
+        recycle:  { name: '資源ごみ', sub: 'Recyclables<br>cans, bottles, PET' },
+        plastic:  { name: '容器包装プラスチック', sub: 'Plastic packaging<br>items with プラ mark' },
+      },
+      typeLabel: {
+        burnable: 'Burnable / general (普通ごみ)',
+        recycle:  'Recyclables — cans, bottles, PET (資源ごみ)',
+        plastic:  'Plastic packaging (容器包装プラスチック)',
+      },
+      start: {
+        lead: 'Follow Osaka City sorting rules: drag each item to the right bin!',
+        rulesTitle: '🚮 Osaka trash categories',
+        rules: [
+          { tagKey: 'burnable', tagText: '普通ごみ', body: '2×/week | Kitchen waste, soiled paper, leather, rubber, small wood, diapers, CDs…' },
+          { tagKey: 'recycle',  tagText: '資源ごみ', body: '1×/week | Empty cans, glass bottles, PET bottles (rinsed)' },
+          { tagKey: 'plastic',  tagText: '容器包装プラスチック', body: '1×/week | Containers / packaging with the プラ ♻️ mark' },
+        ],
+        challenge: '20 rounds, 3 lives max. Good luck!',
+        btn: 'Start',
+        note: '※ Based on the Osaka City Environmental Bureau household sorting rules. Please check the latest official guide for actual sorting.',
+      },
+      fb: {
+        correct: 'Correct!', wrong: 'Wrong…',
+        is: (name, type) => `${name} → <b>${type}</b>`,
+        isWrong: (name, type) => `${name} belongs in <b>${type}</b>`,
+      },
+      end: {
+        scoreLabel: 'SCORE',
+        correct: 'Correct', wrong: 'Wrong', maxStreak: 'Best streak',
+        gameOver: '💔 Game Over', clear: '🎊 All cleared!',
+        ranks: { master: '🏆 Sorting Master', gold: '🥇 Advanced', silver: '🥈 Intermediate', bronze: '🥉 Beginner', fail: 'Tough luck…' },
+        msgs: {
+          master: 'Perfect! A model Osaka resident!',
+          gold: 'Excellent! You know your sorting.',
+          silver: 'Nice work! Almost a master!',
+          bronze: 'Keep learning the sorting rules!',
+          fail: '3 mistakes already. Try again!',
+        },
+        restart: 'Try again',
+      },
+      continueBtn: 'Continue',
+    },
+
+    zh: {
+      title: '🗑️ 大阪市垃圾分类游戏', sub: 'Osaka Trash Sorting',
+      score: '得分', remaining: '剩余', lives: '生命',
+      hint: '拖到下面对应的垃圾桶',
+      streak: (n) => `🔥 连续答对 ×${n}`,
+      bin: {
+        burnable: { name: '普通ごみ', sub: '普通垃圾<br>厨余・纸屑・皮革・尿布' },
+        recycle:  { name: '資源ごみ', sub: '资源垃圾<br>罐・瓶・宝特瓶' },
+        plastic:  { name: '容器包装プラスチック', sub: '容器包装塑料<br>带プラ标志' },
+      },
+      typeLabel: {
+        burnable: '普通垃圾（普通ごみ）',
+        recycle:  '资源垃圾（罐・瓶・宝特瓶）',
+        plastic:  '容器包装塑料（容器包装プラスチック）',
+      },
+      start: {
+        lead: '按照大阪市的分类规则，把垃圾拖到正确的垃圾桶里！',
+        rulesTitle: '🚮 大阪市垃圾分类',
+        rules: [
+          { tagKey: 'burnable', tagText: '普通ごみ', body: '每周2次｜厨余・纸屑・皮革・橡胶・小木屑・尿布・光盘等' },
+          { tagKey: 'recycle',  tagText: '資源ごみ', body: '每周1次｜空罐・空瓶・宝特瓶（清洗后）' },
+          { tagKey: 'plastic',  tagText: '容器包装プラスチック', body: '每周1次｜带プラ♻️标志的容器与包装' },
+        ],
+        challenge: '共20题，最多失误3次！加油！',
+        btn: '开始',
+        note: '※ 本游戏依据大阪市环境局家庭垃圾分类规则。实际分类请参考最新官方信息。',
+      },
+      fb: {
+        correct: '答对了！', wrong: '答错了…',
+        is: (name, type) => `${name}属于<b>${type}</b>`,
+        isWrong: (name, type) => `${name}属于<b>${type}</b>`,
+      },
+      end: {
+        scoreLabel: '得分',
+        correct: '答对', wrong: '答错', maxStreak: '最高连击',
+        gameOver: '💔 游戏结束', clear: '🎊 全部通关！',
+        ranks: { master: '🏆 垃圾分类大师', gold: '🥇 高级', silver: '🥈 中级', bronze: '🥉 初级', fail: '可惜…' },
+        msgs: {
+          master: '完美！大阪市民楷模！',
+          gold: '太棒了！你很懂分类！',
+          silver: '不错！再加把劲就大师了！',
+          bronze: '继续努力学习分类吧！',
+          fail: '失误已达3次。再试一次吧！',
+        },
+        restart: '再来一次',
+      },
+      continueBtn: '继续',
+    },
+
+    ko: {
+      title: '🗑️ 오사카시 쓰레기 분리 게임', sub: 'Osaka Trash Sorting',
+      score: '점수', remaining: '남음', lives: '라이프',
+      hint: '아래 쓰레기통으로 드래그',
+      streak: (n) => `🔥 연속 정답 ×${n}`,
+      bin: {
+        burnable: { name: '普通ごみ', sub: '일반 쓰레기<br>음식물・종이・가죽' },
+        recycle:  { name: '資源ごみ', sub: '자원 쓰레기<br>캔・병・페트병' },
+        plastic:  { name: '容器包装プラスチック', sub: '용기 포장 플라스틱<br>プラ 마크 있음' },
+      },
+      typeLabel: {
+        burnable: '일반 쓰레기 (普通ごみ)',
+        recycle:  '자원 쓰레기 (캔・병・페트병)',
+        plastic:  '용기 포장 플라스틱 (容器包装プラスチック)',
+      },
+      start: {
+        lead: '오사카시 분리수거 규칙에 따라 쓰레기를 올바른 통에 드래그하세요!',
+        rulesTitle: '🚮 오사카시 쓰레기 종류',
+        rules: [
+          { tagKey: 'burnable', tagText: '普通ごみ', body: '주2회｜음식물・종이・가죽・고무・작은 나무 조각・기저귀・CD 등' },
+          { tagKey: 'recycle',  tagText: '資源ごみ', body: '주1회｜빈 캔・빈 병・페트병 (헹궈서)' },
+          { tagKey: 'plastic',  tagText: '容器包装プラスチック', body: '주1회｜プラ♻️ 마크가 있는 용기와 포장' },
+        ],
+        challenge: '총 20문제, 실수는 3번까지! 화이팅!',
+        btn: '시작',
+        note: '※ 본 게임은 오사카시 환경국 가정 쓰레기 분리 규칙을 기반으로 합니다. 실제 분리는 최신 공식 정보를 확인하세요.',
+      },
+      fb: {
+        correct: '정답!', wrong: '오답…',
+        is: (name, type) => `${name} → <b>${type}</b>`,
+        isWrong: (name, type) => `${name}은(는) <b>${type}</b>입니다`,
+      },
+      end: {
+        scoreLabel: '점수',
+        correct: '정답', wrong: '오답', maxStreak: '최고 연속',
+        gameOver: '💔 게임 오버', clear: '🎊 전체 클리어!',
+        ranks: { master: '🏆 분리수거 마스터', gold: '🥇 상급', silver: '🥈 중급', bronze: '🥉 초급', fail: '아쉬워요…' },
+        msgs: {
+          master: '완벽! 오사카 시민의 본보기!',
+          gold: '훌륭해요! 분리수거를 잘 아시네요.',
+          silver: '좋아요! 조금만 더 하면 마스터!',
+          bronze: '앞으로도 분리수거 화이팅!',
+          fail: '실수가 3회가 되었어요. 다시 도전해 보세요!',
+        },
+        restart: '다시 하기',
+      },
+      continueBtn: '계속',
+    },
+
+    my: {
+      title: '🗑️ အိုဆာကာမြို့ အမှိုက်ခွဲခြားရေးဂိမ်း', sub: 'Osaka Trash Sorting',
+      score: 'ရမှတ်', remaining: 'ကျန်', lives: 'အသက်',
+      hint: 'အောက်က အမှိုက်ပုံးထဲ ဆွဲထည့်ပါ',
+      streak: (n) => `🔥 ဆက်တိုက်မှန် ×${n}`,
+      bin: {
+        burnable: { name: '普通ごみ', sub: 'ပုံမှန်အမှိုက်<br>အစားအသောက်၊ စက္ကူ၊ သားရေ' },
+        recycle:  { name: '資源ごみ', sub: 'အရင်းအမြစ်အမှိုက်<br>သတ္တုဘူး၊ ဖန်ဘူး၊ PET' },
+        plastic:  { name: '容器包装プラスチック', sub: 'ထုပ်ပိုးပလပ်စတစ်<br>プラ အမှတ်ပါ' },
+      },
+      typeLabel: {
+        burnable: 'ပုံမှန်အမှိုက် (普通ごみ)',
+        recycle:  'အရင်းအမြစ်အမှိုက် (သတ္တုဘူး၊ ဖန်ဘူး၊ PET)',
+        plastic:  'ထုပ်ပိုးပလပ်စတစ် (容器包装プラスチック)',
+      },
+      start: {
+        lead: 'အိုဆာကာမြို့၏ ခွဲခြားရေးစည်းမျဉ်းအတိုင်း အမှိုက်ကို သင့်တင့်သော အမှိုက်ပုံးထဲ ဆွဲထည့်ပါ!',
+        rulesTitle: '🚮 အိုဆာကာမြို့ အမှိုက်အမျိုးအစားများ',
+        rules: [
+          { tagKey: 'burnable', tagText: '普通ごみ', body: 'တစ်ပတ်၂ကြိမ်｜အစားအသောက်အကြွင်း၊ စက္ကူ၊ သားရေ၊ ရာဘာ၊ သစ်သားအပိုင်းအစ၊ သေးထိန်းအဝတ်၊ CD' },
+          { tagKey: 'recycle',  tagText: '資源ごみ', body: 'တစ်ပတ်၁ကြိမ်｜သတ္တုဘူး၊ ဖန်ပုလင်း၊ PET ဘူး (ဆေးကြောပြီး)' },
+          { tagKey: 'plastic',  tagText: '容器包装プラスチック', body: 'တစ်ပတ်၁ကြိမ်｜プラ♻️ အမှတ်ပါသော ထုပ်ပိုးပလပ်စတစ်' },
+        ],
+        challenge: 'စုစုပေါင်း ၂၀ ပုစ္ဆာ၊ အမှား ၃ ကြိမ်ထိ ခွင့်ပြုသည်!',
+        btn: 'စတင်ပါ',
+        note: '※ ဤဂိမ်းသည် အိုဆာကာမြို့ ပတ်ဝန်းကျင်ဌာန၏ အိမ်တွင်းအမှိုက်ခွဲခြားရေး စည်းမျဉ်းများကို အခြေပြုထားသည်။',
+      },
+      fb: {
+        correct: 'မှန်ပါသည်!', wrong: 'မှားသွားပါပြီ…',
+        is: (name, type) => `${name}သည် <b>${type}</b>`,
+        isWrong: (name, type) => `${name}သည် <b>${type}</b> ဖြစ်သည်`,
+      },
+      end: {
+        scoreLabel: 'ရမှတ်',
+        correct: 'မှန်', wrong: 'မှား', maxStreak: 'အမြင့်ဆုံးဆက်',
+        gameOver: '💔 ဂိမ်းပြီးပါပြီ', clear: '🎊 အားလုံးပြီးဆုံး!',
+        ranks: { master: '🏆 အမှိုက်ခွဲခြားဆရာ', gold: '🥇 အဆင့်မြင့်', silver: '🥈 အလယ်အလတ်', bronze: '🥉 အစပြုသူ', fail: 'စိတ်ပျက်စရာ…' },
+        msgs: {
+          master: 'ပြီးပြည့်စုံပါပြီ! အိုဆာကာမြို့သားပုံစံ!',
+          gold: 'အလွန်ကောင်းပါသည်! ခွဲခြားမှုကို ကောင်းမွန်စွာ နားလည်ပါသည်။',
+          silver: 'ကောင်းပါသည်! နောက်နည်းနည်းနဲ့ ဆရာဖြစ်နိုင်ပါပြီ!',
+          bronze: 'ဆက်လက်ကြိုးစားကြပါစို့!',
+          fail: 'အမှား ၃ ကြိမ်ဖြစ်သွားပါပြီ။ ထပ်မံကြိုးစားကြည့်ပါ!',
+        },
+        restart: 'ထပ်စမ်းပါ',
+      },
+      continueBtn: 'ဆက်လုပ်ပါ',
+    },
+
+    vi: {
+      title: '🗑️ Trò chơi phân loại rác Osaka', sub: 'Osaka Trash Sorting',
+      score: 'Điểm', remaining: 'Còn', lives: 'Mạng',
+      hint: 'Kéo vào thùng rác bên dưới',
+      streak: (n) => `🔥 Đúng liên tiếp ×${n}`,
+      bin: {
+        burnable: { name: '普通ごみ', sub: 'Rác thông thường<br>Thức ăn, giấy, da' },
+        recycle:  { name: '資源ごみ', sub: 'Rác tài nguyên<br>Lon, chai, PET' },
+        plastic:  { name: '容器包装プラスチック', sub: 'Nhựa bao bì<br>Có dấu プラ' },
+      },
+      typeLabel: {
+        burnable: 'Rác thông thường (普通ごみ)',
+        recycle:  'Rác tài nguyên (lon, chai, PET)',
+        plastic:  'Nhựa bao bì (容器包装プラスチック)',
+      },
+      start: {
+        lead: 'Theo quy tắc phân loại của Osaka, kéo rác vào đúng thùng!',
+        rulesTitle: '🚮 Các loại rác ở Osaka',
+        rules: [
+          { tagKey: 'burnable', tagText: '普通ごみ', body: '2 lần/tuần｜Rác bếp, giấy, da, cao su, gỗ vụn nhỏ, tã, CD…' },
+          { tagKey: 'recycle',  tagText: '資源ごみ', body: '1 lần/tuần｜Lon, chai thủy tinh, chai PET (đã rửa sạch)' },
+          { tagKey: 'plastic',  tagText: '容器包装プラスチック', body: '1 lần/tuần｜Bao bì có dấu プラ♻️' },
+        ],
+        challenge: 'Tổng 20 câu, tối đa 3 lần sai! Cố lên!',
+        btn: 'Bắt đầu',
+        note: '※ Trò chơi dựa trên quy tắc phân loại rác của Cục Môi trường thành phố Osaka. Vui lòng tham khảo thông tin chính thức mới nhất.',
+      },
+      fb: {
+        correct: 'Chính xác!', wrong: 'Sai rồi…',
+        is: (name, type) => `${name} thuộc <b>${type}</b>`,
+        isWrong: (name, type) => `${name} thuộc <b>${type}</b>`,
+      },
+      end: {
+        scoreLabel: 'Điểm',
+        correct: 'Đúng', wrong: 'Sai', maxStreak: 'Chuỗi cao nhất',
+        gameOver: '💔 Hết lượt', clear: '🎊 Hoàn thành!',
+        ranks: { master: '🏆 Bậc thầy phân loại', gold: '🥇 Cao cấp', silver: '🥈 Trung cấp', bronze: '🥉 Sơ cấp', fail: 'Tiếc quá…' },
+        msgs: {
+          master: 'Hoàn hảo! Tấm gương của cư dân Osaka!',
+          gold: 'Tuyệt vời! Bạn rất rành phân loại!',
+          silver: 'Khá tốt! Cố thêm chút nữa sẽ thành bậc thầy!',
+          bronze: 'Hãy tiếp tục học phân loại nhé!',
+          fail: 'Đã sai 3 lần. Hãy thử lại nhé!',
+        },
+        restart: 'Chơi lại',
+      },
+      continueBtn: 'Tiếp tục',
+    },
+  };
+
+  const TOTAL_ROUNDS = 20;
+  const MAX_LIVES = 3;
+
+  // ============ State ============
+  const state = {
+    lang: 'ja',
+    score: 0,
+    lives: MAX_LIVES,
+    queue: [],
+    current: null,
+    streak: 0,
+    maxStreak: 0,
+    correct: 0,
+    wrong: 0,
+    busy: false,
+    awaitingResume: false,
+  };
+
+  // ============ DOM helpers ============
+  const $ = (s) => document.querySelector(s);
+  const app        = $('#app');
+  const playArea   = $('#playArea');
+  const itemEl     = $('#item');
+  const itemIcon   = $('#itemIcon');
+  const itemName   = $('#itemName');
+  const scoreEl    = $('#score');
+  const remainingEl= $('#remaining');
+  const livesEl    = $('#lives');
+  const feedbackEl = $('#feedback');
+  const hintEl     = $('#hint');
+  const streakEl   = $('#streakBadge');
+  const bins       = Array.from(document.querySelectorAll('.bin'));
+
+  // ============ I18N apply ============
+  function t() { return I18N[state.lang]; }
+  function getName(item) { return item.n[state.lang] || item.n.ja; }
+  function getReason(item) {
+    const r = REASONS[item.r];
+    if (!r) return '';
+    return r[state.lang] || r.ja;
+  }
+
+  function applyLang() {
+    const L = t();
+    document.documentElement.lang = state.lang;
+
+    $('#hdrTitle').textContent = L.title;
+    $('#hdrSub').textContent   = L.sub;
+    $('#lblScore').textContent = L.score;
+    $('#lblRemaining').textContent = L.remaining;
+    $('#lblLives').textContent = L.lives;
+    $('#hint').textContent     = L.hint;
+
+    for (const k of ['burnable','recycle','plastic']) {
+      $('#binName_' + k).innerHTML = L.bin[k].name;
+      $('#binSub_'  + k).innerHTML = L.bin[k].sub;
+    }
+
+    $('#startTitle').textContent     = L.title;
+    $('#startLead').textContent      = L.start.lead;
+    $('#rulesTitle').textContent     = L.start.rulesTitle;
+    $('#startChallenge').textContent = L.start.challenge;
+    $('#startBtn').textContent       = L.start.btn;
+    $('#startNote').textContent      = L.start.note;
+
+    const rulesList = $('#rulesList');
+    rulesList.innerHTML = '';
+    for (const r of L.start.rules) {
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="tag ${r.tagKey}">${r.tagText}</span> ${r.body}`;
+      rulesList.appendChild(li);
+    }
+
+    $('#endScoreLabel').textContent = L.end.scoreLabel;
+    $('#endLblCorrect').textContent = L.end.correct + ' ';
+    $('#endLblWrong').textContent   = L.end.wrong + ' ';
+    $('#endLblStreak').textContent  = L.end.maxStreak + ' ';
+    $('#restartBtn').textContent    = L.end.restart;
+
+    if (state.current) {
+      itemName.textContent = getName(state.current);
+    }
+
+    if (state.streak >= 2) streakEl.textContent = L.streak(state.streak);
+  }
+
+  function buildLangBar() {
+    const bar = $('#langBar');
+    bar.innerHTML = '';
+    for (const lang of LANGS) {
+      const b = document.createElement('button');
+      b.className = 'lang-btn' + (state.lang === lang.code ? ' active' : '');
+      b.type = 'button';
+      b.dataset.lang = lang.code;
+      b.textContent = lang.name;
+      if (lang.code === 'my') b.classList.add('lang-my');
+      b.addEventListener('click', () => setLang(lang.code));
+      bar.appendChild(b);
+    }
+  }
+
+  function setLang(code) {
+    if (!I18N[code]) return;
+    state.lang = code;
+    try { localStorage.setItem('osaka_gomi_lang', code); } catch (_) {}
+    buildLangBar();
+    applyLang();
+  }
+
+  function cycleLang() {
+    const idx = LANGS.findIndex(l => l.code === state.lang);
+    const next = LANGS[(idx + 1) % LANGS.length];
+    setLang(next.code);
+  }
+
+  // ============ Game logic ============
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function getItemSize() { return itemEl.offsetWidth || 120; }
+
+  function getCenterPos() {
+    const playRect = playArea.getBoundingClientRect();
+    const appRect  = app.getBoundingClientRect();
+    const size = getItemSize();
+    return {
+      x: (playRect.left - appRect.left) + (playRect.width  - size) / 2,
+      y: (playRect.top  - appRect.top)  + (playRect.height - size) / 2,
+    };
+  }
+
+  function setItemPos(x, y) {
+    itemEl.style.left = x + 'px';
+    itemEl.style.top  = y + 'px';
+  }
+
+  function updateHUD() {
+    scoreEl.textContent     = state.score;
+    remainingEl.textContent = state.queue.length + (state.current ? 1 : 0);
+    livesEl.textContent     = '❤️'.repeat(state.lives) + '🖤'.repeat(MAX_LIVES - state.lives);
+  }
+
+  function updateStreak() {
+    if (state.streak >= 2) {
+      streakEl.textContent = t().streak(state.streak);
+      streakEl.classList.add('show');
+    } else {
+      streakEl.classList.remove('show');
+    }
+  }
+
+  function spawnItem() {
+    if (state.lives <= 0) { endGame(); return; }
+    state.current = state.queue.shift() || null;
+    if (!state.current) { endGame(); return; }
+
+    itemIcon.textContent = state.current.i;
+    itemName.textContent = getName(state.current);
+
+    const c = getCenterPos();
+    itemEl.classList.remove('return');
+    setItemPos(c.x, c.y);
+    itemEl.classList.add('shown');
+    itemEl.classList.remove('spawning');
+    void itemEl.offsetWidth;
+    itemEl.classList.add('spawning');
+
+    hintEl.style.opacity = '1';
+    updateHUD();
+  }
+
+  function nextAfterFeedback() {
+    feedbackEl.classList.remove('show');
+    setTimeout(() => {
+      state.busy = false;
+      state.awaitingResume = false;
+      if (state.lives <= 0 || state.queue.length === 0) endGame();
+      else spawnItem();
+    }, 220);
+  }
+
+  function showFeedback(correct, item, points) {
+    const L = t();
+    const name = getName(item);
+    const typeLabel = L.typeLabel[item.t];
+    const tip = getReason(item);
+
+    if (correct) {
+      feedbackEl.className = 'feedback show correct';
+      feedbackEl.innerHTML = `
+        <span class="feedback-emoji">🎉</span>
+        <div class="feedback-title">${L.fb.correct}</div>
+        <div class="feedback-answer">${L.fb.is(name, typeLabel)}</div>
+        <div class="points">+${points}</div>
+        <div class="feedback-tip">${tip}</div>
+      `;
+      setTimeout(nextAfterFeedback, 1100);
+    } else {
+      // Wrong: pause until player clicks Continue
+      state.awaitingResume = true;
+      feedbackEl.className = 'feedback show wrong';
+      feedbackEl.innerHTML = `
+        <span class="feedback-emoji">😢</span>
+        <div class="feedback-title">${L.fb.wrong}</div>
+        <div class="feedback-answer">${L.fb.isWrong(name, typeLabel)}</div>
+        <div class="feedback-tip">${tip}</div>
+        <button class="feedback-btn" id="continueBtn" type="button">${L.continueBtn}</button>
+      `;
+      const btn = $('#continueBtn');
+      btn.addEventListener('click', () => {
+        if (!state.awaitingResume) return;
+        nextAfterFeedback();
+      });
+    }
+  }
+
+  function handleDrop(targetType) {
+    if (!state.current || state.busy) return;
+    state.busy = true;
+    itemEl.classList.remove('shown');
+
+    const item = state.current;
+    state.current = null;
+    const isCorrect = targetType === item.t;
+
+    let points = 0;
+    if (isCorrect) {
+      state.correct++;
+      state.streak++;
+      if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+      points = 100 + Math.min(state.streak - 1, 10) * 20;
+      state.score += points;
+    } else {
+      state.wrong++;
+      state.streak = 0;
+      state.lives--;
+      playArea.classList.remove('shake');
+      void playArea.offsetWidth;
+      playArea.classList.add('shake');
+    }
+    updateHUD();
+    updateStreak();
+    showFeedback(isCorrect, item, points);
+  }
+
+  function returnToCenter() {
+    const c = getCenterPos();
+    itemEl.classList.add('return');
+    setItemPos(c.x, c.y);
+    hintEl.style.opacity = '1';
+    setTimeout(() => itemEl.classList.remove('return'), 300);
+  }
+
+  function endGame() {
+    itemEl.classList.remove('shown');
+    streakEl.classList.remove('show');
+    const L = t();
+
+    $('#finalScore').textContent = state.score;
+    $('#endCorrect').textContent = state.correct;
+    $('#endWrong').textContent   = state.wrong;
+    $('#endStreak').textContent  = state.maxStreak;
+
+    let rankKey, msgKey;
+    if (state.lives <= 0) {
+      $('#endTitle').textContent = L.end.gameOver;
+      rankKey = 'fail'; msgKey = 'fail';
+    } else {
+      $('#endTitle').textContent = L.end.clear;
+      const ratio = state.correct / TOTAL_ROUNDS;
+      if (state.wrong === 0 && state.score >= 2400) { rankKey = 'master'; msgKey = 'master'; }
+      else if (ratio >= 0.9) { rankKey = 'gold';   msgKey = 'gold'; }
+      else if (ratio >= 0.7) { rankKey = 'silver'; msgKey = 'silver'; }
+      else                    { rankKey = 'bronze'; msgKey = 'bronze'; }
+    }
+    $('#rank').textContent       = L.end.ranks[rankKey];
+    $('#endMessage').textContent = L.end.msgs[msgKey];
+
+    $('#endOverlay').classList.remove('hidden');
+  }
+
+  function startGame() {
+    state.score = 0;
+    state.lives = MAX_LIVES;
+    state.streak = 0;
+    state.maxStreak = 0;
+    state.correct = 0;
+    state.wrong = 0;
+    state.busy = false;
+    state.awaitingResume = false;
+    state.current = null;
+    state.queue = shuffle(ITEMS).slice(0, TOTAL_ROUNDS);
+
+    feedbackEl.classList.remove('show');
+    $('#startOverlay').classList.add('hidden');
+    $('#endOverlay').classList.add('hidden');
+    updateHUD();
+    updateStreak();
+    spawnItem();
+  }
+
+  // ============ Drag (Pointer Events) ============
+  let dragging = false;
+  let pointerId = null;
+  let offsetX = 0, offsetY = 0;
+
+  function onPointerDown(e) {
+    if (state.busy || !state.current) return;
+    if (e.button !== undefined && e.button !== 0) return;
+    dragging = true;
+    pointerId = e.pointerId;
+    itemEl.classList.add('dragging');
+    itemEl.classList.remove('return');
+    hintEl.style.opacity = '0';
+
+    const rect = itemEl.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    try { itemEl.setPointerCapture(pointerId); } catch (_) {}
+    e.preventDefault();
+  }
+
+  function onPointerMove(e) {
+    if (!dragging) return;
+    const appRect = app.getBoundingClientRect();
+    const x = e.clientX - appRect.left - offsetX;
+    const y = e.clientY - appRect.top  - offsetY;
+    setItemPos(x, y);
+
+    let hovered = null;
+    for (const b of bins) {
+      const r = b.getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+        hovered = b; break;
+      }
+    }
+    for (const b of bins) b.classList.toggle('hover', b === hovered);
+  }
+
+  function onPointerUp(e) {
+    if (!dragging) return;
+    dragging = false;
+    itemEl.classList.remove('dragging');
+    try { itemEl.releasePointerCapture(pointerId); } catch (_) {}
+    pointerId = null;
+
+    let target = null;
+    for (const b of bins) {
+      b.classList.remove('hover');
+      const r = b.getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+        target = b;
+      }
+    }
+    if (target) handleDrop(target.dataset.type);
+    else returnToCenter();
+  }
+
+  itemEl.addEventListener('pointerdown',  onPointerDown);
+  itemEl.addEventListener('pointermove',  onPointerMove);
+  itemEl.addEventListener('pointerup',    onPointerUp);
+  itemEl.addEventListener('pointercancel', onPointerUp);
+
+  $('#startBtn').addEventListener('click', startGame);
+  $('#restartBtn').addEventListener('click', startGame);
+
+  // Exposed for the site-wide language toggle in the page header
+  window.__gameSyncLang = () => {
+    try {
+      const saved = localStorage.getItem('osaka_gomi_lang');
+      if (saved && I18N[saved] && saved !== state.lang) {
+        state.lang = saved;
+        buildLangBar();
+        applyLang();
+      }
+    } catch (_) {}
+  };
+
+  window.addEventListener('resize', () => {
+    if (!dragging && state.current && itemEl.classList.contains('shown')) {
+      const c = getCenterPos();
+      setItemPos(c.x, c.y);
+    }
+  });
+
+  document.addEventListener('gesturestart', (e) => e.preventDefault());
+  document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  // ============ Boot ============
+  try {
+    const saved = localStorage.getItem('osaka_gomi_lang');
+    if (saved && I18N[saved]) state.lang = saved;
+  } catch (_) {}
+  buildLangBar();
+  applyLang();
+})();
+</script>
+
+<!-- Shared site header wiring -->
+<script src="common.js"></script>
+<script>
+  applySiteHeader('game');
+  setupLangToggle(() => {
+    applySiteHeader('game');
+    if (window.__gameSyncLang) window.__gameSyncLang();
+  });
+</script>
+</body>
+</html>

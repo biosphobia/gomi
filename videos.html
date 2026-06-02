@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>🎬 動画 / Videos — Osaka Support</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .upload-box {
+    background: var(--c-panel);
+    border: 2px dashed var(--c-line);
+    border-radius: var(--radius);
+    padding: 22px 18px;
+    text-align: center;
+    margin-bottom: 18px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .upload-box.drag {
+    background: #fff5ee;
+    border-color: var(--c-accent);
+  }
+  .upload-box input[type="file"] { display: none; }
+  .upload-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--c-accent);
+    color: white;
+    padding: 11px 22px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(255, 106, 77, 0.3);
+  }
+  .upload-label:active { transform: translateY(1px); }
+  .upload-hint {
+    color: var(--c-muted);
+    font-size: 12px;
+    margin-top: 10px;
+  }
+  .upload-current-lang {
+    display: inline-block;
+    background: #fff3e8;
+    color: var(--c-accent);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 4px;
+  }
+
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .video-card {
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+  }
+  .video-card video {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    display: block;
+    object-fit: contain;
+  }
+  .video-info {
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .video-name {
+    font-size: 13px;
+    font-weight: 600;
+    word-break: break-all;
+    line-height: 1.3;
+  }
+  .video-meta {
+    font-size: 11px;
+    color: var(--c-muted);
+  }
+  .video-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 8px 8px;
+  }
+  .btn-delete {
+    background: transparent;
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    color: var(--c-muted);
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-delete:hover {
+    color: #c62828;
+    border-color: #c62828;
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--c-muted);
+    padding: 40px 20px;
+    font-size: 13px;
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 8px; display: block; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="site-brand">🏯 大阪サポート</a>
+  <nav class="site-nav">
+    <a href="index.html"  class="nav-link" data-page="home"   data-nav="home">ホーム</a>
+    <a href="game.html"   class="nav-link" data-page="game"   data-nav="game">ごみゲーム</a>
+    <a href="videos.html" class="nav-link" data-page="videos" data-nav="videos">動画</a>
+  </nav>
+  <button class="site-lang-toggle" type="button">🌐 日本語</button>
+</header>
+
+<main class="page">
+  <h1 id="pageTitle">🎬 アニメーション動画</h1>
+  <p class="lead" id="pageLead">言語別にアニメーション動画をアップロード・視聴できます。動画はこのブラウザ内に保存されます。</p>
+
+  <div class="lang-pills" id="langPills"></div>
+
+  <div class="upload-box" id="uploadBox">
+    <label class="upload-label" for="videoUpload">
+      <span>⬆️</span>
+      <span id="uploadText">動画をアップロード</span>
+      <span class="upload-current-lang" id="uploadLang">日本語</span>
+    </label>
+    <input type="file" id="videoUpload" accept="video/*" />
+    <div class="upload-hint" id="uploadHint">またはここに動画ファイルをドロップ</div>
+  </div>
+
+  <div class="video-grid" id="videoGrid"></div>
+
+  <div class="empty-state hidden" id="emptyState">
+    <span class="empty-icon">📭</span>
+    <span id="emptyText">この言語の動画はまだありません。</span>
+  </div>
+
+  <p class="muted center" id="footerNote" style="margin-top:24px;font-size:11px;">
+    動画はあなたのブラウザ（IndexedDB）に保存されます。他の端末や他人とは共有されません。
+  </p>
+</main>
+
+<script src="common.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  const VIDEOS_I18N = {
+    ja: {
+      pageTitle: '🎬 アニメーション動画',
+      pageLead:  '言語別にアニメーション動画をアップロード・視聴できます。動画はこのブラウザ内に保存されます。',
+      uploadText: '動画をアップロード',
+      uploadHint: 'またはここに動画ファイルをドロップ',
+      emptyText:  'この言語の動画はまだありません。',
+      footerNote: '動画はあなたのブラウザ（IndexedDB）に保存されます。他の端末や他人とは共有されません。',
+      delete: '削除',
+      confirmDelete: 'この動画を削除しますか？',
+      uploadError: 'アップロードに失敗しました。',
+    },
+    en: {
+      pageTitle: '🎬 Animation Videos',
+      pageLead:  'Upload and watch animation videos organized by language. Videos are stored locally in this browser.',
+      uploadText: 'Upload video',
+      uploadHint: 'Or drop a video file here',
+      emptyText:  'No videos yet for this language.',
+      footerNote: 'Videos are saved in your browser (IndexedDB). They are not shared across devices or with other people.',
+      delete: 'Delete',
+      confirmDelete: 'Delete this video?',
+      uploadError: 'Upload failed.',
+    },
+    zh: {
+      pageTitle: '🎬 动画视频',
+      pageLead:  '按语言上传和观看动画视频。视频会保存在此浏览器中。',
+      uploadText: '上传视频',
+      uploadHint: '或将视频文件拖放至此',
+      emptyText:  '该语言尚未有视频。',
+      footerNote: '视频保存在您的浏览器中 (IndexedDB)，不会跨设备或与他人共享。',
+      delete: '删除',
+      confirmDelete: '删除此视频？',
+      uploadError: '上传失败。',
+    },
+    ko: {
+      pageTitle: '🎬 애니메이션 동영상',
+      pageLead:  '언어별로 애니메이션 동영상을 업로드하고 시청할 수 있습니다. 동영상은 이 브라우저에 저장됩니다.',
+      uploadText: '동영상 업로드',
+      uploadHint: '또는 동영상 파일을 여기에 끌어다 놓으세요',
+      emptyText:  '이 언어의 동영상이 아직 없습니다.',
+      footerNote: '동영상은 브라우저(IndexedDB)에 저장됩니다. 다른 기기나 사용자와는 공유되지 않습니다.',
+      delete: '삭제',
+      confirmDelete: '이 동영상을 삭제하시겠습니까?',
+      uploadError: '업로드에 실패했습니다.',
+    },
+    my: {
+      pageTitle: '🎬 အန်နီမေးရှင်း ဗီဒီယိုများ',
+      pageLead:  'ဘာသာစကားအလိုက် ဗီဒီယိုများကို တင်ပြီး ကြည့်ရှုနိုင်ပါသည်။ ဗီဒီယိုများသည် ဤဘရောက်ဇာတွင် သိမ်းဆည်းသည်။',
+      uploadText: 'ဗီဒီယိုတင်ပါ',
+      uploadHint: 'သို့မဟုတ် ဗီဒီယိုဖိုင်ကို ဤနေရာသို့ ဆွဲချပါ',
+      emptyText:  'ဤဘာသာစကားအတွက် ဗီဒီယိုမရှိသေးပါ။',
+      footerNote: 'ဗီဒီယိုများသည် သင်၏ဘရောက်ဇာ (IndexedDB) တွင် သိမ်းဆည်းသည်။ အခြားစက်ပစ္စည်းများ သို့မဟုတ် အခြားသူများနှင့် မျှဝေမည်မဟုတ်ပါ။',
+      delete: 'ဖျက်ပါ',
+      confirmDelete: 'ဤဗီဒီယိုကို ဖျက်မှာ သေချာပါသလား?',
+      uploadError: 'တင်ခြင်း မအောင်မြင်ပါ။',
+    },
+    vi: {
+      pageTitle: '🎬 Video hoạt hình',
+      pageLead:  'Tải lên và xem các video hoạt hình theo ngôn ngữ. Video được lưu trong trình duyệt của bạn.',
+      uploadText: 'Tải video lên',
+      uploadHint: 'Hoặc kéo và thả tệp video vào đây',
+      emptyText:  'Chưa có video nào cho ngôn ngữ này.',
+      footerNote: 'Video được lưu trong trình duyệt (IndexedDB). Không chia sẻ giữa các thiết bị hay với người khác.',
+      delete: 'Xóa',
+      confirmDelete: 'Xóa video này?',
+      uploadError: 'Tải lên thất bại.',
+    },
+  };
+
+  // ---------- State ----------
+  // selectedLang = the language currently being viewed (which bucket of videos)
+  let selectedLang = getLang();
+  const objectUrls = new Map(); // id -> URL.createObjectURL
+
+  // ---------- Helpers ----------
+  function L() { return VIDEOS_I18N[getLang()] || VIDEOS_I18N.ja; }
+  function langName(code) {
+    const l = LANGS.find(x => x.code === code);
+    return l ? l.name : code;
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function fmtSize(n) {
+    if (n < 1024) return n + ' B';
+    if (n < 1024*1024) return (n/1024).toFixed(1) + ' KB';
+    return (n/1024/1024).toFixed(1) + ' MB';
+  }
+  function fmtDate(ts) {
+    try { return new Date(ts).toLocaleDateString(); } catch (_) { return ''; }
+  }
+  function revokeUrls() {
+    for (const u of objectUrls.values()) URL.revokeObjectURL(u);
+    objectUrls.clear();
+  }
+
+  // ---------- UI rendering ----------
+  function buildLangPills() {
+    const pills = document.getElementById('langPills');
+    pills.innerHTML = '';
+    for (const lang of LANGS) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'lang-pill' + (lang.code === selectedLang ? ' active' : '');
+      b.textContent = lang.name;
+      if (lang.code === 'my') b.classList.add('lang-my');
+      b.addEventListener('click', () => {
+        selectedLang = lang.code;
+        buildLangPills();
+        document.getElementById('uploadLang').textContent = langName(selectedLang);
+        renderVideos();
+      });
+      pills.appendChild(b);
+    }
+  }
+
+  async function renderVideos() {
+    revokeUrls();
+    const grid = document.getElementById('videoGrid');
+    const empty = document.getElementById('emptyState');
+    grid.innerHTML = '';
+    let videos;
+    try {
+      videos = await VideoDB.list(selectedLang);
+    } catch (e) {
+      console.error(e);
+      videos = [];
+    }
+    if (!videos.length) {
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    for (const v of videos) {
+      const url = URL.createObjectURL(v.blob);
+      objectUrls.set(v.id, url);
+      const card = document.createElement('div');
+      card.className = 'video-card';
+      card.innerHTML = `
+        <video src="${url}" controls preload="metadata"></video>
+        <div class="video-info">
+          <div class="video-name">${escapeHtml(v.name || '')}</div>
+          <div class="video-meta">${fmtSize(v.size)} · ${fmtDate(v.uploadedAt)}</div>
+        </div>
+        <div class="video-actions">
+          <button class="btn-delete" data-id="${v.id}" type="button">× ${escapeHtml(L().delete)}</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    }
+    grid.querySelectorAll('.btn-delete').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm(L().confirmDelete)) return;
+        try {
+          await VideoDB.delete(parseInt(btn.dataset.id, 10));
+          renderVideos();
+        } catch (e) { console.error(e); }
+      });
+    });
+  }
+
+  function applyI18n() {
+    const Li = L();
+    for (const k of ['pageTitle','pageLead','uploadText','uploadHint','emptyText','footerNote']) {
+      const el = document.getElementById(k);
+      if (el) el.textContent = Li[k];
+    }
+    document.getElementById('uploadLang').textContent = langName(selectedLang);
+  }
+
+  async function handleFiles(files) {
+    if (!files || !files.length) return;
+    const file = files[0];
+    if (!file.type.startsWith('video/')) {
+      alert(L().uploadError);
+      return;
+    }
+    try {
+      await VideoDB.add(selectedLang, file);
+      renderVideos();
+    } catch (e) {
+      console.error(e);
+      alert(L().uploadError);
+    }
+  }
+
+  // ---------- Events ----------
+  const fileInput = document.getElementById('videoUpload');
+  fileInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files);
+    e.target.value = '';
+  });
+
+  const dropBox = document.getElementById('uploadBox');
+  ['dragenter','dragover'].forEach(ev => {
+    dropBox.addEventListener(ev, (e) => {
+      e.preventDefault(); e.stopPropagation();
+      dropBox.classList.add('drag');
+    });
+  });
+  ['dragleave','drop'].forEach(ev => {
+    dropBox.addEventListener(ev, (e) => {
+      e.preventDefault(); e.stopPropagation();
+      dropBox.classList.remove('drag');
+    });
+  });
+  dropBox.addEventListener('drop', (e) => {
+    const files = e.dataTransfer && e.dataTransfer.files;
+    handleFiles(files);
+  });
+
+  function refreshAll() {
+    applySiteHeader('videos');
+    applyI18n();
+    buildLangPills();
+    renderVideos();
+  }
+
+  refreshAll();
+  setupLangToggle(() => refreshAll());
+
+  window.addEventListener('beforeunload', revokeUrls);
+})();
+</script>
+</body>
+</html>
