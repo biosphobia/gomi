@@ -1,67 +1,69 @@
 /* ============================================================
-   firebase-config.js — fill this in to enable the Contact chat.
+   firebase-config.js — Firebase credentials for the Contact chat
    ============================================================
 
-   The Contact tab in this site uses Firebase for real-time chat
-   between you (the admin) and visitors who message you anonymously.
-   This file is a placeholder. Until you fill it in and apply the
-   Firestore rules below, the Contact page will show a setup notice
-   instead of the chat UI.
+   ⚠️ When deployed via Render, this file is REGENERATED at build
+   time from environment variables. The empty placeholder values
+   below are intentional — Render's build step overwrites them
+   with the values you set in the Render dashboard before serving
+   the site. See render.yaml > buildCommand.
+
+   → To change keys in production, edit the env vars in:
+       Render dashboard > your service > Environment tab.
+     Render redeploys automatically and rewrites this file. Do
+     NOT commit real keys to git.
+
+   → For local development, fill the values in below by hand and
+     just don't commit those changes
+     (`git restore firebase-config.js` before committing).
 
    ----------------------------------------------------------------
-   SETUP (one time, ~10 minutes)
+   ONE-TIME SETUP (in Firebase Console, ~10 minutes)
    ----------------------------------------------------------------
-   1. Go to https://console.firebase.google.com and create a project.
+   1. https://console.firebase.google.com → Create a project.
 
-   2. In your new project, enable:
+   2. In your project, enable:
         Authentication > Sign-in method > Anonymous       → Enable
         Authentication > Sign-in method > Email/Password  → Enable
         Firestore Database > Create database              → Production mode
         (pick a region close to you, e.g. asia-northeast1 for Osaka)
 
    3. Authentication > Users > Add user.
-        Enter the email + password you want to use as the admin
-        (this site's creator) login. Remember the email — you'll
-        paste it into OSAKA_ADMIN_EMAIL below.
+        Enter the email + password to use as the admin (site
+        creator) login. Remember the email — it goes into the
+        OSAKA_ADMIN_EMAIL env var.
 
-   4. Project Settings (the gear icon, top left) > General >
-      "Your apps" > Add a web app (</> icon).
-        Give it a nickname (e.g. "osaka-support") and register it.
-        Copy the firebaseConfig object that Firebase shows you and
-        paste it into OSAKA_FIREBASE_CONFIG below.
+   4. Project Settings (gear icon) > General > "Your apps" >
+      Add a web app (</>). Register it. Firebase shows a config
+      object with the six values listed below — paste them into
+      the matching env vars on Render (or into the placeholders
+      here for local dev only).
 
-   5. Set OSAKA_ADMIN_EMAIL below to the email from step 3.
+   5. Firestore Database > Rules tab — paste the rules block at
+      the bottom of this file. Replace REPLACE_WITH_ADMIN_EMAIL
+      with the same email you used in step 3. Publish.
 
-   6. Go to Firestore Database > Rules tab and replace whatever's
-      there with the rules block at the bottom of this file.
-        ⚠ IMPORTANT: change "REPLACE_WITH_ADMIN_EMAIL" inside the
-        rules to your actual admin email (the same one from step 3).
-        Then click Publish.
-
-   7. Save this file. Reload contact.html in your browser. Visit
-        contact.html             — the visitor view.
-        contact.html#admin       — the admin login + chat list.
+   6. After Render gives you a *.onrender.com URL, add it under
+        Authentication > Settings > Authorized domains
+      so the deployed site can sign visitors in.
 
    ----------------------------------------------------------------
-   PRIVACY NOTES (read me before deploying)
+   PRIVACY NOTES
    ----------------------------------------------------------------
-   - Visitors sign in via Firebase Anonymous Auth. They get a random
-     UID; no email, name, or identifier is collected by this site.
-   - Each visitor can only read/write their own chat thread, scoped
-     by their UID. The Firestore rules below enforce this.
-   - Only the admin (you, signed in with OSAKA_ADMIN_EMAIL) can list
-     and read all chat threads.
-   - Translation runs ON DEVICE via the Chrome 138+ Translator API.
-     Messages are not sent to Google Translate or any other server
-     for translation.
-   - HOWEVER: Firebase is operated by Google. Message contents,
-     timestamps, IP addresses, and the anonymous UIDs are visible
-     to Google as the infrastructure provider. The site is NOT
-     end-to-end encrypted. For stronger privacy you would need to
-     add client-side encryption before writing to Firestore — out
-     of scope for this basic build.
-   - Image uploads are resized and re-encoded as JPEG client-side,
-     which strips EXIF / location metadata before storage.
+   - Visitors sign in via Firebase Anonymous Auth. They get a
+     random UID; no email or PII is collected by this site.
+   - Each visitor can only read/write their own chat thread,
+     enforced by the Firestore rules below.
+   - Only the admin (OSAKA_ADMIN_EMAIL) can list and read all
+     chats.
+   - Translation runs ON-DEVICE via the Chrome 138+ Translator
+     API; messages are not sent to translation servers.
+   - However, Firebase is operated by Google. Message bodies,
+     timestamps, IPs, and anonymous UIDs are visible to Google
+     as the infra provider. This is NOT end-to-end encrypted.
+   - Image uploads are decoded into a canvas and re-encoded as
+     JPEG client-side, which strips EXIF / GPS metadata before
+     storage.
    ============================================================ */
 
 window.OSAKA_FIREBASE_CONFIG = {
