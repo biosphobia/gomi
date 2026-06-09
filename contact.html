@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>💬 相談チャット / Contact — Osaka Support</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+  /* ----- Privacy banner ----- */
+  .privacy-banner {
+    background: #fff8eb;
+    border: 1px solid #f3e0b8;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .privacy-banner strong { font-size: 13.5px; }
+  .privacy-banner ul {
+    margin: 6px 0 0 0;
+    padding-left: 18px;
+    color: var(--c-muted);
+  }
+  .privacy-banner li { padding: 2px 0; font-size: 12px; }
+
+  /* ----- Setup-needed ----- */
+  .setup-card {
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+    text-align: left;
+  }
+  .setup-card ol { padding-left: 20px; margin: 12px 0; }
+  .setup-card ol li { padding: 4px 0; font-size: 13px; line-height: 1.5; }
+  .setup-card code {
+    background: var(--c-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
+  /* ----- Admin auth form ----- */
+  .admin-form {
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    padding: 22px;
+    max-width: 380px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-sm);
+  }
+  .admin-form h2 { margin-bottom: 14px; }
+  .admin-form label {
+    display: block;
+    font-size: 12px;
+    color: var(--c-muted);
+    margin-bottom: 4px;
+  }
+  .admin-form input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--c-line);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    margin-bottom: 12px;
+  }
+  .admin-form input:focus { outline: 2px solid var(--c-accent); }
+  .admin-form .error {
+    color: #c62828;
+    font-size: 12px;
+    margin-bottom: 10px;
+    min-height: 16px;
+  }
+
+  /* ----- Admin dashboard ----- */
+  .chat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .chat-list-item {
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+  }
+  .chat-list-item:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+  .chat-list-item .info { flex: 1; min-width: 0; }
+  .chat-list-item .uid {
+    font-size: 13px;
+    font-weight: 700;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  .chat-list-item .meta {
+    font-size: 11px;
+    color: var(--c-muted);
+    margin-top: 2px;
+  }
+  .chat-list-item .pill {
+    background: var(--c-accent);
+    color: white;
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .chat-list-empty {
+    text-align: center;
+    color: var(--c-muted);
+    padding: 40px 20px;
+    font-size: 13px;
+  }
+  .admin-logout {
+    background: transparent;
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--c-muted);
+  }
+  .admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  /* ----- Chat view ----- */
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    height: calc(100dvh - var(--site-header-h) - 56px);
+    max-height: 760px;
+    box-shadow: var(--shadow-sm);
+  }
+  .chat-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--c-line);
+    background: var(--c-panel);
+    gap: 8px;
+  }
+  .chat-top-left { flex: 1; min-width: 0; }
+  .chat-id {
+    font-size: 11px;
+    color: var(--c-muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    margin-top: 1px;
+  }
+  .chat-title { font-size: 13px; font-weight: 700; }
+  .chat-actions { display: flex; gap: 6px; }
+  .chat-icon-btn {
+    background: var(--c-bg);
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--c-text);
+    white-space: nowrap;
+  }
+  .chat-icon-btn:hover { background: #f0ebe2; }
+  .chat-icon-btn.active {
+    background: var(--c-accent);
+    color: white;
+    border-color: var(--c-accent);
+  }
+  .chat-icon-btn.danger { color: #c62828; }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #fbf8f3;
+  }
+  .chat-day-sep {
+    align-self: center;
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 10.5px;
+    color: var(--c-muted);
+    margin: 6px 0;
+  }
+  .msg {
+    max-width: 80%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .msg.self { align-self: flex-end; align-items: flex-end; }
+  .msg.other { align-self: flex-start; align-items: flex-start; }
+
+  .msg-bubble {
+    padding: 9px 13px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.45;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+  .msg.self .msg-bubble {
+    background: var(--c-accent);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+  .msg.other .msg-bubble {
+    background: var(--c-panel);
+    color: var(--c-text);
+    border: 1px solid var(--c-line);
+    border-bottom-left-radius: 4px;
+  }
+  .msg-bubble img {
+    display: block;
+    max-width: 240px;
+    max-height: 240px;
+    border-radius: 10px;
+    cursor: zoom-in;
+  }
+  .msg-translated {
+    font-size: 11.5px;
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px dashed rgba(0,0,0,0.18);
+    opacity: 0.92;
+  }
+  .msg.self .msg-translated { border-top-color: rgba(255,255,255,0.4); }
+  .msg-meta {
+    font-size: 10.5px;
+    color: var(--c-muted);
+    padding: 0 4px;
+  }
+
+  .typing { font-style: italic; color: var(--c-muted); font-size: 12px; padding: 0 4px; }
+
+  .chat-input-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    padding: 10px 12px;
+    border-top: 1px solid var(--c-line);
+    background: var(--c-panel);
+  }
+  .chat-input-wrap textarea {
+    flex: 1;
+    resize: none;
+    border: 1px solid var(--c-line);
+    border-radius: 18px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-family: inherit;
+    line-height: 1.4;
+    min-height: 38px;
+    max-height: 110px;
+    background: var(--c-bg);
+  }
+  .chat-input-wrap textarea:focus { outline: 2px solid var(--c-accent); background: white; }
+
+  .input-icon {
+    flex-shrink: 0;
+    background: var(--c-bg);
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--c-text);
+    font-family: inherit;
+  }
+  .input-icon.send {
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+    color: white;
+  }
+  .input-icon:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .image-preview {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 12px;
+    border-top: 1px dashed var(--c-line);
+    background: #fffaf2;
+    font-size: 12px;
+    color: var(--c-muted);
+  }
+  .image-preview img {
+    width: 44px; height: 44px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid var(--c-line);
+  }
+  .image-preview .remove {
+    background: transparent;
+    border: none;
+    color: #c62828;
+    cursor: pointer;
+    font-size: 18px;
+    margin-left: auto;
+    font-family: inherit;
+  }
+
+  /* ----- Image lightbox ----- */
+  .lightbox {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+  }
+  .lightbox img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+  .lightbox.hidden { display: none; }
+
+  /* ----- Pre-chat (visitor landing) ----- */
+  .topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+    margin: 8px 0 16px;
+  }
+  .topic-chip {
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    color: var(--c-text);
+    font-family: inherit;
+    line-height: 1.3;
+  }
+  .topic-chip:hover { background: var(--c-bg); }
+  .topic-chip.active {
+    background: #fff3e8;
+    border-color: var(--c-accent);
+    color: var(--c-accent);
+  }
+
+  .status-line {
+    font-size: 11px;
+    color: var(--c-muted);
+    margin-top: 8px;
+    text-align: center;
+  }
+  .status-line.warn { color: #c62828; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="site-brand">🏯 大阪サポート</a>
+  <nav class="site-nav">
+    <a href="index.html"   class="nav-link" data-page="home"    data-nav="home">ホーム</a>
+    <a href="game.html"    class="nav-link" data-page="game"    data-nav="game">ごみゲーム</a>
+    <a href="videos.html"  class="nav-link" data-page="videos"  data-nav="videos">動画</a>
+    <a href="contact.html" class="nav-link" data-page="contact" data-nav="contact">相談チャット</a>
+  </nav>
+  <button class="site-lang-toggle" type="button">🌐 日本語</button>
+</header>
+
+<main class="page" id="pageMain">
+
+  <!-- Setup-needed view -->
+  <section id="viewSetup" class="hidden">
+    <h1 id="setupTitle">⚙️ チャットの初期設定が必要です</h1>
+    <p class="lead" id="setupLead">このチャット機能を有効にするには、Firebase の設定が必要です。<code>firebase-config.js</code> の手順に従ってください。</p>
+    <div class="setup-card">
+      <ol>
+        <li id="setup1">Firebase でプロジェクトを作成</li>
+        <li id="setup2">Anonymous と Email/Password 認証を有効化</li>
+        <li id="setup3">Firestore データベースを作成</li>
+        <li id="setup4">管理者ユーザーを Authentication に追加</li>
+        <li id="setup5"><code>firebase-config.js</code> に設定を貼り付け</li>
+        <li id="setup6">セキュリティルールを適用</li>
+      </ol>
+      <p class="muted" style="font-size:12px;" id="setupNote">詳しい手順は <code>firebase-config.js</code> のコメントを読んでください。</p>
+    </div>
+  </section>
+
+  <!-- Pre-chat (visitor) -->
+  <section id="viewPreChat" class="hidden">
+    <h1 id="preTitle">💬 匿名で相談する</h1>
+    <p class="lead" id="preLead">日本での生活で困ったことがあれば、匿名でお気軽にご相談ください。</p>
+
+    <div class="privacy-banner">
+      <strong id="privacyHead">🔒 プライバシーについて</strong>
+      <ul>
+        <li id="privacy1">あなたの名前・メール・端末情報は収集しません。</li>
+        <li id="privacy2">チャットはあなたと運営者のみが見られます。</li>
+        <li id="privacy3">翻訳はあなたの端末上で行われ、他のサーバーに送られません。</li>
+        <li id="privacy4">画像から位置情報などのメタデータは自動的に削除されます。</li>
+      </ul>
+    </div>
+
+    <h3 id="chooseLangTitle" style="font-size:14px;margin-bottom:8px;">言語を選んでください</h3>
+    <div class="lang-pills" id="chatLangPills"></div>
+
+    <h3 id="topicTitle" style="font-size:14px;margin-bottom:8px;margin-top:18px;">相談したいこと（任意）</h3>
+    <div class="topic-grid" id="topicGrid"></div>
+
+    <button class="btn" id="startChatBtn" style="margin-top:10px;">チャットを開始</button>
+    <p class="status-line" id="preStatus"></p>
+  </section>
+
+  <!-- Admin login -->
+  <section id="viewAdminLogin" class="hidden">
+    <div class="admin-form">
+      <h2 id="adminLoginTitle">👤 管理者ログイン</h2>
+      <p class="muted" id="adminLoginLead" style="font-size:12px;margin-bottom:14px;">Firebase に登録した管理者アカウントでログインしてください。</p>
+      <form id="adminLoginForm">
+        <label id="adminEmailLbl">メールアドレス</label>
+        <input type="email" id="adminEmail" autocomplete="email" required />
+        <label id="adminPasswordLbl">パスワード</label>
+        <input type="password" id="adminPassword" autocomplete="current-password" required />
+        <div class="error" id="adminLoginError"></div>
+        <button class="btn" type="submit" id="adminLoginBtn" style="width:100%;">ログイン</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Admin dashboard -->
+  <section id="viewAdminDash" class="hidden">
+    <div class="admin-header">
+      <h2 id="adminDashTitle">📥 受信チャット一覧</h2>
+      <button class="admin-logout" type="button" id="adminLogout">ログアウト</button>
+    </div>
+    <div id="chatListContainer">
+      <div class="chat-list-empty" id="chatListEmpty">まだチャットはありません。</div>
+      <div class="chat-list" id="chatList"></div>
+    </div>
+  </section>
+
+  <!-- Chat view (used by both user and admin) -->
+  <section id="viewChat" class="hidden">
+    <div class="chat-container">
+      <div class="chat-top">
+        <div class="chat-top-left">
+          <div class="chat-title" id="chatTitle">💬 匿名チャット</div>
+          <div class="chat-id" id="chatIdLabel"></div>
+        </div>
+        <div class="chat-actions">
+          <button class="chat-icon-btn" type="button" id="translateBtn">🌐 <span id="translateLabel">翻訳</span>: OFF</button>
+          <button class="chat-icon-btn danger" type="button" id="closeChatBtn" title="Close" aria-label="Close">×</button>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages"></div>
+
+      <div class="image-preview hidden" id="imagePreview">
+        <img id="imagePreviewImg" alt="" />
+        <span id="imagePreviewName">image.jpg</span>
+        <button type="button" class="remove" id="imagePreviewRemove" aria-label="Remove">×</button>
+      </div>
+
+      <div class="chat-input-wrap">
+        <input type="file" id="imageInput" accept="image/*" hidden />
+        <button type="button" class="input-icon" id="attachBtn" title="Attach image" aria-label="Attach">📎</button>
+        <textarea id="messageInput" rows="1" placeholder="メッセージを入力..." maxlength="3500"></textarea>
+        <button type="button" class="input-icon send" id="sendBtn" title="Send" aria-label="Send">➤</button>
+      </div>
+    </div>
+    <p class="status-line" id="chatStatus"></p>
+  </section>
+
+  <!-- Lightbox -->
+  <div class="lightbox hidden" id="lightbox"><img id="lightboxImg" alt="" /></div>
+</main>
+
+<!-- Firebase config (user-provided) -->
+<script src="firebase-config.js"></script>
+<script src="common.js"></script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import {
+  getAuth, signInAnonymously, signInWithEmailAndPassword, signOut,
+  onAuthStateChanged, setPersistence, browserLocalPersistence,
+} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import {
+  getFirestore, doc, setDoc, getDoc, updateDoc, addDoc,
+  collection, onSnapshot, query, orderBy, serverTimestamp, limit,
+} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+/* ====================================================
+   i18n strings for the Contact page
+   ==================================================== */
+const I18N = {
+  ja: {
+    navContact: '相談チャット',
+    setupTitle: '⚙️ チャットの初期設定が必要です',
+    setupLead: 'このチャット機能を有効にするには、Firebase の設定が必要です。firebase-config.js の手順に従ってください。',
+    setup1: 'Firebase でプロジェクトを作成',
+    setup2: 'Anonymous と Email/Password 認証を有効化',
+    setup3: 'Firestore データベースを作成',
+    setup4: '管理者ユーザーを Authentication に追加',
+    setup5: 'firebase-config.js に設定を貼り付け',
+    setup6: 'セキュリティルールを適用',
+    setupNote: '詳しい手順は firebase-config.js のコメントを読んでください。',
+    preTitle: '💬 匿名で相談する',
+    preLead: '日本での生活で困ったことがあれば、匿名でお気軽にご相談ください。',
+    privacyHead: '🔒 プライバシーについて',
+    privacy1: 'あなたの名前・メール・端末情報は収集しません。',
+    privacy2: 'チャットはあなたと運営者のみが見られます。',
+    privacy3: '翻訳はあなたの端末上で行われ、他のサーバーに送られません。',
+    privacy4: '画像から位置情報などのメタデータは自動的に削除されます。',
+    chooseLangTitle: '言語を選んでください',
+    topicTitle: '相談したいこと（任意）',
+    topicGeneral: '一般', topicHousing: '住居', topicWork: '仕事',
+    topicHealth: '医療', topicLegal: '在留・書類', topicOther: 'その他',
+    startChatBtn: 'チャットを開始',
+    preStatusConnecting: '接続中…',
+    preStatusReady: '',
+    chatTitle: '💬 匿名チャット',
+    translateLabel: '翻訳',
+    msgPlaceholder: 'メッセージを入力…',
+    chatStatusConnecting: '接続中…',
+    chatStatusReady: '',
+    chatStatusError: '送信に失敗しました。',
+    adminLoginTitle: '👤 管理者ログイン',
+    adminLoginLead: 'Firebase に登録した管理者アカウントでログインしてください。',
+    adminEmailLbl: 'メールアドレス',
+    adminPasswordLbl: 'パスワード',
+    adminLoginBtn: 'ログイン',
+    adminLoginErr: 'ログインに失敗しました。',
+    adminLoginErrNotAdmin: 'このアカウントは管理者として登録されていません。',
+    adminDashTitle: '📥 受信チャット一覧',
+    adminLogout: 'ログアウト',
+    chatListEmpty: 'まだチャットはありません。',
+    translateUnavailable: '翻訳機能はこのブラウザで利用できません（Chrome 138+ が必要です）。',
+    translatePairUnavailable: 'この言語ペアの翻訳は利用できません。',
+    yourLang: 'あなたの言語',
+    adminLang: '管理者言語: 日本語',
+    today: '今日', yesterday: '昨日',
+  },
+  en: {
+    navContact: 'Contact',
+    setupTitle: '⚙️ Chat setup required',
+    setupLead: 'To enable the chat, Firebase needs to be configured. Follow the steps in firebase-config.js.',
+    setup1: 'Create a Firebase project',
+    setup2: 'Enable Anonymous and Email/Password auth',
+    setup3: 'Create a Firestore database',
+    setup4: 'Add an admin user in Authentication',
+    setup5: 'Paste the config into firebase-config.js',
+    setup6: 'Apply the security rules',
+    setupNote: 'Full instructions are in the comments at the top of firebase-config.js.',
+    preTitle: '💬 Message us anonymously',
+    preLead: 'Need help with life in Japan? Send us a message — no account or personal info needed.',
+    privacyHead: '🔒 About your privacy',
+    privacy1: 'No name, email, or device info is collected.',
+    privacy2: 'Only you and the site creator can read this chat.',
+    privacy3: 'Translation runs on-device — not sent to any external server.',
+    privacy4: 'Image metadata (location, etc.) is stripped automatically.',
+    chooseLangTitle: 'Pick your language',
+    topicTitle: 'What is it about? (optional)',
+    topicGeneral: 'General', topicHousing: 'Housing', topicWork: 'Work',
+    topicHealth: 'Health', topicLegal: 'Visa / Paperwork', topicOther: 'Other',
+    startChatBtn: 'Start chat',
+    preStatusConnecting: 'Connecting…',
+    preStatusReady: '',
+    chatTitle: '💬 Anonymous chat',
+    translateLabel: 'Translate',
+    msgPlaceholder: 'Type a message…',
+    chatStatusConnecting: 'Connecting…',
+    chatStatusReady: '',
+    chatStatusError: 'Failed to send.',
+    adminLoginTitle: '👤 Admin sign-in',
+    adminLoginLead: 'Sign in with the admin account you registered in Firebase.',
+    adminEmailLbl: 'Email',
+    adminPasswordLbl: 'Password',
+    adminLoginBtn: 'Sign in',
+    adminLoginErr: 'Sign-in failed.',
+    adminLoginErrNotAdmin: 'This account is not registered as the admin.',
+    adminDashTitle: '📥 Incoming chats',
+    adminLogout: 'Sign out',
+    chatListEmpty: 'No chats yet.',
+    translateUnavailable: 'Translation is unavailable in this browser (requires Chrome 138+).',
+    translatePairUnavailable: 'Translation is unavailable for this language pair.',
+    yourLang: 'Your language',
+    adminLang: 'Admin language: Japanese',
+    today: 'Today', yesterday: 'Yesterday',
+  },
+  zh: {
+    navContact: '咨询',
+    setupTitle: '⚙️ 需要初始化设置',
+    setupLead: '要启用聊天功能，请先在 firebase-config.js 中按照说明配置 Firebase。',
+    setup1: '创建 Firebase 项目',
+    setup2: '启用 Anonymous 和 Email/Password 登录',
+    setup3: '创建 Firestore 数据库',
+    setup4: '在 Authentication 中添加管理员账号',
+    setup5: '将配置粘贴到 firebase-config.js',
+    setup6: '应用安全规则',
+    setupNote: '详细步骤见 firebase-config.js 文件顶部的注释。',
+    preTitle: '💬 匿名咨询',
+    preLead: '在日本生活遇到困难，可以匿名向我们发送消息。',
+    privacyHead: '🔒 隐私说明',
+    privacy1: '不会收集您的姓名、邮箱或设备信息。',
+    privacy2: '只有您和站点管理员能看到这段聊天。',
+    privacy3: '翻译在您的设备上完成，不发送到任何外部服务器。',
+    privacy4: '图片中的位置等元数据会自动删除。',
+    chooseLangTitle: '请选择您的语言',
+    topicTitle: '想咨询的内容（可选）',
+    topicGeneral: '一般', topicHousing: '住房', topicWork: '工作',
+    topicHealth: '医疗', topicLegal: '签证/文件', topicOther: '其他',
+    startChatBtn: '开始聊天',
+    preStatusConnecting: '正在连接…',
+    preStatusReady: '',
+    chatTitle: '💬 匿名聊天',
+    translateLabel: '翻译',
+    msgPlaceholder: '输入消息…',
+    chatStatusConnecting: '正在连接…',
+    chatStatusReady: '',
+    chatStatusError: '发送失败。',
+    adminLoginTitle: '👤 管理员登录',
+    adminLoginLead: '请使用您在 Firebase 注册的管理员账号登录。',
+    adminEmailLbl: '邮箱',
+    adminPasswordLbl: '密码',
+    adminLoginBtn: '登录',
+    adminLoginErr: '登录失败。',
+    adminLoginErrNotAdmin: '此账号未注册为管理员。',
+    adminDashTitle: '📥 收件箱',
+    adminLogout: '退出登录',
+    chatListEmpty: '暂无聊天。',
+    translateUnavailable: '此浏览器不支持翻译功能（需要 Chrome 138+）。',
+    translatePairUnavailable: '此语言对的翻译不可用。',
+    yourLang: '您的语言',
+    adminLang: '管理员语言：日语',
+    today: '今天', yesterday: '昨天',
+  },
+  ko: {
+    navContact: '상담',
+    setupTitle: '⚙️ 초기 설정이 필요합니다',
+    setupLead: '채팅을 사용하려면 firebase-config.js 의 안내에 따라 Firebase 를 설정하세요.',
+    setup1: 'Firebase 프로젝트 생성',
+    setup2: 'Anonymous · Email/Password 인증 활성화',
+    setup3: 'Firestore 데이터베이스 생성',
+    setup4: 'Authentication 에 관리자 계정 추가',
+    setup5: 'firebase-config.js 에 설정 붙여넣기',
+    setup6: '보안 규칙 적용',
+    setupNote: '자세한 안내는 firebase-config.js 상단 주석을 참고하세요.',
+    preTitle: '💬 익명으로 상담하기',
+    preLead: '일본 생활에서 어려운 점이 있다면 익명으로 메시지를 보내세요.',
+    privacyHead: '🔒 개인정보 안내',
+    privacy1: '이름·이메일·기기 정보를 수집하지 않습니다.',
+    privacy2: '이 채팅은 본인과 운영자만 볼 수 있습니다.',
+    privacy3: '번역은 기기 내에서 처리되며 외부 서버로 전송되지 않습니다.',
+    privacy4: '이미지의 위치 정보 등 메타데이터는 자동으로 삭제됩니다.',
+    chooseLangTitle: '언어를 선택하세요',
+    topicTitle: '상담 내용 (선택)',
+    topicGeneral: '일반', topicHousing: '주거', topicWork: '일',
+    topicHealth: '의료', topicLegal: '비자·서류', topicOther: '기타',
+    startChatBtn: '채팅 시작',
+    preStatusConnecting: '연결 중…',
+    preStatusReady: '',
+    chatTitle: '💬 익명 채팅',
+    translateLabel: '번역',
+    msgPlaceholder: '메시지 입력…',
+    chatStatusConnecting: '연결 중…',
+    chatStatusReady: '',
+    chatStatusError: '전송에 실패했습니다.',
+    adminLoginTitle: '👤 관리자 로그인',
+    adminLoginLead: 'Firebase 에 등록한 관리자 계정으로 로그인하세요.',
+    adminEmailLbl: '이메일',
+    adminPasswordLbl: '비밀번호',
+    adminLoginBtn: '로그인',
+    adminLoginErr: '로그인에 실패했습니다.',
+    adminLoginErrNotAdmin: '이 계정은 관리자로 등록되어 있지 않습니다.',
+    adminDashTitle: '📥 수신 채팅 목록',
+    adminLogout: '로그아웃',
+    chatListEmpty: '아직 채팅이 없습니다.',
+    translateUnavailable: '이 브라우저에서는 번역을 사용할 수 없습니다 (Chrome 138+ 필요).',
+    translatePairUnavailable: '이 언어 쌍에 대한 번역을 사용할 수 없습니다.',
+    yourLang: '귀하의 언어',
+    adminLang: '관리자 언어: 일본어',
+    today: '오늘', yesterday: '어제',
+  },
+  my: {
+    navContact: 'ဆက်သွယ်ရန်',
+    setupTitle: '⚙️ ပထမဆုံးအသုံးပြုခြင်း ပြင်ဆင်ရန် လိုအပ်သည်',
+    setupLead: 'ဤချက်တင်ကို အသုံးပြုရန် firebase-config.js မှ ညွှန်ကြားချက်များအတိုင်း Firebase ကို စနစ်ထည့်သွင်းပါ။',
+    setup1: 'Firebase project ဖန်တီးပါ',
+    setup2: 'Anonymous နှင့် Email/Password အကောင့်ဝင်ခြင်းကို ဖွင့်ပါ',
+    setup3: 'Firestore Database ဖန်တီးပါ',
+    setup4: 'Authentication တွင် Admin အကောင့်ထည့်ပါ',
+    setup5: 'firebase-config.js တွင် config ထည့်ပါ',
+    setup6: 'လုံခြုံရေး rules များကို သုံးပါ',
+    setupNote: 'firebase-config.js ၏ထိပ်ပိုင်း မှတ်ချက်များတွင် အသေးစိတ်ရှိသည်။',
+    preTitle: '💬 အမည်ဝှက်ဖြင့် ဆက်သွယ်ရန်',
+    preLead: 'ဂျပန်နိုင်ငံတွင် နေထိုင်ရင်း အခက်အခဲရှိပါက အမည်ဝှက်ဖြင့် မက်ဆေ့ချ်ပို့နိုင်ပါသည်။',
+    privacyHead: '🔒 ကိုယ်ပိုင်လုံခြုံမှု',
+    privacy1: 'အမည်၊ အီးမေးလ်၊ စက်ပစ္စည်းအချက်အလက်များ စုဆောင်းခြင်းမရှိပါ။',
+    privacy2: 'ဤချက်တင်ကို သင်နှင့် ဆိုက်ပိုင်ရှင်ကိုသာ မြင်နိုင်ပါသည်။',
+    privacy3: 'ဘာသာပြန်ခြင်းကို သင်၏စက်ပစ္စည်းတွင်သာ ပြုလုပ်သည်။',
+    privacy4: 'ပုံ၏ တည်နေရာ စသည့် Metadata များကို အလိုအလျောက် ဖျက်ပစ်သည်။',
+    chooseLangTitle: 'ဘာသာစကားရွေးပါ',
+    topicTitle: 'ဘာအကြောင်းလဲ (မဖြစ်မနေမဟုတ်)',
+    topicGeneral: 'အထွေထွေ', topicHousing: 'အိမ်ရာ', topicWork: 'အလုပ်',
+    topicHealth: 'ကျန်းမာရေး', topicLegal: 'ဗီဇာ/စာရွက်စာတမ်း', topicOther: 'အခြား',
+    startChatBtn: 'ချက်တင်စတင်ပါ',
+    preStatusConnecting: 'ချိတ်ဆက်နေသည်…',
+    preStatusReady: '',
+    chatTitle: '💬 အမည်ဝှက်ချက်တင်',
+    translateLabel: 'ဘာသာပြန်',
+    msgPlaceholder: 'မက်ဆေ့ချ်ရိုက်ပါ…',
+    chatStatusConnecting: 'ချိတ်ဆက်နေသည်…',
+    chatStatusReady: '',
+    chatStatusError: 'ပို့ခြင်းမအောင်မြင်ပါ။',
+    adminLoginTitle: '👤 Admin ဝင်ရောက်ခြင်း',
+    adminLoginLead: 'Firebase တွင် မှတ်ပုံတင်ထားသော Admin အကောင့်ဖြင့် ဝင်ပါ။',
+    adminEmailLbl: 'အီးမေးလ်',
+    adminPasswordLbl: 'စကားဝှက်',
+    adminLoginBtn: 'ဝင်ရောက်ပါ',
+    adminLoginErr: 'ဝင်ရောက်မှု မအောင်မြင်ပါ။',
+    adminLoginErrNotAdmin: 'ဤအကောင့်သည် Admin အဖြစ် မမှတ်ပုံတင်ထားပါ။',
+    adminDashTitle: '📥 လာရောက်သော ချက်တင်များ',
+    adminLogout: 'ထွက်ပါ',
+    chatListEmpty: 'ချက်တင် မရှိသေးပါ။',
+    translateUnavailable: 'ဤဘရောက်ဇာတွင် ဘာသာပြန်စနစ်မရှိပါ (Chrome 138+ လိုအပ်)။',
+    translatePairUnavailable: 'ဤဘာသာစကားအတွဲကို ဘာသာပြန်၍မရပါ။',
+    yourLang: 'သင်၏ဘာသာစကား',
+    adminLang: 'Admin ဘာသာစကား: ဂျပန်',
+    today: 'ယနေ့', yesterday: 'မနေ့က',
+  },
+  vi: {
+    navContact: 'Liên hệ',
+    setupTitle: '⚙️ Cần thiết lập ban đầu',
+    setupLead: 'Để bật tính năng chat, hãy cấu hình Firebase theo hướng dẫn trong firebase-config.js.',
+    setup1: 'Tạo dự án Firebase',
+    setup2: 'Bật Anonymous & Email/Password Auth',
+    setup3: 'Tạo cơ sở dữ liệu Firestore',
+    setup4: 'Thêm tài khoản quản trị viên trong Authentication',
+    setup5: 'Dán cấu hình vào firebase-config.js',
+    setup6: 'Áp dụng quy tắc bảo mật',
+    setupNote: 'Hướng dẫn chi tiết xem trong các bình luận đầu firebase-config.js.',
+    preTitle: '💬 Liên hệ ẩn danh',
+    preLead: 'Có vấn đề khi sinh sống ở Nhật? Hãy gửi tin nhắn ẩn danh cho chúng tôi.',
+    privacyHead: '🔒 Về quyền riêng tư',
+    privacy1: 'Không thu thập tên, email hay thông tin thiết bị của bạn.',
+    privacy2: 'Chỉ bạn và người tạo trang mới thấy cuộc trò chuyện này.',
+    privacy3: 'Dịch chạy trên thiết bị — không gửi tới bất kỳ máy chủ nào.',
+    privacy4: 'Metadata ảnh (vị trí…) bị xóa tự động.',
+    chooseLangTitle: 'Chọn ngôn ngữ của bạn',
+    topicTitle: 'Chủ đề (tuỳ chọn)',
+    topicGeneral: 'Chung', topicHousing: 'Nhà ở', topicWork: 'Công việc',
+    topicHealth: 'Y tế', topicLegal: 'Visa / Giấy tờ', topicOther: 'Khác',
+    startChatBtn: 'Bắt đầu chat',
+    preStatusConnecting: 'Đang kết nối…',
+    preStatusReady: '',
+    chatTitle: '💬 Chat ẩn danh',
+    translateLabel: 'Dịch',
+    msgPlaceholder: 'Nhập tin nhắn…',
+    chatStatusConnecting: 'Đang kết nối…',
+    chatStatusReady: '',
+    chatStatusError: 'Gửi thất bại.',
+    adminLoginTitle: '👤 Đăng nhập quản trị',
+    adminLoginLead: 'Đăng nhập bằng tài khoản quản trị viên đã đăng ký trên Firebase.',
+    adminEmailLbl: 'Email',
+    adminPasswordLbl: 'Mật khẩu',
+    adminLoginBtn: 'Đăng nhập',
+    adminLoginErr: 'Đăng nhập thất bại.',
+    adminLoginErrNotAdmin: 'Tài khoản này không phải tài khoản quản trị.',
+    adminDashTitle: '📥 Danh sách chat đến',
+    adminLogout: 'Đăng xuất',
+    chatListEmpty: 'Chưa có cuộc chat nào.',
+    translateUnavailable: 'Trình duyệt không hỗ trợ dịch (cần Chrome 138+).',
+    translatePairUnavailable: 'Cặp ngôn ngữ này chưa được hỗ trợ.',
+    yourLang: 'Ngôn ngữ của bạn',
+    adminLang: 'Ngôn ngữ admin: tiếng Nhật',
+    today: 'Hôm nay', yesterday: 'Hôm qua',
+  },
+};
+
+const TOPICS = ['General','Housing','Work','Health','Legal','Other'];
+const topicKey = { General:'topicGeneral', Housing:'topicHousing', Work:'topicWork',
+                   Health:'topicHealth', Legal:'topicLegal', Other:'topicOther' };
+
+function L() { return I18N[getLang()] || I18N.ja; }
+
+/* ====================================================
+   Firebase setup check
+   ==================================================== */
+const cfg = window.OSAKA_FIREBASE_CONFIG || {};
+const ADMIN_EMAIL = (window.OSAKA_ADMIN_EMAIL || '').trim().toLowerCase();
+const isConfigured = !!(cfg.apiKey && cfg.projectId && cfg.authDomain && ADMIN_EMAIL);
+
+let app, auth, db;
+if (isConfigured) {
+  app  = initializeApp(cfg);
+  auth = getAuth(app);
+  db   = getFirestore(app);
+  try { await setPersistence(auth, browserLocalPersistence); } catch (_) {}
+}
+
+/* ====================================================
+   App state
+   ==================================================== */
+const state = {
+  user: null,        // Firebase user
+  isAdmin: false,    // true after admin email sign-in
+  view: null,        // 'setup' | 'preChat' | 'adminLogin' | 'adminDash' | 'chat'
+  chatId: null,      // id of the chat currently open
+  chatMeta: null,    // chat doc data
+  selectedLang: getLang(),
+  selectedTopic: 'General',
+  messages: [],
+  translateOn: false,
+  unsubMessages: null,
+  unsubChats: null,
+  pendingImage: null, // { blob, dataUrl, name }
+};
+
+/* ====================================================
+   DOM helpers
+   ==================================================== */
+const $ = (id) => document.getElementById(id);
+function show(viewId) {
+  for (const v of ['viewSetup','viewPreChat','viewAdminLogin','viewAdminDash','viewChat']) {
+    const el = $(v);
+    if (el) el.classList.toggle('hidden', v !== viewId);
+  }
+  state.view = viewId.replace('view','').toLowerCase();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function fmtTime(d) {
+  if (!d) return '';
+  try { return d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); } catch { return ''; }
+}
+function fmtDay(d, now) {
+  if (!d) return '';
+  const same = (a,b) => a.toDateString() === b.toDateString();
+  const yest = new Date(now); yest.setDate(yest.getDate()-1);
+  const Li = L();
+  if (same(d, now)) return Li.today;
+  if (same(d, yest)) return Li.yesterday;
+  try { return d.toLocaleDateString(); } catch { return ''; }
+}
+function toDate(ts) {
+  if (!ts) return null;
+  if (typeof ts.toDate === 'function') return ts.toDate();
+  if (ts.seconds != null) return new Date(ts.seconds * 1000);
+  return null;
+}
+
+/* ====================================================
+   i18n apply
+   ==================================================== */
+function applyI18n() {
+  const Li = L();
+  const map = {
+    setupTitle: Li.setupTitle, setupLead: Li.setupLead,
+    setup1: Li.setup1, setup2: Li.setup2, setup3: Li.setup3,
+    setup4: Li.setup4, setup5: Li.setup5, setup6: Li.setup6,
+    setupNote: Li.setupNote,
+    preTitle: Li.preTitle, preLead: Li.preLead,
+    privacyHead: Li.privacyHead,
+    privacy1: Li.privacy1, privacy2: Li.privacy2, privacy3: Li.privacy3, privacy4: Li.privacy4,
+    chooseLangTitle: Li.chooseLangTitle, topicTitle: Li.topicTitle,
+    startChatBtn: Li.startChatBtn,
+    adminLoginTitle: Li.adminLoginTitle, adminLoginLead: Li.adminLoginLead,
+    adminEmailLbl: Li.adminEmailLbl, adminPasswordLbl: Li.adminPasswordLbl,
+    adminLoginBtn: Li.adminLoginBtn,
+    adminDashTitle: Li.adminDashTitle, adminLogout: Li.adminLogout,
+    chatListEmpty: Li.chatListEmpty,
+    chatTitle: Li.chatTitle,
+    translateLabel: Li.translateLabel,
+  };
+  for (const id in map) {
+    const el = $(id);
+    if (el) el.textContent = map[id];
+  }
+  const ph = $('messageInput');
+  if (ph) ph.placeholder = Li.msgPlaceholder;
+  updateTranslateButton();
+  buildPreChatLangPills();
+  buildTopicGrid();
+}
+
+function buildPreChatLangPills() {
+  const c = $('chatLangPills');
+  if (!c) return;
+  c.innerHTML = '';
+  for (const lang of LANGS) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'lang-pill' + (state.selectedLang === lang.code ? ' active' : '');
+    b.textContent = lang.name;
+    if (lang.code === 'my') b.classList.add('lang-my');
+    b.addEventListener('click', () => {
+      state.selectedLang = lang.code;
+      buildPreChatLangPills();
+    });
+    c.appendChild(b);
+  }
+}
+
+function buildTopicGrid() {
+  const g = $('topicGrid');
+  if (!g) return;
+  g.innerHTML = '';
+  const Li = L();
+  for (const t of TOPICS) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'topic-chip' + (state.selectedTopic === t ? ' active' : '');
+    b.textContent = Li[topicKey[t]] || t;
+    b.addEventListener('click', () => {
+      state.selectedTopic = t;
+      buildTopicGrid();
+    });
+    g.appendChild(b);
+  }
+}
+
+/* ====================================================
+   Translator (Chrome on-device API)
+   ==================================================== */
+const translatorCache = new Map(); // 'src->tgt' -> translator instance, or null
+let translatorAPISupported = ('Translator' in self) || (!!self.translation && typeof self.translation.createTranslator === 'function');
+
+async function getTranslator(src, tgt) {
+  const key = `${src}->${tgt}`;
+  if (translatorCache.has(key)) return translatorCache.get(key);
+  let t = null;
+  try {
+    if ('Translator' in self) {
+      const avail = await self.Translator.availability?.({ sourceLanguage: src, targetLanguage: tgt });
+      if (avail === 'unavailable') { translatorCache.set(key, null); return null; }
+      t = await self.Translator.create({ sourceLanguage: src, targetLanguage: tgt });
+    } else if (self.translation && self.translation.createTranslator) {
+      t = await self.translation.createTranslator({ sourceLanguage: src, targetLanguage: tgt });
+    }
+  } catch (e) { t = null; }
+  translatorCache.set(key, t);
+  return t;
+}
+
+async function translateText(text, src, tgt) {
+  if (!text || src === tgt) return text;
+  const t = await getTranslator(src, tgt);
+  if (!t) return null;
+  try { return await t.translate(text); } catch { return null; }
+}
+
+function updateTranslateButton() {
+  const btn = $('translateBtn');
+  if (!btn) return;
+  const Li = L();
+  btn.innerHTML = `🌐 <span>${Li.translateLabel}</span>: ${state.translateOn ? 'ON' : 'OFF'}`;
+  btn.classList.toggle('active', state.translateOn);
+  if (!translatorAPISupported) {
+    btn.title = Li.translateUnavailable;
+  } else {
+    btn.title = '';
+  }
+}
+
+/* ====================================================
+   Image handling
+   ==================================================== */
+const MAX_IMAGE_DIM = 1024;
+const JPEG_QUALITY  = 0.78;
+
+async function processImage(file) {
+  if (!file || !file.type.startsWith('image/')) return null;
+  const dataUrl = await readAsDataURL(file);
+  const img = await loadImage(dataUrl);
+  const scale = Math.min(1, MAX_IMAGE_DIM / Math.max(img.width, img.height));
+  const w = Math.round(img.width * scale);
+  const h = Math.round(img.height * scale);
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0, w, h);
+  const outDataUrl = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+  return { dataUrl: outDataUrl, name: file.name || 'image.jpg' };
+}
+function readAsDataURL(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = () => rej(r.error);
+    r.readAsDataURL(file);
+  });
+}
+function loadImage(src) {
+  return new Promise((res, rej) => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = rej;
+    i.src = src;
+  });
+}
+
+/* ====================================================
+   Firebase auth flow + routing
+   ==================================================== */
+function routeFromHash() {
+  if (!isConfigured) { show('viewSetup'); applyI18n(); return; }
+  const wantAdmin = location.hash.startsWith('#admin');
+  if (wantAdmin) {
+    if (!state.user || state.user.isAnonymous) {
+      show('viewAdminLogin');
+    } else if (state.isAdmin) {
+      // Open chat-list dashboard (or stay in chat if a chatId is set)
+      if (state.chatId) openChat(state.chatId);
+      else { show('viewAdminDash'); subscribeAdminChats(); }
+    } else {
+      // Signed in as a non-admin email — treat as visitor for safety
+      show('viewAdminLogin');
+      $('adminLoginError').textContent = L().adminLoginErrNotAdmin;
+    }
+  } else {
+    if (state.user && state.user.isAnonymous && state.chatId) {
+      openChat(state.chatId);
+    } else {
+      show('viewPreChat');
+    }
+  }
+  applyI18n();
+}
+
+if (isConfigured) {
+  onAuthStateChanged(auth, (user) => {
+    state.user = user;
+    state.isAdmin = !!(user && !user.isAnonymous && user.email
+                       && user.email.toLowerCase() === ADMIN_EMAIL);
+    // Anonymous users: chat id = their UID
+    if (user && user.isAnonymous) state.chatId = user.uid;
+    routeFromHash();
+  });
+}
+window.addEventListener('hashchange', routeFromHash);
+
+/* ====================================================
+   Visitor: start a chat
+   ==================================================== */
+$('startChatBtn').addEventListener('click', async () => {
+  $('preStatus').textContent = L().preStatusConnecting;
+  $('startChatBtn').disabled = true;
+  try {
+    if (!state.user || !state.user.isAnonymous) {
+      await signInAnonymously(auth);
+    }
+    const uid = auth.currentUser.uid;
+    const chatRef = doc(db, 'chats', uid);
+    const existing = await getDoc(chatRef);
+    if (!existing.exists()) {
+      await setDoc(chatRef, {
+        ownerUid: uid,
+        userLang: state.selectedLang,
+        topic: state.selectedTopic,
+        createdAt: serverTimestamp(),
+        lastMessageAt: serverTimestamp(),
+        status: 'active',
+      });
+    } else {
+      await updateDoc(chatRef, {
+        userLang: state.selectedLang,
+        topic: state.selectedTopic,
+      });
+    }
+    state.chatId = uid;
+    openChat(uid);
+  } catch (e) {
+    console.error(e);
+    $('preStatus').textContent = (e && e.message) || L().chatStatusError;
+    $('preStatus').classList.add('warn');
+  } finally {
+    $('startChatBtn').disabled = false;
+  }
+});
+
+/* ====================================================
+   Admin auth
+   ==================================================== */
+$('adminLoginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = $('adminEmail').value.trim();
+  const password = $('adminPassword').value;
+  $('adminLoginError').textContent = '';
+  $('adminLoginBtn').disabled = true;
+  try {
+    if (email.toLowerCase() !== ADMIN_EMAIL) {
+      $('adminLoginError').textContent = L().adminLoginErrNotAdmin;
+      return;
+    }
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    $('adminLoginError').textContent = (err && err.message) || L().adminLoginErr;
+  } finally {
+    $('adminLoginBtn').disabled = false;
+  }
+});
+
+$('adminLogout').addEventListener('click', async () => {
+  await signOut(auth);
+  state.isAdmin = false;
+  state.chatId = null;
+  if (state.unsubMessages) state.unsubMessages();
+  if (state.unsubChats) state.unsubChats();
+  location.hash = '#admin';
+});
+
+function subscribeAdminChats() {
+  if (state.unsubChats) state.unsubChats();
+  const q = query(collection(db, 'chats'), orderBy('lastMessageAt', 'desc'), limit(100));
+  state.unsubChats = onSnapshot(q, (snap) => {
+    const chats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderChatList(chats);
+  }, (err) => {
+    console.error('chat list error', err);
+    $('chatListEmpty').textContent = (err && err.message) || L().chatListEmpty;
+    $('chatListEmpty').classList.remove('hidden');
+  });
+}
+
+function renderChatList(chats) {
+  const list = $('chatList');
+  const empty = $('chatListEmpty');
+  list.innerHTML = '';
+  if (!chats.length) { empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  for (const c of chats) {
+    const last = toDate(c.lastMessageAt);
+    const created = toDate(c.createdAt);
+    const item = document.createElement('div');
+    item.className = 'chat-list-item';
+    const langLbl = (LANGS.find(l => l.code === c.userLang) || {}).name || c.userLang || '—';
+    const topicLbl = (L()[topicKey[c.topic]] || c.topic || '');
+    item.innerHTML = `
+      <div class="info">
+        <div class="uid">#${escapeHtml((c.id||'').slice(0,8))}</div>
+        <div class="meta">${escapeHtml(langLbl)} · ${escapeHtml(topicLbl)} · ${fmtDay(last||created, new Date())} ${fmtTime(last||created)}</div>
+      </div>
+      <div class="pill">${escapeHtml(c.status === 'active' ? '●' : '○')}</div>
+    `;
+    item.addEventListener('click', () => {
+      state.chatId = c.id;
+      state.chatMeta = c;
+      openChat(c.id);
+    });
+    list.appendChild(item);
+  }
+}
+
+/* ====================================================
+   Open a chat (user or admin)
+   ==================================================== */
+async function openChat(chatId) {
+  if (state.unsubMessages) { state.unsubMessages(); state.unsubMessages = null; }
+  try {
+    const meta = await getDoc(doc(db, 'chats', chatId));
+    if (meta.exists()) state.chatMeta = { id: chatId, ...meta.data() };
+  } catch (_) {}
+  state.chatId = chatId;
+  show('viewChat');
+  applyI18n();
+  $('chatIdLabel').textContent = '#' + chatId.slice(0, 12);
+  $('chatStatus').textContent = '';
+  state.messages = [];
+  renderMessages();
+
+  const qMsgs = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
+  state.unsubMessages = onSnapshot(qMsgs, (snap) => {
+    state.messages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderMessages();
+    pretranslateNew();
+  }, (err) => {
+    console.error('messages error', err);
+    $('chatStatus').textContent = (err && err.message) || L().chatStatusError;
+    $('chatStatus').classList.add('warn');
+  });
+}
+
+/* ====================================================
+   Render messages
+   ==================================================== */
+function renderMessages() {
+  const cont = $('chatMessages');
+  if (!cont) return;
+  const selfUid = state.user ? state.user.uid : null;
+  const viewerLang = state.isAdmin ? 'ja' : (state.chatMeta?.userLang || state.selectedLang);
+  const now = new Date();
+  let lastDay = '';
+  cont.innerHTML = '';
+
+  for (const m of state.messages) {
+    const d = toDate(m.createdAt);
+    const dayLbl = d ? fmtDay(d, now) : '';
+    if (dayLbl && dayLbl !== lastDay) {
+      const sep = document.createElement('div');
+      sep.className = 'chat-day-sep';
+      sep.textContent = dayLbl;
+      cont.appendChild(sep);
+      lastDay = dayLbl;
+    }
+    const isSelf = m.senderUid === selfUid;
+    const wrap = document.createElement('div');
+    wrap.className = 'msg ' + (isSelf ? 'self' : 'other');
+
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+
+    if (m.imageDataUrl) {
+      const img = document.createElement('img');
+      img.src = m.imageDataUrl;
+      img.alt = '';
+      img.addEventListener('click', () => openLightbox(m.imageDataUrl));
+      bubble.appendChild(img);
+    }
+    if (m.text) {
+      const txt = document.createElement('div');
+      txt.textContent = m.text;
+      bubble.appendChild(txt);
+    }
+
+    // Translation
+    if (state.translateOn && m.text && m.sourceLang && m.sourceLang !== viewerLang) {
+      const trEl = document.createElement('div');
+      trEl.className = 'msg-translated';
+      const cached = m._translations && m._translations[viewerLang];
+      if (cached === false) trEl.textContent = '— ' + L().translatePairUnavailable;
+      else if (cached) trEl.textContent = cached;
+      else trEl.textContent = '…';
+      bubble.appendChild(trEl);
+    }
+
+    wrap.appendChild(bubble);
+    const meta = document.createElement('div');
+    meta.className = 'msg-meta';
+    meta.textContent = fmtTime(d);
+    wrap.appendChild(meta);
+
+    cont.appendChild(wrap);
+  }
+  cont.scrollTop = cont.scrollHeight;
+}
+
+async function pretranslateNew() {
+  if (!state.translateOn || !translatorAPISupported) return;
+  const viewerLang = state.isAdmin ? 'ja' : (state.chatMeta?.userLang || state.selectedLang);
+  let updated = false;
+  for (const m of state.messages) {
+    if (!m.text || !m.sourceLang || m.sourceLang === viewerLang) continue;
+    if (m._translations && (m._translations[viewerLang] || m._translations[viewerLang] === false)) continue;
+    const tr = await translateText(m.text, m.sourceLang, viewerLang);
+    m._translations = m._translations || {};
+    m._translations[viewerLang] = tr || false;
+    updated = true;
+  }
+  if (updated) renderMessages();
+}
+
+/* ====================================================
+   Send message
+   ==================================================== */
+$('attachBtn').addEventListener('click', () => $('imageInput').click());
+$('imageInput').addEventListener('change', async (e) => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  try {
+    const processed = await processImage(f);
+    if (!processed) return;
+    state.pendingImage = processed;
+    $('imagePreviewImg').src = processed.dataUrl;
+    $('imagePreviewName').textContent = processed.name + ' (' + Math.round(processed.dataUrl.length/1024) + ' KB)';
+    $('imagePreview').classList.remove('hidden');
+  } catch (err) {
+    console.error(err);
+  }
+});
+$('imagePreviewRemove').addEventListener('click', () => {
+  state.pendingImage = null;
+  $('imagePreview').classList.add('hidden');
+});
+
+$('messageInput').addEventListener('input', (e) => {
+  e.target.style.height = 'auto';
+  e.target.style.height = Math.min(110, e.target.scrollHeight) + 'px';
+});
+$('messageInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+    e.preventDefault();
+    sendCurrentMessage();
+  }
+});
+$('sendBtn').addEventListener('click', sendCurrentMessage);
+
+async function sendCurrentMessage() {
+  if (!state.chatId || !state.user) return;
+  const ta = $('messageInput');
+  const text = ta.value.trim();
+  if (!text && !state.pendingImage) return;
+  const data = {
+    senderType: state.isAdmin ? 'admin' : 'user',
+    senderUid: state.user.uid,
+    text: text || '',
+    sourceLang: state.isAdmin ? 'ja' : (state.chatMeta?.userLang || state.selectedLang),
+    createdAt: serverTimestamp(),
+  };
+  if (state.pendingImage) {
+    if (state.pendingImage.dataUrl.length > 900_000) {
+      $('chatStatus').textContent = 'Image too large after compression. Try a smaller one.';
+      $('chatStatus').classList.add('warn');
+      return;
+    }
+    data.imageDataUrl = state.pendingImage.dataUrl;
+  }
+  $('sendBtn').disabled = true;
+  try {
+    await addDoc(collection(db, 'chats', state.chatId, 'messages'), data);
+    await updateDoc(doc(db, 'chats', state.chatId), { lastMessageAt: serverTimestamp() });
+    ta.value = '';
+    ta.style.height = 'auto';
+    state.pendingImage = null;
+    $('imagePreview').classList.add('hidden');
+    $('chatStatus').textContent = '';
+    $('chatStatus').classList.remove('warn');
+  } catch (err) {
+    console.error(err);
+    $('chatStatus').textContent = (err && err.message) || L().chatStatusError;
+    $('chatStatus').classList.add('warn');
+  } finally {
+    $('sendBtn').disabled = false;
+  }
+}
+
+/* ====================================================
+   Translate toggle
+   ==================================================== */
+$('translateBtn').addEventListener('click', async () => {
+  if (!translatorAPISupported) {
+    $('chatStatus').textContent = L().translateUnavailable;
+    $('chatStatus').classList.add('warn');
+    return;
+  }
+  state.translateOn = !state.translateOn;
+  updateTranslateButton();
+  if (state.translateOn) await pretranslateNew();
+  renderMessages();
+});
+
+/* ====================================================
+   Close chat
+   ==================================================== */
+$('closeChatBtn').addEventListener('click', () => {
+  if (state.unsubMessages) { state.unsubMessages(); state.unsubMessages = null; }
+  state.messages = [];
+  if (state.isAdmin) {
+    state.chatId = null;
+    show('viewAdminDash');
+    subscribeAdminChats();
+  } else {
+    // Visitors keep their chat thread; just go back to pre-chat view
+    show('viewPreChat');
+  }
+});
+
+/* ====================================================
+   Lightbox
+   ==================================================== */
+function openLightbox(src) {
+  $('lightboxImg').src = src;
+  $('lightbox').classList.remove('hidden');
+}
+$('lightbox').addEventListener('click', () => {
+  $('lightbox').classList.add('hidden');
+  $('lightboxImg').src = '';
+});
+
+/* ====================================================
+   Site header + language sync
+   ==================================================== */
+applySiteHeader('contact');
+setupLangToggle(() => {
+  applySiteHeader('contact');
+  state.selectedLang = getLang();
+  applyI18n();
+  if (state.view === 'chat') renderMessages();
+});
+
+// Initial route (fires before auth state but covers the unconfigured case)
+if (!isConfigured) { show('viewSetup'); applyI18n(); }
+else { applyI18n(); }
+</script>
+</body>
+</html>
