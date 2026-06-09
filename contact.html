@@ -509,8 +509,24 @@
   <div class="lightbox hidden" id="lightbox"><img id="lightboxImg" alt="" /></div>
 </main>
 
-<!-- Firebase config (user-provided) -->
-<script src="firebase-config.js"></script>
+<!--
+  Firebase credentials. The @@…@@ placeholders are rewritten in
+  place by Render's buildCommand at deploy time (see render.yaml),
+  using the env vars you set in the Render dashboard. On local
+  dev they stay as @@…@@ and the Contact page shows a setup screen
+  with a diagnostic of which env vars are reaching the page.
+-->
+<script>
+window.OSAKA_FIREBASE_CONFIG = {
+  apiKey:            "@@FIREBASE_API_KEY@@",
+  authDomain:        "@@FIREBASE_AUTH_DOMAIN@@",
+  projectId:         "@@FIREBASE_PROJECT_ID@@",
+  storageBucket:     "@@FIREBASE_STORAGE_BUCKET@@",
+  messagingSenderId: "@@FIREBASE_MESSAGING_SENDER_ID@@",
+  appId:             "@@FIREBASE_APP_ID@@"
+};
+window.OSAKA_ADMIN_EMAIL = "@@OSAKA_ADMIN_EMAIL@@";
+</script>
 <script src="common.js"></script>
 
 <script type="module">
@@ -821,8 +837,23 @@ function L() { return I18N[getLang()] || I18N.ja; }
 /* ====================================================
    Firebase setup check
    ==================================================== */
-const cfg = window.OSAKA_FIREBASE_CONFIG || {};
-const ADMIN_EMAIL = (window.OSAKA_ADMIN_EMAIL || '').trim().toLowerCase();
+// Values come from Render env vars baked into the inline <script>
+// block above. Unsubstituted @@…@@ placeholders count as "not set".
+function isRealValue(v) {
+  return typeof v === 'string' && v.trim().length > 0 && !v.startsWith('@@');
+}
+const cfgRaw = window.OSAKA_FIREBASE_CONFIG || {};
+const cfg = {
+  apiKey:            isRealValue(cfgRaw.apiKey)            ? cfgRaw.apiKey            : '',
+  authDomain:        isRealValue(cfgRaw.authDomain)        ? cfgRaw.authDomain        : '',
+  projectId:         isRealValue(cfgRaw.projectId)         ? cfgRaw.projectId         : '',
+  storageBucket:     isRealValue(cfgRaw.storageBucket)     ? cfgRaw.storageBucket     : '',
+  messagingSenderId: isRealValue(cfgRaw.messagingSenderId) ? cfgRaw.messagingSenderId : '',
+  appId:             isRealValue(cfgRaw.appId)             ? cfgRaw.appId             : '',
+};
+const ADMIN_EMAIL = isRealValue(window.OSAKA_ADMIN_EMAIL)
+  ? window.OSAKA_ADMIN_EMAIL.trim().toLowerCase()
+  : '';
 const isConfigured = !!(cfg.apiKey && cfg.projectId && cfg.authDomain && ADMIN_EMAIL);
 
 let app, auth, db;
@@ -1439,11 +1470,11 @@ function renderSetupDiag() {
     ['FIREBASE_STORAGE_BUCKET',     cfg.storageBucket],
     ['FIREBASE_MESSAGING_SENDER_ID', cfg.messagingSenderId],
     ['FIREBASE_APP_ID',             cfg.appId],
-    ['OSAKA_ADMIN_EMAIL',           window.OSAKA_ADMIN_EMAIL || ''],
+    ['OSAKA_ADMIN_EMAIL',           ADMIN_EMAIL],
   ];
   const safe = (s) => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   list.innerHTML = fields.map(([k, v]) => {
-    const ok = !!(v && String(v).trim());
+    const ok = isRealValue(v);
     const mask = ok
       ? (String(v).length > 12 ? String(v).slice(0,6) + '…' + String(v).slice(-4) : String(v))
       : '(empty)';
