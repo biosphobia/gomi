@@ -1,0 +1,64 @@
+# ============================================================
+# Render Blueprint for the Osaka Support site
+# ============================================================
+#
+# This is a Render "Blueprint" — Render reads it from the repo
+# root and provisions everything automatically. The site itself
+# is plain HTML/CSS/JS, so the deploy is just "copy files to
+# Render's CDN" with no build step.
+#
+# DEPLOY STEPS (~3 minutes):
+#   1. Make sure this file (and the rest of the site) is pushed
+#      to the branch you want to deploy.
+#   2. Go to https://dashboard.render.com and sign in (free tier
+#      is fine).
+#   3. Click "New +"  →  "Blueprint".
+#   4. Connect GitHub if you haven't, then select the repo
+#      `biosphobia/gomi`.
+#   5. Pick the branch you want to deploy (e.g. main, or the
+#      claude/* feature branch). Render will read this file and
+#      show a preview of the service ("osaka-support") it will
+#      create. Click Apply.
+#   6. Render gives you a URL like
+#         https://osaka-support.onrender.com
+#      (or, if that's taken, a different unique name). The free
+#      static site is HTTPS by default.
+#
+# AFTER DEPLOY — wire Firebase to the new URL:
+#   The Contact / chat tab uses Firebase Auth, which only accepts
+#   sign-ins from domains you've authorized.
+#     Firebase Console > Authentication > Settings >
+#         Authorized domains > Add domain
+#     → paste the *.onrender.com host Render gave you.
+#   Without this step the Contact tab will fail to sign in once
+#   it's deployed (it'll still work on localhost / 127.0.0.1).
+#
+# Auto-deploys: every push to the branch you picked will redeploy
+# automatically. To roll back, use Render's "Deploys" tab.
+
+services:
+  - type: web
+    name: osaka-support
+    runtime: static
+    # No build step — files are served directly from the repo root.
+    buildCommand: ":"
+    staticPublishPath: .
+    # Disabled because preview URLs need to be added to Firebase
+    # authorized domains too; turn on later if you want them.
+    pullRequestPreviewsEnabled: false
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=()
+      - path: /*
+        name: Strict-Transport-Security
+        value: max-age=63072000; includeSubDomains
