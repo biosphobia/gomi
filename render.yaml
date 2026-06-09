@@ -90,6 +90,11 @@ services:
       - key: OSAKA_ADMIN_EMAIL
         sync: false
     headers:
+      # Don't cache the generated config — env-var changes should
+      # propagate immediately after redeploy.
+      - path: /firebase-config.js
+        name: Cache-Control
+        value: no-store, no-cache, must-revalidate, max-age=0
       - path: /*
         name: X-Content-Type-Options
         value: nosniff

@@ -410,6 +410,14 @@
       </ol>
       <p class="muted" style="font-size:12px;" id="setupNote">詳しい手順は <code>firebase-config.js</code> のコメントを読んでください。</p>
     </div>
+    <div class="setup-card" style="margin-top:14px;">
+      <h3 style="font-size:14px;margin-bottom:8px;" id="diagTitle">🔎 検出された設定 / Detected config</h3>
+      <ul id="diagList" style="list-style:none;padding:0;font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.7;"></ul>
+      <p class="muted" style="font-size:11px;margin-top:8px;" id="diagHint">
+        Render: ダッシュボード &gt; サービス &gt; <b>Environment</b> タブで上記7つの環境変数を設定し、再デプロイしてください。
+        ローカル: <code>firebase-config.js</code> の値を直接編集してください。
+      </p>
+    </div>
   </section>
 
   <!-- Pre-chat (visitor) -->
@@ -1418,8 +1426,39 @@ setupLangToggle(() => {
   if (state.view === 'chat') renderMessages();
 });
 
+/* ====================================================
+   Setup-screen diagnostic — show which env vars look set
+   ==================================================== */
+function renderSetupDiag() {
+  const list = document.getElementById('diagList');
+  if (!list) return;
+  const fields = [
+    ['FIREBASE_API_KEY',            cfg.apiKey],
+    ['FIREBASE_AUTH_DOMAIN',        cfg.authDomain],
+    ['FIREBASE_PROJECT_ID',         cfg.projectId],
+    ['FIREBASE_STORAGE_BUCKET',     cfg.storageBucket],
+    ['FIREBASE_MESSAGING_SENDER_ID', cfg.messagingSenderId],
+    ['FIREBASE_APP_ID',             cfg.appId],
+    ['OSAKA_ADMIN_EMAIL',           window.OSAKA_ADMIN_EMAIL || ''],
+  ];
+  const safe = (s) => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  list.innerHTML = fields.map(([k, v]) => {
+    const ok = !!(v && String(v).trim());
+    const mask = ok
+      ? (String(v).length > 12 ? String(v).slice(0,6) + '…' + String(v).slice(-4) : String(v))
+      : '(empty)';
+    const color = ok ? '#2e7d32' : '#c62828';
+    return `<li><span style="color:${color}">${ok ? '✓' : '✗'}</span> <b>${k}</b>: <span style="color:#666">${safe(mask)}</span></li>`;
+  }).join('');
+  const allSet = fields.every(([_, v]) => v && String(v).trim());
+  if (allSet) {
+    list.insertAdjacentHTML('beforeend',
+      '<li style="color:#c62828;margin-top:8px;">All seven values look set, but the Firebase init still failed. Check the browser console for errors.</li>');
+  }
+}
+
 // Initial route (fires before auth state but covers the unconfigured case)
-if (!isConfigured) { show('viewSetup'); applyI18n(); }
+if (!isConfigured) { show('viewSetup'); applyI18n(); renderSetupDiag(); }
 else { applyI18n(); }
 </script>
 </body>
