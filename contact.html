@@ -1463,29 +1463,54 @@ setupLangToggle(() => {
 function renderSetupDiag() {
   const list = document.getElementById('diagList');
   if (!list) return;
+  // Read RAW values, not the cleaned cfg, so we can distinguish
+  // "empty string" (env var unset on Render) from "@@…@@" (build
+  // step didn't run and substitute the placeholder at all).
+  const raw = window.OSAKA_FIREBASE_CONFIG || {};
+  const adminRaw = window.OSAKA_ADMIN_EMAIL || '';
   const fields = [
-    ['FIREBASE_API_KEY',            cfg.apiKey],
-    ['FIREBASE_AUTH_DOMAIN',        cfg.authDomain],
-    ['FIREBASE_PROJECT_ID',         cfg.projectId],
-    ['FIREBASE_STORAGE_BUCKET',     cfg.storageBucket],
-    ['FIREBASE_MESSAGING_SENDER_ID', cfg.messagingSenderId],
-    ['FIREBASE_APP_ID',             cfg.appId],
-    ['OSAKA_ADMIN_EMAIL',           ADMIN_EMAIL],
+    ['FIREBASE_API_KEY',             raw.apiKey],
+    ['FIREBASE_AUTH_DOMAIN',         raw.authDomain],
+    ['FIREBASE_PROJECT_ID',          raw.projectId],
+    ['FIREBASE_STORAGE_BUCKET',      raw.storageBucket],
+    ['FIREBASE_MESSAGING_SENDER_ID', raw.messagingSenderId],
+    ['FIREBASE_APP_ID',              raw.appId],
+    ['OSAKA_ADMIN_EMAIL',            adminRaw],
   ];
   const safe = (s) => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  list.innerHTML = fields.map(([k, v]) => {
-    const ok = isRealValue(v);
-    const mask = ok
-      ? (String(v).length > 12 ? String(v).slice(0,6) + '…' + String(v).slice(-4) : String(v))
-      : '(empty)';
-    const color = ok ? '#2e7d32' : '#c62828';
-    return `<li><span style="color:${color}">${ok ? '✓' : '✗'}</span> <b>${k}</b>: <span style="color:#666">${safe(mask)}</span></li>`;
+  let placeholderCount = 0, emptyCount = 0, realCount = 0;
+  const rows = fields.map(([k, v]) => {
+    const s = String(v == null ? '' : v);
+    const isPh = s.startsWith('@@');
+    const isEmpty = !isPh && s.trim() === '';
+    const isReal = !isPh && !isEmpty;
+    if (isPh) placeholderCount++;
+    else if (isEmpty) emptyCount++;
+    else realCount++;
+    let icon, color, label;
+    if (isReal) {
+      icon = '✓'; color = '#2e7d32';
+      label = s.length > 12 ? s.slice(0, 6) + '…' + s.slice(-4) : s;
+    } else if (isPh) {
+      icon = '⚠'; color = '#b76f00';
+      label = 'placeholder — build never substituted it';
+    } else {
+      icon = '✗'; color = '#c62828';
+      label = '(empty — env var not set on Render)';
+    }
+    return `<li><span style="color:${color}">${icon}</span> <b>${k}</b>: <span style="color:#666">${safe(label)}</span></li>`;
   }).join('');
-  const allSet = fields.every(([_, v]) => v && String(v).trim());
-  if (allSet) {
-    list.insertAdjacentHTML('beforeend',
-      '<li style="color:#c62828;margin-top:8px;">All seven values look set, but the Firebase init still failed. Check the browser console for errors.</li>');
+  let summary = '';
+  if (placeholderCount === fields.length) {
+    summary = `<li style="color:#b76f00;margin-top:8px;">All seven values are still the literal <code>@@…@@</code> placeholders. The Render build step never ran the <code>sed</code> substitution. Check the deploy logs for the line <code>[build] contact.html Firebase tokens substituted from env vars</code> — if it's missing, the buildCommand didn't execute.</li>`;
+  } else if (emptyCount === fields.length) {
+    summary = `<li style="color:#c62828;margin-top:8px;">The build ran (placeholders are gone) but every env var came through empty. Open Render dashboard → your service → Environment tab, confirm all seven keys are set with non-empty values, then trigger a redeploy.</li>`;
+  } else if (placeholderCount > 0 || emptyCount > 0) {
+    summary = `<li style="color:#c62828;margin-top:8px;">Mixed state: ${realCount} set, ${emptyCount} empty, ${placeholderCount} still placeholder. Fix the empty/placeholder ones in the Render Environment tab and redeploy.</li>`;
+  } else {
+    summary = `<li style="color:#c62828;margin-top:8px;">All seven values look set, but Firebase init still failed. Open the browser DevTools console and check the error there.</li>`;
   }
+  list.innerHTML = rows + summary;
 }
 
 // Initial route (fires before auth state but covers the unconfigured case)
