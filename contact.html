@@ -607,6 +607,7 @@ const I18N = {
     chatListEmpty: 'まだチャットはありません。',
     translateUnavailable: '翻訳APIキーが設定されていません。',
     translatePairUnavailable: 'この言語ペアの翻訳は利用できません。',
+    translateFailed: '翻訳に失敗しました',
     yourLang: 'あなたの言語',
     adminLang: '管理者言語: 日本語',
     today: '今日', yesterday: '昨日',
@@ -658,6 +659,7 @@ const I18N = {
     chatListEmpty: 'No chats yet.',
     translateUnavailable: 'Translation API key is not configured.',
     translatePairUnavailable: 'Translation is unavailable for this language pair.',
+    translateFailed: 'Translation failed',
     yourLang: 'Your language',
     adminLang: 'Admin language: Japanese',
     today: 'Today', yesterday: 'Yesterday',
@@ -709,6 +711,7 @@ const I18N = {
     chatListEmpty: '暂无聊天。',
     translateUnavailable: '未配置翻译 API 密钥。',
     translatePairUnavailable: '此语言对的翻译不可用。',
+    translateFailed: '翻译失败',
     yourLang: '您的语言',
     adminLang: '管理员语言：日语',
     today: '今天', yesterday: '昨天',
@@ -760,6 +763,7 @@ const I18N = {
     chatListEmpty: '아직 채팅이 없습니다.',
     translateUnavailable: '번역 API 키가 설정되지 않았습니다.',
     translatePairUnavailable: '이 언어 쌍에 대한 번역을 사용할 수 없습니다.',
+    translateFailed: '번역 실패',
     yourLang: '귀하의 언어',
     adminLang: '관리자 언어: 일본어',
     today: '오늘', yesterday: '어제',
@@ -811,6 +815,7 @@ const I18N = {
     chatListEmpty: 'ချက်တင် မရှိသေးပါ။',
     translateUnavailable: 'ဘာသာပြန် API ကီး မထည့်ထားပါ။',
     translatePairUnavailable: 'ဤဘာသာစကားအတွဲကို ဘာသာပြန်၍မရပါ။',
+    translateFailed: 'ဘာသာပြန်ခြင်း မအောင်မြင်ပါ',
     yourLang: 'သင်၏ဘာသာစကား',
     adminLang: 'Admin ဘာသာစကား: ဂျပန်',
     today: 'ယနေ့', yesterday: 'မနေ့က',
@@ -862,6 +867,7 @@ const I18N = {
     chatListEmpty: 'Chưa có cuộc chat nào.',
     translateUnavailable: 'Chưa cấu hình API key cho dịch.',
     translatePairUnavailable: 'Cặp ngôn ngữ này chưa được hỗ trợ.',
+    translateFailed: 'Dịch thất bại',
     yourLang: 'Ngôn ngữ của bạn',
     adminLang: 'Ngôn ngữ admin: tiếng Nhật',
     today: 'Hôm nay', yesterday: 'Hôm qua',
@@ -1040,7 +1046,7 @@ function buildTopicGrid() {
    Results are cached in memory so toggling the translate
    button is instant after the first fetch per message.
    ==================================================== */
-const translationCache = new Map(); // 'src|tgt|text' -> translated string
+const translationCache = new Map(); // 'auto|gTgt|text' -> translated string
 const GOOGLE_KEY_RAW = window.GOOGLE_TRANSLATE_API_KEY || '';
 const GOOGLE_KEY = (typeof GOOGLE_KEY_RAW === 'string'
                    && GOOGLE_KEY_RAW.trim()
@@ -1048,10 +1054,33 @@ const GOOGLE_KEY = (typeof GOOGLE_KEY_RAW === 'string'
                    ? GOOGLE_KEY_RAW.trim() : '';
 const translatorAPISupported = !!GOOGLE_KEY;
 
+// Map our site language codes to the BCP-47 codes Google Cloud
+// Translation expects. The main fix here is "zh" → "zh-CN":
+// Google's v2 endpoint sometimes rejects bare "zh" depending on
+// the pair, so we pin it to Simplified Chinese explicitly.
+const TRANSLATE_LANG_MAP = {
+  ja: 'ja',
+  en: 'en',
+  zh: 'zh-CN',
+  ko: 'ko',
+  my: 'my',
+  vi: 'vi',
+};
+
+// Track failures so the UI can show a useful message instead of
+// just a generic "language pair unavailable".
+let lastTranslateError = '';
+
 async function translateText(text, src, tgt) {
   if (!text || src === tgt) return text;
   if (!GOOGLE_KEY) return null;
-  const cacheKey = `${src}|${tgt}|${text}`;
+  const gTgt = TRANSLATE_LANG_MAP[tgt] || tgt;
+  // We deliberately do NOT pass `source`. Google's auto-detect is
+  // accurate and avoids two failure modes:
+  //   1. Our stored sourceLang is the visitor's *selected* language,
+  //      which can differ from what they actually typed.
+  //   2. Our code may not match Google's spelling exactly (e.g. zh).
+  const cacheKey = `auto|${gTgt}|${text}`;
   if (translationCache.has(cacheKey)) return translationCache.get(cacheKey);
   try {
     const res = await fetch(
@@ -1059,18 +1088,30 @@ async function translateText(text, src, tgt) {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ q: text, source: src, target: tgt, format: 'text' }),
+        body: JSON.stringify({ q: text, target: gTgt, format: 'text' }),
       }
     );
     if (!res.ok) {
-      console.warn('translate http', res.status);
+      const errText = await res.text().catch(() => '');
+      lastTranslateError = `HTTP ${res.status}: ${errText.slice(0, 200)}`;
+      console.warn('translate http', res.status, errText.slice(0, 400));
       return null;
     }
     const json = await res.json();
-    const out = json?.data?.translations?.[0]?.translatedText;
-    if (out) translationCache.set(cacheKey, out);
+    const translation = json?.data?.translations?.[0];
+    const out = translation?.translatedText;
+    // If Google detected the source as the same as our target,
+    // the "translation" is just the original text, which is noise
+    // for the UI — treat that as "no translation needed".
+    const detected = (translation?.detectedSourceLanguage || '').toLowerCase();
+    if (detected && detected.split('-')[0] === gTgt.split('-')[0]) return text;
+    if (out) {
+      translationCache.set(cacheKey, out);
+      lastTranslateError = '';
+    }
     return out || null;
   } catch (e) {
+    lastTranslateError = (e && e.message) || String(e);
     console.warn('translate err', e);
     return null;
   }
@@ -1430,14 +1471,24 @@ function renderMessages() {
       bubble.appendChild(txt);
     }
 
-    // Translation
-    if (state.translateOn && m.text && m.sourceLang && m.sourceLang !== viewerLang) {
+    // Translation: show translated copy of the OTHER party's
+    // messages when the toggle is on. The "other party" check is
+    // by sender UID, not stored sourceLang — Google's auto-detect
+    // handles the case where the visitor typed in a different
+    // language than the one they picked.
+    if (state.translateOn && m.text && !isSelf) {
       const trEl = document.createElement('div');
       trEl.className = 'msg-translated';
       const cached = m._translations && m._translations[viewerLang];
-      if (cached === false) trEl.textContent = '— ' + L().translatePairUnavailable;
-      else if (cached) trEl.textContent = cached;
-      else trEl.textContent = '…';
+      if (cached === false) {
+        trEl.textContent = '— ' + (lastTranslateError
+          ? L().translateFailed + ' (' + lastTranslateError.slice(0, 80) + ')'
+          : L().translatePairUnavailable);
+      } else if (cached) {
+        trEl.textContent = cached;
+      } else {
+        trEl.textContent = '…';
+      }
       bubble.appendChild(trEl);
     }
 
@@ -1455,11 +1506,16 @@ function renderMessages() {
 async function pretranslateNew() {
   if (!state.translateOn || !translatorAPISupported) return;
   const viewerLang = state.isAdmin ? 'ja' : (state.chatMeta?.userLang || state.selectedLang);
+  const selfUid = state.user?.uid;
   let updated = false;
   for (const m of state.messages) {
-    if (!m.text || !m.sourceLang || m.sourceLang === viewerLang) continue;
+    // Skip empty messages and the viewer's own messages — we always
+    // translate "the other party"'s messages regardless of what
+    // sourceLang they were tagged with, because the stored tag may
+    // not match what was actually typed.
+    if (!m.text || m.senderUid === selfUid) continue;
     if (m._translations && (m._translations[viewerLang] || m._translations[viewerLang] === false)) continue;
-    const tr = await translateText(m.text, m.sourceLang, viewerLang);
+    const tr = await translateText(m.text, m.sourceLang || 'auto', viewerLang);
     m._translations = m._translations || {};
     m._translations[viewerLang] = tr || false;
     updated = true;
