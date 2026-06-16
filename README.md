@@ -8,7 +8,8 @@ static site:
 - **🎬 Animation Videos** — per-language video library; uploads stored
   locally in the browser (IndexedDB).
 - **💬 Anonymous Chat** — visitors message the site creator privately
-  with photos, with on-device translation. Backed by Firebase.
+  with photos. Backed by Firebase Auth + Firestore; translation via
+  Google Cloud Translation.
 
 Site UI is available in **Japanese / English / 中文 / 한국어 / မြန်မာ /
 Tiếng Việt**. The language picker lives in the header and the choice
@@ -131,12 +132,43 @@ Inside an open chat:
   re-encoded as JPEG (max 1024 px, ~78% quality) before being stored as
   a data URL on the message document. EXIF/GPS metadata is stripped by
   this round-trip.
-- 🌐 **Translate** toggle — runs on-device through the Chrome 138+
-  Translator API. When ON, messages from the other party are
-  translated into your language and pre-translated in the background
-  so the toggle feels instant. Falls back to a "not supported" notice
-  if the browser doesn't expose `Translator`.
-- × — closes the chat and (for admins) goes back to the chat list.
+- 🌐 **Translate** toggle — uses **Google Cloud Translation API v2**
+  so it works in every browser. When ON, messages from the other party
+  are translated into your language and pre-translated in the
+  background so the toggle feels instant. Per-message results are
+  cached in memory. Disabled with a notice if
+  `GOOGLE_TRANSLATE_API_KEY` is not configured.
+- ⛔ **End** — deletes the conversation. Messages + chat doc are
+  removed via a batched `writeBatch`, then visitors are signed out so
+  a new Start chat creates a fresh thread under a brand-new anonymous
+  UID. Admins return to the chat list.
+- × — minimizes (closes the view but keeps the thread). Admin returns
+  to the chat list; visitor returns to the pre-chat screen and can
+  reopen the same thread with **Start chat** again.
+- **Ping sound** — a short two-tone "ding" plays via the Web Audio API
+  when a new message from the other party arrives, and (for admins)
+  when a brand-new chat appears in the list. AudioContext unlocks on
+  the first click/keypress so the very first ping may be silent.
+- **Send button + Enter** are both reentrancy-guarded with a
+  `state.sending` flag; the textarea is cleared *before* the
+  `addDoc` await so a rapid second Enter cannot resend the same
+  message.
+
+### Admin chat management
+
+In the admin dashboard:
+
+- The chat list updates in real time via `onSnapshot` — new chats
+  appear and re-sort as visitors send messages, no refresh needed.
+- Each row has a 🗑 button that deletes the chat (messages first,
+  then the chat doc) after a confirmation prompt.
+
+### Firestore rules update for delete
+
+The rules below allow both **the owner** (visitor for their own
+chat) and **the admin** to delete a chat and its messages. This is
+required for the End / 🗑 buttons to work. See
+[Firebase setup](#firebase-setup) for the full rules block.
 
 ---
 
@@ -193,7 +225,7 @@ of one-time setup in the Firebase Console.
          allow create: if isOwner(chatId)
                        && request.resource.data.ownerUid == request.auth.uid;
          allow update: if isOwner(chatId) || isAdmin();
-         allow delete: if false;
+         allow delete: if isOwner(chatId) || isAdmin();
 
          match /messages/{messageId} {
            allow read:   if isOwner(chatId) || isAdmin();
@@ -201,14 +233,24 @@ of one-time setup in the Firebase Console.
                          && request.resource.data.senderUid == request.auth.uid
                          && request.resource.data.text is string
                          && request.resource.data.text.size() < 4000;
-           allow update, delete: if false;
+           allow update: if false;
+           allow delete: if isOwner(chatId) || isAdmin();
          }
        }
      }
    }
    ```
 
-6. After the site is deployed, come back to
+6. **Translation API key (optional, but recommended)**.
+   Go to <https://console.cloud.google.com> → APIs & Services →
+   Library → enable **Cloud Translation API**. Then APIs & Services
+   → Credentials → **Create credentials → API key**. Restrict it to
+   **Cloud Translation API only** and to your `*.onrender.com`
+   referrer for safety. This key becomes the
+   `GOOGLE_TRANSLATE_API_KEY` env var. Without it, the chat still
+   works fully — only the 🌐 Translate button is disabled.
+
+7. After the site is deployed, come back to
    **Authentication → Settings → Authorized domains** and add the
    `*.onrender.com` host Render gave you. Without this step, sign-in
    fails on the deployed URL (but still works on `localhost`).
@@ -248,6 +290,7 @@ nothing sensitive lives in git.
    FIREBASE_MESSAGING_SENDER_ID
    FIREBASE_APP_ID
    OSAKA_ADMIN_EMAIL
+   GOOGLE_TRANSLATE_API_KEY   # optional
    ```
 
    Click **Apply**.
@@ -291,9 +334,14 @@ the new values. Because `contact.html` is served with
 - **Per-chat isolation.** Firestore rules restrict each chat thread
   to its owner (matching UID) and the admin (matching email). No
   other authenticated user can list or read another visitor's chat.
-- **On-device translation.** Translation runs entirely in the
-  browser via Chrome's `Translator` API. Message contents are never
-  sent to Google Translate or any other translation service.
+- **Translation via Google Cloud Translation.** When the 🌐 Translate
+  toggle is on, message text is sent to
+  `translation.googleapis.com` with your API key over HTTPS so it
+  can be translated for the viewer. Each translation result is
+  cached in the browser tab's memory so the same message isn't
+  re-sent twice. If `GOOGLE_TRANSLATE_API_KEY` is not configured,
+  no translation calls are made and message text stays in its
+  original language — nothing is sent anywhere.
 - **Image metadata stripped.** Uploaded images go through a canvas
   decode + JPEG re-encode, which removes EXIF / GPS metadata before
   the file is written to Firestore.
@@ -313,10 +361,15 @@ the new values. Because `contact.html` is served with
 - **Game**, **Videos**, and the Contact UI: any modern browser
   (Chrome, Firefox, Safari, Edge). Drag-and-drop in the game and the
   chat input use Pointer Events, which work on mouse and touch.
-- **Chat translation toggle**: requires Chrome 138+ on desktop or
-  Android with the `Translator` API enabled. On other browsers the
-  toggle shows a "not supported" notice and falls back to showing
-  messages in their original language.
+- **Chat translation toggle**: uses Google Cloud Translation API v2
+  over HTTPS, so it works in every modern browser. If
+  `GOOGLE_TRANSLATE_API_KEY` is not configured, the toggle is shown
+  with a "not configured" notice and messages stay in their original
+  language.
+- **Ping sound**: uses the Web Audio API, which needs a user gesture
+  to unlock — the first click or keypress on the page unlocks it.
+  The very first incoming ping may therefore be silent if no user
+  interaction has happened yet.
 - **Burmese rendering**: shared styles include `Noto Sans Myanmar`,
   `Pyidaungsu`, and `Padauk` as font fallbacks. Most platforms ship
   one of these.

@@ -117,6 +117,23 @@
     font-size: 11px;
     font-weight: 700;
   }
+  .chat-list-delete {
+    background: transparent;
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--c-muted);
+    font-family: inherit;
+    flex-shrink: 0;
+  }
+  .chat-list-delete:hover {
+    color: #c62828;
+    border-color: #c62828;
+    background: #fff5f5;
+  }
+  .chat-list-delete:disabled { opacity: 0.5; cursor: not-allowed; }
   .chat-list-empty {
     text-align: center;
     color: var(--c-muted);
@@ -483,7 +500,8 @@
         </div>
         <div class="chat-actions">
           <button class="chat-icon-btn" type="button" id="translateBtn">🌐 <span id="translateLabel">翻訳</span>: OFF</button>
-          <button class="chat-icon-btn danger" type="button" id="closeChatBtn" title="Close" aria-label="Close">×</button>
+          <button class="chat-icon-btn danger" type="button" id="endChatBtn" title="End chat">⛔ <span id="endChatLabel">終了</span></button>
+          <button class="chat-icon-btn" type="button" id="closeChatBtn" title="Minimize" aria-label="Minimize">×</button>
         </div>
       </div>
 
@@ -526,6 +544,7 @@ window.OSAKA_FIREBASE_CONFIG = {
   appId:             "@@FIREBASE_APP_ID@@"
 };
 window.OSAKA_ADMIN_EMAIL = "@@OSAKA_ADMIN_EMAIL@@";
+window.GOOGLE_TRANSLATE_API_KEY = "@@GOOGLE_TRANSLATE_API_KEY@@";
 </script>
 <script src="common.js"></script>
 
@@ -538,6 +557,7 @@ import {
 import {
   getFirestore, doc, setDoc, getDoc, updateDoc, addDoc,
   collection, onSnapshot, query, orderBy, serverTimestamp, limit,
+  deleteDoc, getDocs, writeBatch,
 } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 /* ====================================================
@@ -585,11 +605,15 @@ const I18N = {
     adminDashTitle: '📥 受信チャット一覧',
     adminLogout: 'ログアウト',
     chatListEmpty: 'まだチャットはありません。',
-    translateUnavailable: '翻訳機能はこのブラウザで利用できません（Chrome 138+ が必要です）。',
+    translateUnavailable: '翻訳APIキーが設定されていません。',
     translatePairUnavailable: 'この言語ペアの翻訳は利用できません。',
     yourLang: 'あなたの言語',
     adminLang: '管理者言語: 日本語',
     today: '今日', yesterday: '昨日',
+    endChatLabel: '終了',
+    confirmEndChat: 'このチャットを終了して削除しますか？復元できません。',
+    deleteChatBtn: '削除',
+    confirmDeleteChat: 'このチャットを削除しますか？復元できません。',
   },
   en: {
     navContact: 'Contact',
@@ -632,11 +656,15 @@ const I18N = {
     adminDashTitle: '📥 Incoming chats',
     adminLogout: 'Sign out',
     chatListEmpty: 'No chats yet.',
-    translateUnavailable: 'Translation is unavailable in this browser (requires Chrome 138+).',
+    translateUnavailable: 'Translation API key is not configured.',
     translatePairUnavailable: 'Translation is unavailable for this language pair.',
     yourLang: 'Your language',
     adminLang: 'Admin language: Japanese',
     today: 'Today', yesterday: 'Yesterday',
+    endChatLabel: 'End',
+    confirmEndChat: 'End and delete this chat? It can\'t be recovered.',
+    deleteChatBtn: 'Delete',
+    confirmDeleteChat: 'Delete this chat? It can\'t be recovered.',
   },
   zh: {
     navContact: '咨询',
@@ -679,11 +707,15 @@ const I18N = {
     adminDashTitle: '📥 收件箱',
     adminLogout: '退出登录',
     chatListEmpty: '暂无聊天。',
-    translateUnavailable: '此浏览器不支持翻译功能（需要 Chrome 138+）。',
+    translateUnavailable: '未配置翻译 API 密钥。',
     translatePairUnavailable: '此语言对的翻译不可用。',
     yourLang: '您的语言',
     adminLang: '管理员语言：日语',
     today: '今天', yesterday: '昨天',
+    endChatLabel: '结束',
+    confirmEndChat: '结束并删除此对话？无法恢复。',
+    deleteChatBtn: '删除',
+    confirmDeleteChat: '删除此对话？无法恢复。',
   },
   ko: {
     navContact: '상담',
@@ -726,11 +758,15 @@ const I18N = {
     adminDashTitle: '📥 수신 채팅 목록',
     adminLogout: '로그아웃',
     chatListEmpty: '아직 채팅이 없습니다.',
-    translateUnavailable: '이 브라우저에서는 번역을 사용할 수 없습니다 (Chrome 138+ 필요).',
+    translateUnavailable: '번역 API 키가 설정되지 않았습니다.',
     translatePairUnavailable: '이 언어 쌍에 대한 번역을 사용할 수 없습니다.',
     yourLang: '귀하의 언어',
     adminLang: '관리자 언어: 일본어',
     today: '오늘', yesterday: '어제',
+    endChatLabel: '종료',
+    confirmEndChat: '이 채팅을 종료하고 삭제할까요? 복구할 수 없습니다.',
+    deleteChatBtn: '삭제',
+    confirmDeleteChat: '이 채팅을 삭제할까요? 복구할 수 없습니다.',
   },
   my: {
     navContact: 'ဆက်သွယ်ရန်',
@@ -773,11 +809,15 @@ const I18N = {
     adminDashTitle: '📥 လာရောက်သော ချက်တင်များ',
     adminLogout: 'ထွက်ပါ',
     chatListEmpty: 'ချက်တင် မရှိသေးပါ။',
-    translateUnavailable: 'ဤဘရောက်ဇာတွင် ဘာသာပြန်စနစ်မရှိပါ (Chrome 138+ လိုအပ်)။',
+    translateUnavailable: 'ဘာသာပြန် API ကီး မထည့်ထားပါ။',
     translatePairUnavailable: 'ဤဘာသာစကားအတွဲကို ဘာသာပြန်၍မရပါ။',
     yourLang: 'သင်၏ဘာသာစကား',
     adminLang: 'Admin ဘာသာစကား: ဂျပန်',
     today: 'ယနေ့', yesterday: 'မနေ့က',
+    endChatLabel: 'ဆုံးခြင်း',
+    confirmEndChat: 'ဤချက်တင်ကို ဆုံးပြီး ဖျက်မှာ သေချာပါသလား? ပြန်လည်ရယူ၍မရပါ။',
+    deleteChatBtn: 'ဖျက်ပါ',
+    confirmDeleteChat: 'ဤချက်တင်ကို ဖျက်မှာ သေချာပါသလား? ပြန်လည်ရယူ၍မရပါ။',
   },
   vi: {
     navContact: 'Liên hệ',
@@ -820,11 +860,15 @@ const I18N = {
     adminDashTitle: '📥 Danh sách chat đến',
     adminLogout: 'Đăng xuất',
     chatListEmpty: 'Chưa có cuộc chat nào.',
-    translateUnavailable: 'Trình duyệt không hỗ trợ dịch (cần Chrome 138+).',
+    translateUnavailable: 'Chưa cấu hình API key cho dịch.',
     translatePairUnavailable: 'Cặp ngôn ngữ này chưa được hỗ trợ.',
     yourLang: 'Ngôn ngữ của bạn',
     adminLang: 'Ngôn ngữ admin: tiếng Nhật',
     today: 'Hôm nay', yesterday: 'Hôm qua',
+    endChatLabel: 'Kết thúc',
+    confirmEndChat: 'Kết thúc và xóa cuộc trò chuyện này? Không thể khôi phục.',
+    deleteChatBtn: 'Xóa',
+    confirmDeleteChat: 'Xóa cuộc trò chuyện này? Không thể khôi phục.',
   },
 };
 
@@ -940,6 +984,7 @@ function applyI18n() {
     chatListEmpty: Li.chatListEmpty,
     chatTitle: Li.chatTitle,
     translateLabel: Li.translateLabel,
+    endChatLabel: Li.endChatLabel,
   };
   for (const id in map) {
     const el = $(id);
@@ -989,33 +1034,46 @@ function buildTopicGrid() {
 }
 
 /* ====================================================
-   Translator (Chrome on-device API)
+   Translation — Google Cloud Translation API v2
+   Works in every browser. Each call is one HTTPS POST to
+   translation.googleapis.com with the configured API key.
+   Results are cached in memory so toggling the translate
+   button is instant after the first fetch per message.
    ==================================================== */
-const translatorCache = new Map(); // 'src->tgt' -> translator instance, or null
-let translatorAPISupported = ('Translator' in self) || (!!self.translation && typeof self.translation.createTranslator === 'function');
-
-async function getTranslator(src, tgt) {
-  const key = `${src}->${tgt}`;
-  if (translatorCache.has(key)) return translatorCache.get(key);
-  let t = null;
-  try {
-    if ('Translator' in self) {
-      const avail = await self.Translator.availability?.({ sourceLanguage: src, targetLanguage: tgt });
-      if (avail === 'unavailable') { translatorCache.set(key, null); return null; }
-      t = await self.Translator.create({ sourceLanguage: src, targetLanguage: tgt });
-    } else if (self.translation && self.translation.createTranslator) {
-      t = await self.translation.createTranslator({ sourceLanguage: src, targetLanguage: tgt });
-    }
-  } catch (e) { t = null; }
-  translatorCache.set(key, t);
-  return t;
-}
+const translationCache = new Map(); // 'src|tgt|text' -> translated string
+const GOOGLE_KEY_RAW = window.GOOGLE_TRANSLATE_API_KEY || '';
+const GOOGLE_KEY = (typeof GOOGLE_KEY_RAW === 'string'
+                   && GOOGLE_KEY_RAW.trim()
+                   && !GOOGLE_KEY_RAW.startsWith('@@'))
+                   ? GOOGLE_KEY_RAW.trim() : '';
+const translatorAPISupported = !!GOOGLE_KEY;
 
 async function translateText(text, src, tgt) {
   if (!text || src === tgt) return text;
-  const t = await getTranslator(src, tgt);
-  if (!t) return null;
-  try { return await t.translate(text); } catch { return null; }
+  if (!GOOGLE_KEY) return null;
+  const cacheKey = `${src}|${tgt}|${text}`;
+  if (translationCache.has(cacheKey)) return translationCache.get(cacheKey);
+  try {
+    const res = await fetch(
+      'https://translation.googleapis.com/language/translate/v2?key=' + encodeURIComponent(GOOGLE_KEY),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ q: text, source: src, target: tgt, format: 'text' }),
+      }
+    );
+    if (!res.ok) {
+      console.warn('translate http', res.status);
+      return null;
+    }
+    const json = await res.json();
+    const out = json?.data?.translations?.[0]?.translatedText;
+    if (out) translationCache.set(cacheKey, out);
+    return out || null;
+  } catch (e) {
+    console.warn('translate err', e);
+    return null;
+  }
 }
 
 function updateTranslateButton() {
@@ -1024,11 +1082,44 @@ function updateTranslateButton() {
   const Li = L();
   btn.innerHTML = `🌐 <span>${Li.translateLabel}</span>: ${state.translateOn ? 'ON' : 'OFF'}`;
   btn.classList.toggle('active', state.translateOn);
-  if (!translatorAPISupported) {
-    btn.title = Li.translateUnavailable;
-  } else {
-    btn.title = '';
-  }
+  btn.title = translatorAPISupported ? '' : Li.translateUnavailable;
+}
+
+/* ====================================================
+   Ping sound (Web Audio API)
+   Plays a quick two-tone "ding" on incoming messages /
+   new admin chats. AudioContext is unlocked on the first
+   user gesture (browsers require this).
+   ==================================================== */
+let audioCtx = null;
+function ensureAudioCtx() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+  } catch (_) {}
+  return audioCtx;
+}
+document.addEventListener('click', ensureAudioCtx, { passive: true });
+document.addEventListener('keydown', ensureAudioCtx, { passive: true });
+
+function playPing() {
+  const ctx = audioCtx;
+  if (!ctx) return;
+  try {
+    const t0 = ctx.currentTime;
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc1.type = 'sine'; osc2.type = 'sine';
+    osc1.frequency.value = 880;
+    osc2.frequency.value = 1320;
+    osc1.connect(gain); osc2.connect(gain); gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.34);
+    osc1.start(t0);        osc1.stop(t0 + 0.36);
+    osc2.start(t0 + 0.05); osc2.stop(t0 + 0.36);
+  } catch (_) {}
 }
 
 /* ====================================================
@@ -1180,15 +1271,38 @@ $('adminLogout').addEventListener('click', async () => {
 
 function subscribeAdminChats() {
   if (state.unsubChats) state.unsubChats();
+  state.adminChatsInitialized = false;
+  state.knownChatIds = state.knownChatIds || new Set();
   const q = query(collection(db, 'chats'), orderBy('lastMessageAt', 'desc'), limit(100));
   state.unsubChats = onSnapshot(q, (snap) => {
     const chats = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Ping when a brand-new chat appears (skip the initial snapshot).
+    if (state.adminChatsInitialized) {
+      const fresh = chats.filter(c => !state.knownChatIds.has(c.id));
+      if (fresh.length > 0) playPing();
+    }
+    for (const c of chats) state.knownChatIds.add(c.id);
+    state.adminChatsInitialized = true;
     renderChatList(chats);
   }, (err) => {
     console.error('chat list error', err);
     $('chatListEmpty').textContent = (err && err.message) || L().chatListEmpty;
     $('chatListEmpty').classList.remove('hidden');
   });
+}
+
+async function deleteChatCascade(chatId) {
+  // Delete all messages in the subcollection, then the chat doc.
+  // Firestore writeBatch is limited to 500 ops; chunk to stay under that.
+  let snap = await getDocs(collection(db, 'chats', chatId, 'messages'));
+  let docs = snap.docs;
+  while (docs.length) {
+    const batch = writeBatch(db);
+    docs.slice(0, 400).forEach(d => batch.delete(d.ref));
+    await batch.commit();
+    docs = docs.slice(400);
+  }
+  await deleteDoc(doc(db, 'chats', chatId));
 }
 
 function renderChatList(chats) {
@@ -1209,8 +1323,22 @@ function renderChatList(chats) {
         <div class="uid">#${escapeHtml((c.id||'').slice(0,8))}</div>
         <div class="meta">${escapeHtml(langLbl)} · ${escapeHtml(topicLbl)} · ${fmtDay(last||created, new Date())} ${fmtTime(last||created)}</div>
       </div>
-      <div class="pill">${escapeHtml(c.status === 'active' ? '●' : '○')}</div>
+      <button class="chat-list-delete" type="button" title="${escapeHtml(L().deleteChatBtn)}" aria-label="${escapeHtml(L().deleteChatBtn)}">🗑</button>
     `;
+    const delBtn = item.querySelector('.chat-list-delete');
+    delBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!confirm(L().confirmDeleteChat)) return;
+      delBtn.disabled = true;
+      try {
+        await deleteChatCascade(c.id);
+        state.knownChatIds && state.knownChatIds.delete(c.id);
+      } catch (err) {
+        console.error('delete chat', err);
+        alert((err && err.message) || L().chatStatusError);
+        delBtn.disabled = false;
+      }
+    });
     item.addEventListener('click', () => {
       state.chatId = c.id;
       state.chatMeta = c;
@@ -1235,11 +1363,22 @@ async function openChat(chatId) {
   $('chatIdLabel').textContent = '#' + chatId.slice(0, 12);
   $('chatStatus').textContent = '';
   state.messages = [];
+  state.knownMessageIds = new Set();
+  state.messagesInitialized = false;
   renderMessages();
 
   const qMsgs = query(collection(db, 'chats', chatId, 'messages'), orderBy('createdAt', 'asc'));
   state.unsubMessages = onSnapshot(qMsgs, (snap) => {
-    state.messages = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Ping when a brand-new message from the OTHER party arrives.
+    if (state.messagesInitialized) {
+      const myUid = state.user ? state.user.uid : null;
+      const fresh = msgs.filter(m => !state.knownMessageIds.has(m.id) && m.senderUid !== myUid);
+      if (fresh.length > 0) playPing();
+    }
+    for (const m of msgs) state.knownMessageIds.add(m.id);
+    state.messagesInitialized = true;
+    state.messages = msgs;
     renderMessages();
     pretranslateNew();
   }, (err) => {
@@ -1359,46 +1498,61 @@ $('messageInput').addEventListener('input', (e) => {
 $('messageInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
     e.preventDefault();
+    if (state.sending) return;
     sendCurrentMessage();
   }
 });
 $('sendBtn').addEventListener('click', sendCurrentMessage);
 
 async function sendCurrentMessage() {
+  // Re-entry guard: blocks a second Enter / click while the first
+  // addDoc is still in flight.
+  if (state.sending) return;
   if (!state.chatId || !state.user) return;
   const ta = $('messageInput');
   const text = ta.value.trim();
-  if (!text && !state.pendingImage) return;
+  const pendingImage = state.pendingImage;
+  if (!text && !pendingImage) return;
+  if (pendingImage && pendingImage.dataUrl.length > 900_000) {
+    $('chatStatus').textContent = 'Image too large after compression. Try a smaller one.';
+    $('chatStatus').classList.add('warn');
+    return;
+  }
+  // Lock everything BEFORE the await so a fast-fired second Enter
+  // hits the guard and the textarea is already empty for it.
+  state.sending = true;
+  $('sendBtn').disabled = true;
+  ta.value = '';
+  ta.style.height = 'auto';
+  state.pendingImage = null;
+  $('imagePreview').classList.add('hidden');
+
   const data = {
     senderType: state.isAdmin ? 'admin' : 'user',
-    senderUid: state.user.uid,
-    text: text || '',
+    senderUid:  state.user.uid,
+    text:       text || '',
     sourceLang: state.isAdmin ? 'ja' : (state.chatMeta?.userLang || state.selectedLang),
-    createdAt: serverTimestamp(),
+    createdAt:  serverTimestamp(),
   };
-  if (state.pendingImage) {
-    if (state.pendingImage.dataUrl.length > 900_000) {
-      $('chatStatus').textContent = 'Image too large after compression. Try a smaller one.';
-      $('chatStatus').classList.add('warn');
-      return;
-    }
-    data.imageDataUrl = state.pendingImage.dataUrl;
-  }
-  $('sendBtn').disabled = true;
+  if (pendingImage) data.imageDataUrl = pendingImage.dataUrl;
   try {
     await addDoc(collection(db, 'chats', state.chatId, 'messages'), data);
     await updateDoc(doc(db, 'chats', state.chatId), { lastMessageAt: serverTimestamp() });
-    ta.value = '';
-    ta.style.height = 'auto';
-    state.pendingImage = null;
-    $('imagePreview').classList.add('hidden');
     $('chatStatus').textContent = '';
     $('chatStatus').classList.remove('warn');
   } catch (err) {
     console.error(err);
+    // Restore so the user can retry
+    ta.value = text;
+    state.pendingImage = pendingImage;
+    if (pendingImage) {
+      $('imagePreviewImg').src = pendingImage.dataUrl;
+      $('imagePreview').classList.remove('hidden');
+    }
     $('chatStatus').textContent = (err && err.message) || L().chatStatusError;
     $('chatStatus').classList.add('warn');
   } finally {
+    state.sending = false;
     $('sendBtn').disabled = false;
   }
 }
@@ -1419,7 +1573,10 @@ $('translateBtn').addEventListener('click', async () => {
 });
 
 /* ====================================================
-   Close chat
+   Close (minimize) — leaves the chat thread intact, just
+   navigates away. Admin returns to chat list; visitor goes
+   back to the pre-chat screen but their UID is unchanged
+   so they re-enter the same thread on Start chat.
    ==================================================== */
 $('closeChatBtn').addEventListener('click', () => {
   if (state.unsubMessages) { state.unsubMessages(); state.unsubMessages = null; }
@@ -1429,8 +1586,43 @@ $('closeChatBtn').addEventListener('click', () => {
     show('viewAdminDash');
     subscribeAdminChats();
   } else {
-    // Visitors keep their chat thread; just go back to pre-chat view
     show('viewPreChat');
+  }
+});
+
+/* ====================================================
+   End chat — deletes the conversation. Visitors are then
+   signed out, so a new Start chat creates a fresh thread
+   under a brand-new anonymous UID.
+   ==================================================== */
+$('endChatBtn').addEventListener('click', async () => {
+  if (!state.chatId) return;
+  if (!confirm(L().confirmEndChat)) return;
+  const btn = $('endChatBtn');
+  btn.disabled = true;
+  const chatId = state.chatId;
+  if (state.unsubMessages) { state.unsubMessages(); state.unsubMessages = null; }
+  try {
+    await deleteChatCascade(chatId);
+    state.knownMessageIds = new Set();
+    state.messagesInitialized = false;
+    state.messages = [];
+    state.chatId = null;
+    state.chatMeta = null;
+    if (state.isAdmin) {
+      show('viewAdminDash');
+      subscribeAdminChats();
+    } else {
+      // Sign the visitor out so the next Start chat picks up a new
+      // anonymous UID (and therefore a new, unlinked chat thread).
+      try { await signOut(auth); } catch (_) {}
+      show('viewPreChat');
+    }
+  } catch (err) {
+    console.error('end chat', err);
+    alert((err && err.message) || L().chatStatusError);
+  } finally {
+    btn.disabled = false;
   }
 });
 
@@ -1468,6 +1660,7 @@ function renderSetupDiag() {
   // step didn't run and substitute the placeholder at all).
   const raw = window.OSAKA_FIREBASE_CONFIG || {};
   const adminRaw = window.OSAKA_ADMIN_EMAIL || '';
+  const gtkRaw = window.GOOGLE_TRANSLATE_API_KEY || '';
   const fields = [
     ['FIREBASE_API_KEY',             raw.apiKey],
     ['FIREBASE_AUTH_DOMAIN',         raw.authDomain],
@@ -1476,6 +1669,7 @@ function renderSetupDiag() {
     ['FIREBASE_MESSAGING_SENDER_ID', raw.messagingSenderId],
     ['FIREBASE_APP_ID',              raw.appId],
     ['OSAKA_ADMIN_EMAIL',            adminRaw],
+    ['GOOGLE_TRANSLATE_API_KEY',     gtkRaw],
   ];
   const safe = (s) => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   let placeholderCount = 0, emptyCount = 0, realCount = 0;
