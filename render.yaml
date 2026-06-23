@@ -27,6 +27,12 @@
 #                                        API key. Optional, but the
 #                                        chat's Translate button only
 #                                        works if it's set.
+#         GOOGLE_TTS_API_KEY           ← Google Cloud Text-to-Speech
+#                                        API key. Optional; powers the
+#                                        🔊 audio toggle in the Kana
+#                                        Quiz. Can be the same key as
+#                                        translate if that key has the
+#                                        Text-to-Speech API enabled.
 #      Click Apply.
 #   5. Render gives you a https://*.onrender.com URL.
 #
@@ -50,17 +56,18 @@ services:
   - type: web
     name: osaka-support
     runtime: static
-    # In-place substitute every @@…@@ token in contact.html with
-    # the matching env var. Empty values mean unset env vars and
-    # produce empty strings, which contact.html treats as "not
-    # configured" rather than crashing.
+    # In-place substitute every @@…@@ token in contact.html and
+    # kana.html with the matching env var. Empty values mean unset
+    # env vars and produce empty strings, which the pages treat as
+    # "not configured" rather than crashing.
     buildCommand: |
       set -e
       echo "[build] Render shell: $0  |  bash version: $BASH_VERSION"
       echo "[build] env var status (masked):"
       for var in FIREBASE_API_KEY FIREBASE_AUTH_DOMAIN FIREBASE_PROJECT_ID \
                  FIREBASE_STORAGE_BUCKET FIREBASE_MESSAGING_SENDER_ID \
-                 FIREBASE_APP_ID OSAKA_ADMIN_EMAIL GOOGLE_TRANSLATE_API_KEY; do
+                 FIREBASE_APP_ID OSAKA_ADMIN_EMAIL GOOGLE_TRANSLATE_API_KEY \
+                 GOOGLE_TTS_API_KEY; do
         val="${!var}"
         if [ -z "$val" ]; then
           echo "  $var = <empty / unset>"
@@ -82,12 +89,13 @@ services:
         -e "s|@@FIREBASE_APP_ID@@|${FIREBASE_APP_ID:-}|g" \
         -e "s|@@OSAKA_ADMIN_EMAIL@@|${OSAKA_ADMIN_EMAIL:-}|g" \
         -e "s|@@GOOGLE_TRANSLATE_API_KEY@@|${GOOGLE_TRANSLATE_API_KEY:-}|g" \
-        contact.html
-      echo "[build] contact.html tokens substituted from env vars"
-      remaining=$(grep -c '@@FIREBASE\|@@OSAKA\|@@GOOGLE' contact.html || true)
-      if [ "$remaining" != "0" ]; then
-        echo "[build] WARNING: $remaining placeholder(s) still present in contact.html"
-        grep -n '@@FIREBASE\|@@OSAKA\|@@GOOGLE' contact.html || true
+        -e "s|@@GOOGLE_TTS_API_KEY@@|${GOOGLE_TTS_API_KEY:-}|g" \
+        contact.html kana.html
+      echo "[build] contact.html + kana.html tokens substituted from env vars"
+      remaining=$(grep -l '@@FIREBASE\|@@OSAKA\|@@GOOGLE' contact.html kana.html 2>/dev/null || true)
+      if [ -n "$remaining" ]; then
+        echo "[build] WARNING: placeholder(s) still present in: $remaining"
+        grep -n '@@FIREBASE\|@@OSAKA\|@@GOOGLE' contact.html kana.html || true
       fi
     staticPublishPath: .
     # Disabled because preview URLs would need to be re-added to
@@ -110,11 +118,17 @@ services:
         sync: false
       - key: GOOGLE_TRANSLATE_API_KEY
         sync: false
+      - key: GOOGLE_TTS_API_KEY
+        sync: false
     headers:
       # contact.html now contains the live secrets after build, so
       # don't let CDN/browser caches hold a stale (or wrong-config)
       # version of it.
       - path: /contact.html
+        name: Cache-Control
+        value: no-store, no-cache, must-revalidate, max-age=0
+      # kana.html carries the TTS API key after build — same treatment.
+      - path: /kana.html
         name: Cache-Control
         value: no-store, no-cache, must-revalidate, max-age=0
       - path: /*

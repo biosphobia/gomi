@@ -1,10 +1,12 @@
 # 🏯 Osaka Support
 
-A small support site for foreigners living in Osaka. Three tools in one
+A small support site for foreigners living in Osaka. Four tools in one
 static site:
 
 - **🗑 Trash Sorting Game** — drag-and-drop game teaching Osaka City's
   household-waste rules. 100 items, 3 bins, 6 languages.
+- **📝 Kana Quiz** — hiragana/katakana drill with per-row and per-kana
+  selection, two finishing modes, and optional Google TTS audio.
 - **🎬 Animation Videos** — per-language video library; uploads stored
   locally in the browser (IndexedDB).
 - **💬 Anonymous Chat** — visitors message the site creator privately
@@ -22,12 +24,13 @@ persists across pages.
 1. [Project structure](#project-structure)
 2. [Run locally](#run-locally)
 3. [The Trash Sorting Game](#the-trash-sorting-game)
-4. [The Videos tab](#the-videos-tab)
-5. [The Contact / chat tab](#the-contact--chat-tab)
-6. [Firebase setup](#firebase-setup)
-7. [Deploy to Render](#deploy-to-render)
-8. [Privacy notes](#privacy-notes)
-9. [Browser compatibility](#browser-compatibility)
+4. [The Kana Quiz](#the-kana-quiz)
+5. [The Videos tab](#the-videos-tab)
+6. [The Contact / chat tab](#the-contact--chat-tab)
+7. [Firebase setup](#firebase-setup)
+8. [Deploy to Render](#deploy-to-render)
+9. [Privacy notes](#privacy-notes)
+10. [Browser compatibility](#browser-compatibility)
 
 ---
 
@@ -37,6 +40,7 @@ persists across pages.
 .
 ├── index.html        landing page (hero, feature cards, emergency contacts, tips)
 ├── game.html         trash-sorting game
+├── kana.html         hiragana/katakana quiz (optional Google TTS audio)
 ├── videos.html       per-language video library
 ├── contact.html      anonymous chat (Firebase)
 ├── styles.css        shared site styles (header, nav, cards, language picker)
@@ -90,6 +94,57 @@ All 100 items are based on the 大阪市環境局 (Osaka City Environmental
 Bureau) household sorting guide. Tips share 17 reason keys
 (`kitchen`, `leather`, `glass_bottle`, `plastic_tray`, etc.) translated
 once per language instead of per item.
+
+---
+
+## The Kana Quiz
+
+`kana.html`. A configurable hiragana / katakana drill.
+
+**Selection (setup screen)**
+
+- Two tabs — **Hiragana** and **Katakana** — each with an independent
+  selection and a live count. You configure each script separately.
+- 104 kana: basic gojūon (46), dakuten / handakuten (25), and yōon
+  combos (33).
+- Toggle at any level: whole group (the ◧ button), whole row (the
+  romaji button), or an individual kana chip.
+- Quick category toggles for **Dakuten / Handakuten** (が) and **Yōon**
+  (きゃ) sit right above the grid and flip those whole categories on/off
+  for the active script; they light up when fully selected.
+- Presets: **All / None / Basic only / Copy from the other script.**
+
+**Modes**
+
+- **Master mode** — keep going until every selected kana has been
+  answered correctly at least once. A wrong answer keeps it in the
+  pool. Progress bar shows mastered / total.
+- **Count mode** — finish after a set number of correct answers
+  (10 / 20 / 30 / 50). Progress bar shows correct / target.
+
+**Quiz**
+
+- Shows a kana; you type the romaji and press Enter / Check. Correct
+  flashes green and auto-advances; wrong pauses on the answer until you
+  continue. Standard alternate spellings are accepted (`shi`/`si`,
+  `tsu`/`tu`, `fu`/`hu`, `ji`/`zi`, `ja`/`jya`/`zya`, `n`/`nn`/`n'`, …).
+- **🔊 Audio toggle** (only shown when `GOOGLE_TTS_API_KEY` is set):
+  plays the kana's reading via Google Cloud Text-to-Speech after each
+  answer, right or wrong. Synthesized MP3 is cached per kana so a
+  repeat doesn't re-call the API. The preference is remembered in
+  `localStorage`.
+- Results screen: accuracy %, question count, elapsed time, and a
+  "kana to review" list of the most-missed characters.
+
+### Google TTS for the kana audio
+
+The 🔊 toggle uses the **Google Cloud Text-to-Speech** REST API
+(`ja-JP`, MP3). Enable the **Cloud Text-to-Speech API** in your Google
+Cloud project, create an API key, and set it as the `GOOGLE_TTS_API_KEY`
+env var (see [Deploy to Render](#deploy-to-render)). It can be the same
+key as `GOOGLE_TRANSLATE_API_KEY` as long as that key has the
+Text-to-Speech API enabled. Without the key the audio toggle is simply
+hidden and the quiz works normally.
 
 ---
 
@@ -290,7 +345,8 @@ nothing sensitive lives in git.
    FIREBASE_MESSAGING_SENDER_ID
    FIREBASE_APP_ID
    OSAKA_ADMIN_EMAIL
-   GOOGLE_TRANSLATE_API_KEY   # optional
+   GOOGLE_TRANSLATE_API_KEY   # optional (chat translation)
+   GOOGLE_TTS_API_KEY         # optional (kana quiz audio)
    ```
 
    Click **Apply**.
@@ -370,6 +426,11 @@ the new values. Because `contact.html` is served with
   to unlock — the first click or keypress on the page unlocks it.
   The very first incoming ping may therefore be silent if no user
   interaction has happened yet.
+- **Kana quiz audio**: uses Google Cloud Text-to-Speech over HTTPS and
+  plays the result with an `<Audio>` element, so it works in every
+  modern browser. The toggle only appears when `GOOGLE_TTS_API_KEY`
+  is configured. Playback is triggered by your answer (a user
+  gesture), so autoplay restrictions don't block it.
 - **Burmese rendering**: shared styles include `Noto Sans Myanmar`,
   `Pyidaungsu`, and `Padauk` as font fallbacks. Most platforms ship
   one of these.

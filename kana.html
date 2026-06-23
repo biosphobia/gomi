@@ -61,6 +61,52 @@
   }
   .preset-btn:hover { background: var(--c-bg); }
 
+  /* ---- Category quick toggles (dakuten / yoon) ---- */
+  .cat-toggle-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .cat-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    padding: 6px 14px 6px 8px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--c-text);
+    font-family: inherit;
+  }
+  .cat-toggle .cat-kana {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 28px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--c-bg);
+    font-size: 16px;
+    line-height: 1;
+  }
+  .cat-toggle .cat-state {
+    font-size: 11px;
+    color: var(--c-muted);
+    font-weight: 700;
+  }
+  .cat-toggle.on {
+    border-color: var(--c-accent);
+    background: #fff5ee;
+    color: var(--c-accent);
+  }
+  .cat-toggle.on .cat-kana { background: var(--c-accent); color: #fff; }
+  .cat-toggle.on .cat-state { color: var(--c-accent); }
+
   /* ---- Kana groups / rows / chips ---- */
   .kana-group { margin-bottom: 16px; }
   .kana-group-head {
@@ -266,6 +312,7 @@
   }
   .quiz-btn.primary { background: var(--c-accent); color: #fff; border-color: var(--c-accent); }
   .quiz-btn.ghost { color: var(--c-muted); }
+  .quiz-btn.active { background: var(--c-accent); color: #fff; border-color: var(--c-accent); }
 
   .quiz-stats-line {
     display: flex;
@@ -354,6 +401,19 @@
       <button class="preset-btn" type="button" id="presetCopy" title=""><span id="presetCopyL">もう一方からコピー</span></button>
     </div>
 
+    <div class="cat-toggle-row">
+      <button class="cat-toggle" type="button" id="catDakuten">
+        <span class="cat-kana" id="catDakutenKana">が</span>
+        <span id="catDakutenL">濁音・半濁音</span>
+        <span class="cat-state" id="catDakutenState">OFF</span>
+      </button>
+      <button class="cat-toggle" type="button" id="catCombo">
+        <span class="cat-kana" id="catComboKana">きゃ</span>
+        <span id="catComboL">拗音</span>
+        <span class="cat-state" id="catComboState">OFF</span>
+      </button>
+    </div>
+
     <div id="kanaGrid"></div>
 
     <h2 id="modeTitle" style="margin-top:8px;">モード</h2>
@@ -380,7 +440,10 @@
     <div class="quiz-wrap">
       <div class="quiz-top">
         <span class="progress-text" id="progressText"></span>
-        <button class="quiz-btn ghost" type="button" id="quitBtn">✕ <span id="quitL">やめる</span></button>
+        <div style="display:flex; gap:6px;">
+          <button class="quiz-btn ghost hidden" type="button" id="ttsBtn">🔊 <span id="ttsL">音声</span>: OFF</button>
+          <button class="quiz-btn ghost" type="button" id="quitBtn">✕ <span id="quitL">やめる</span></button>
+        </div>
       </div>
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
@@ -392,7 +455,6 @@
                spellcheck="false" inputmode="latin" />
         <div class="quiz-feedback" id="quizFeedback"></div>
         <div class="quiz-actions">
-          <button class="quiz-btn ghost" type="button" id="skipBtn"><span id="skipL">わからない</span></button>
           <button class="quiz-btn primary" type="button" id="nextBtn"><span id="checkL">こたえる</span></button>
         </div>
       </div>
@@ -428,6 +490,15 @@
 
 </main>
 
+<!--
+  Google Cloud Text-to-Speech key. The @@…@@ placeholder is
+  rewritten by Render's buildCommand at deploy time from the
+  GOOGLE_TTS_API_KEY env var. Left as @@…@@ on local dev, in which
+  case the 🔊 audio toggle simply stays hidden.
+-->
+<script>
+window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
+</script>
 <script src="common.js"></script>
 <script>
 (() => {
@@ -493,7 +564,7 @@
       start:'スタート',
       selSummary:(h,k)=>`ひらがな ${h}・カタカナ ${k} 選択中`,
       needSelection:'かなを1つ以上選んでください。',
-      quit:'やめる', skip:'わからない', check:'こたえる', next:'つぎへ',
+      quit:'やめる', check:'こたえる', next:'つぎへ', tts:'音声',
       correct:'正解！', wrong:'ちがう',
       answerWas:(r)=>`こたえ: ${r}`,
       statCorrect:'正解', statWrong:'不正解', statStreak:'連続',
@@ -516,7 +587,7 @@
       start:'Start',
       selSummary:(h,k)=>`${h} hiragana · ${k} katakana selected`,
       needSelection:'Select at least one kana.',
-      quit:'Quit', skip:'Skip', check:'Check', next:'Next',
+      quit:'Quit', check:'Check', next:'Next', tts:'Audio',
       correct:'Correct!', wrong:'Wrong',
       answerWas:(r)=>`Answer: ${r}`,
       statCorrect:'Correct', statWrong:'Wrong', statStreak:'Streak',
@@ -539,7 +610,7 @@
       start:'开始',
       selSummary:(h,k)=>`已选 平假名 ${h}・片假名 ${k}`,
       needSelection:'请至少选择一个假名。',
-      quit:'退出', skip:'不会', check:'确认', next:'下一个',
+      quit:'退出', check:'确认', next:'下一个', tts:'语音',
       correct:'正确！', wrong:'错误',
       answerWas:(r)=>`答案：${r}`,
       statCorrect:'正确', statWrong:'错误', statStreak:'连续',
@@ -562,7 +633,7 @@
       start:'시작',
       selSummary:(h,k)=>`히라가나 ${h}・가타카나 ${k} 선택됨`,
       needSelection:'가나를 하나 이상 선택하세요.',
-      quit:'그만', skip:'모름', check:'확인', next:'다음',
+      quit:'그만', check:'확인', next:'다음', tts:'음성',
       correct:'정답!', wrong:'오답',
       answerWas:(r)=>`정답: ${r}`,
       statCorrect:'정답', statWrong:'오답', statStreak:'연속',
@@ -585,7 +656,7 @@
       start:'စတင်ပါ',
       selSummary:(h,k)=>`ဟိရဂန ${h}・ကတခန ${k} ရွေးထားသည်`,
       needSelection:'ကာနာ အနည်းဆုံး တစ်ခု ရွေးပါ။',
-      quit:'ရပ်ပါ', skip:'မသိပါ', check:'စစ်ဆေး', next:'နောက်တစ်ခု',
+      quit:'ရပ်ပါ', check:'စစ်ဆေး', next:'နောက်တစ်ခု', tts:'အသံ',
       correct:'မှန်ပါသည်!', wrong:'မှား',
       answerWas:(r)=>`အဖြေ: ${r}`,
       statCorrect:'မှန်', statWrong:'မှား', statStreak:'ဆက်တိုက်',
@@ -608,7 +679,7 @@
       start:'Bắt đầu',
       selSummary:(h,k)=>`Đã chọn ${h} hiragana · ${k} katakana`,
       needSelection:'Hãy chọn ít nhất một kana.',
-      quit:'Thoát', skip:'Không biết', check:'Kiểm tra', next:'Tiếp',
+      quit:'Thoát', check:'Kiểm tra', next:'Tiếp', tts:'Âm thanh',
       correct:'Đúng!', wrong:'Sai',
       answerWas:(r)=>`Đáp án: ${r}`,
       statCorrect:'Đúng', statWrong:'Sai', statStreak:'Chuỗi',
@@ -626,6 +697,60 @@
   const COUNT_PRESETS = [10, 20, 30, 50];
 
   function L() { return I18N[getLang()] || I18N.ja; }
+
+  /* ===========================================================
+     Google Cloud Text-to-Speech (optional)
+     Reads GOOGLE_TTS_API_KEY injected by Render. When present, a
+     🔊 toggle appears in the quiz and the kana's reading is played
+     after each answer (right or wrong). Audio is cached per kana.
+     =========================================================== */
+  function isRealValue(v) {
+    return typeof v === 'string' && v.trim().length > 0 && !v.startsWith('@@');
+  }
+  const TTS_KEY = isRealValue(window.GOOGLE_TTS_API_KEY) ? window.GOOGLE_TTS_API_KEY.trim() : '';
+  const ttsSupported = !!TTS_KEY;
+  const ttsCache = new Map(); // kana char -> object URL / data URI
+  let ttsAudio = null;
+
+  async function playKanaTTS(char) {
+    if (!TTS_KEY || !char) return;
+    try {
+      let url = ttsCache.get(char);
+      if (!url) {
+        const res = await fetch(
+          'https://texttospeech.googleapis.com/v1/text:synthesize?key=' + encodeURIComponent(TTS_KEY),
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              input: { text: char },
+              voice: { languageCode: 'ja-JP' },
+              audioConfig: { audioEncoding: 'MP3' },
+            }),
+          }
+        );
+        if (!res.ok) { console.warn('tts http', res.status); return; }
+        const json = await res.json();
+        if (!json.audioContent) return;
+        url = 'data:audio/mp3;base64,' + json.audioContent;
+        ttsCache.set(char, url);
+      }
+      if (ttsAudio) { try { ttsAudio.pause(); } catch (_) {} }
+      ttsAudio = new Audio(url);
+      ttsAudio.play().catch(() => {});
+    } catch (e) {
+      console.warn('tts err', e);
+    }
+  }
+
+  function updateTtsButton() {
+    const btn = $('ttsBtn');
+    if (!btn) return;
+    if (!ttsSupported) { btn.classList.add('hidden'); return; }
+    btn.classList.remove('hidden');
+    btn.innerHTML = '🔊 <span>' + L().tts + '</span>: ' + (state.ttsOn ? 'ON' : 'OFF');
+    btn.classList.toggle('active', state.ttsOn);
+  }
 
   /* ===========================================================
      State
@@ -649,7 +774,9 @@
     mistakes: {},     // char -> count
     awaitingNext: false,
     finished: false,
+    ttsOn: false,
   };
+  try { state.ttsOn = localStorage.getItem('kana_tts') === '1'; } catch (_) {}
 
   const $ = (id) => document.getElementById(id);
 
@@ -757,6 +884,28 @@
     $('tabKCount').textContent = k;
     $('selSummary').textContent = L().selSummary(h, k);
     $('startBtn').disabled = (h + k) === 0;
+    refreshCatToggles();
+  }
+
+  // Whole-category quick toggles (dakuten / yoon) for the active script.
+  function groupAllSelected(groupId) {
+    const set = state.selected[state.activeScript];
+    const g = KANA_GROUPS.find(x => x.id === groupId);
+    return g.rows.flatMap(r => r.cells).every(c => set.has(c.h));
+  }
+  function toggleGroupById(groupId) {
+    toggleGroup(KANA_GROUPS.find(x => x.id === groupId));
+  }
+  function refreshCatToggles() {
+    const sc = state.activeScript;
+    $('catDakutenKana').textContent = sc === 'h' ? 'が' : 'ガ';
+    $('catComboKana').textContent   = sc === 'h' ? 'きゃ' : 'キャ';
+    const dOn = groupAllSelected('dakuten');
+    const cOn = groupAllSelected('combo');
+    $('catDakuten').classList.toggle('on', dOn);
+    $('catCombo').classList.toggle('on', cOn);
+    $('catDakutenState').textContent = dOn ? 'ON' : 'OFF';
+    $('catComboState').textContent   = cOn ? 'ON' : 'OFF';
   }
 
   function setActiveScript(sc) {
@@ -764,6 +913,7 @@
     $('tabH').classList.toggle('active', sc === 'h');
     $('tabK').classList.toggle('active', sc === 'k');
     buildGrid();
+    refreshCounts();
   }
 
   function buildCountOptions() {
@@ -884,6 +1034,7 @@
     if (!normalize(raw)) return; // ignore empty
     state.answered++;
     const ok = isCorrectAnswer(q, raw);
+    if (state.ttsOn) playKanaTTS(q.char);
     if (ok) {
       state.correct++;
       state.streak++;
@@ -892,12 +1043,13 @@
       $('quizFeedback').className = 'quiz-feedback correct';
       if (state.mode === 'master') state.remaining.delete(q.char);
       updateStats(); updateProgress();
-      // auto-advance quickly
+      // auto-advance quickly (a bit longer when audio is on so the
+      // pronunciation has time to play)
       input.disabled = true;
       setTimeout(() => {
         if (state.finished) return;
         if (reachedEnd()) finishQuiz(); else nextQuestion();
-      }, 550);
+      }, state.ttsOn ? 900 : 550);
     } else {
       state.wrong++;
       state.streak = 0;
@@ -912,25 +1064,6 @@
       $('nextBtn').querySelector('span').textContent = L().next;
       setTimeout(() => $('nextBtn').focus(), 30);
     }
-  }
-
-  function skipQuestion() {
-    if (state.awaitingNext) { nextQuestion(); return; }
-    const q = state.current;
-    if (!q) return;
-    state.answered++;
-    state.wrong++;
-    state.streak = 0;
-    state.mistakes[q.char] = (state.mistakes[q.char] || 0) + 1;
-    const input = $('quizInput');
-    input.classList.add('wrong');
-    input.disabled = true;
-    $('quizFeedback').innerHTML = '✕ ' + L().wrong + ' — <span class="ans">' + L().answerWas(q.r) + '</span>';
-    $('quizFeedback').className = 'quiz-feedback wrong';
-    updateStats();
-    state.awaitingNext = true;
-    $('nextBtn').querySelector('span').textContent = L().next;
-    setTimeout(() => $('nextBtn').focus(), 30);
   }
 
   function reachedEnd() {
@@ -1019,7 +1152,8 @@
     $('modeCountDesc').textContent = Li.modeCountDesc;
     $('startBtn').textContent = Li.start;
     $('quitL').textContent = Li.quit;
-    $('skipL').textContent = Li.skip;
+    $('catDakutenL').textContent = Li.groupDakuten;
+    $('catComboL').textContent = Li.groupCombo;
     $('statCorrectL').textContent = Li.statCorrect;
     $('statWrongL').textContent = Li.statWrong;
     $('statStreakL').textContent = Li.statStreak;
@@ -1034,6 +1168,7 @@
     // Buttons that depend on state
     const checkSpan = $('nextBtn').querySelector('span');
     if (checkSpan) checkSpan.textContent = state.awaitingNext ? Li.next : Li.check;
+    updateTtsButton();
     refreshCounts();
     rebuildGridLabels();
   }
@@ -1053,14 +1188,20 @@
   $('presetNone').addEventListener('click', presetNone);
   $('presetBasic').addEventListener('click', presetBasic);
   $('presetCopy').addEventListener('click', presetCopy);
+  $('catDakuten').addEventListener('click', () => toggleGroupById('dakuten'));
+  $('catCombo').addEventListener('click', () => toggleGroupById('combo'));
   $('modeMasterCard').addEventListener('click', () => setMode('master'));
   $('modeCountCard').addEventListener('click', () => setMode('count'));
   $('startBtn').addEventListener('click', startQuiz);
 
   $('nextBtn').addEventListener('click', submitAnswer);
-  $('skipBtn').addEventListener('click', skipQuestion);
   $('quizInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); submitAnswer(); }
+  });
+  $('ttsBtn').addEventListener('click', () => {
+    state.ttsOn = !state.ttsOn;
+    try { localStorage.setItem('kana_tts', state.ttsOn ? '1' : '0'); } catch (_) {}
+    updateTtsButton();
   });
   $('quitBtn').addEventListener('click', () => { state.finished = true; showView('viewSetup'); });
   $('againBtn').addEventListener('click', startQuiz);
@@ -1078,6 +1219,7 @@
   setActiveScript('h');
   buildCountOptions();
   setMode('master');
+  updateTtsButton();
   applyI18n();
   refreshCounts();
 })();
