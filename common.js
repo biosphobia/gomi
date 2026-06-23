@@ -237,33 +237,36 @@
     const vw = window.innerWidth, vh = window.innerHeight;
     const size = Math.max(140, Math.min(300, Math.round(Math.min(vw, vh) * 0.34)));
     const inset = 10;
+    // Keep below the sticky 56px site header on every page.
+    const topPad = 66;
     const avoid = busyRects || [];
-
-    // Candidate top-left anchor points around the edges.
-    const candidates = [
-      { x: inset,            y: inset + 54 },
-      { x: vw - size - inset, y: inset + 54 },
-      { x: inset,            y: Math.round(vh * 0.42) },
-      { x: vw - size - inset, y: Math.round(vh * 0.42) },
-      { x: inset,            y: vh - size - inset },
-      { x: vw - size - inset, y: vh - size - inset },
-    ];
-    const overlaps = (p) => {
-      const r = { left: p.x, top: p.y, right: p.x + size, bottom: p.y + size };
+    const minX = inset, maxX = vw - size - inset;
+    const minY = topPad, maxY = vh - size - inset;
+    const overlaps = (x, y) => {
+      const r = { left: x, top: y, right: x + size, bottom: y + size };
       return avoid.some(b => !(r.right < b.left || r.left > b.right || r.bottom < b.top || r.top > b.bottom));
     };
-    let pool = candidates.filter(p => !overlaps(p));
-    if (!pool.length) pool = candidates;
-    const p = pool[(Math.random() * pool.length) | 0];
+    // Try fully random positions across the viewport; fall back to the
+    // top-left if every attempt overlaps a busy rect.
+    let px = minX, py = minY;
+    for (let i = 0; i < 40; i++) {
+      const x = minX + Math.random() * Math.max(1, maxX - minX);
+      const y = minY + Math.random() * Math.max(1, maxY - minY);
+      if (!overlaps(x, y)) { px = x; py = y; break; }
+    }
 
     const el = document.createElement('img');
     el.className = 'reaction-pop ' + outcome;
     el.src = src;
     el.alt = '';
     el.onerror = () => el.remove();
-    el.style.width = size + 'px';
-    el.style.left = Math.round(p.x) + 'px';
-    el.style.top = Math.round(p.y) + 'px';
+    // Square bounding box + object-fit:contain (from styles.css) so
+    // every image occupies the same on-screen footprint regardless of
+    // its native aspect ratio.
+    el.style.width  = size + 'px';
+    el.style.height = size + 'px';
+    el.style.left = Math.round(px) + 'px';
+    el.style.top  = Math.round(py) + 'px';
     document.body.appendChild(el);
     requestAnimationFrame(() => el.classList.add('in'));
     setTimeout(() => {
