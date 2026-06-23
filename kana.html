@@ -7,32 +7,38 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📝</text></svg>" />
 <link rel="stylesheet" href="styles.css" />
 <style>
+  /* Tighten the page chrome on this screen — the kana grid is long. */
+  .page { padding-top: 12px; padding-bottom: 20px; }
+  #viewSetup > h1 { margin-bottom: 2px; }
+  #viewSetup > .lead { margin-bottom: 8px; font-size: 13px; }
+  #modeTitle { margin-top: 4px; margin-bottom: 4px; font-size: 16px; }
+
   /* ---- Script tabs ---- */
   .script-tabs {
     display: flex;
     gap: 6px;
-    margin: 16px 0 10px;
+    margin: 8px 0 8px;
   }
   .script-tab {
     flex: 1;
     background: var(--c-panel);
     border: 1px solid var(--c-line);
     border-radius: 12px;
-    padding: 10px 12px;
-    font-size: 14px;
+    padding: 6px 12px;
+    font-size: 13.5px;
     font-weight: 700;
     cursor: pointer;
     color: var(--c-text);
     font-family: inherit;
     text-align: center;
-    line-height: 1.3;
+    line-height: 1.25;
   }
   .script-tab .count {
-    display: block;
+    display: inline;
+    margin-left: 6px;
     font-size: 11px;
     font-weight: 500;
     color: var(--c-muted);
-    margin-top: 2px;
   }
   .script-tab.active {
     background: var(--c-accent);
@@ -46,7 +52,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-bottom: 14px;
+    margin-bottom: 8px;
   }
   .preset-btn {
     background: var(--c-panel);
@@ -66,7 +72,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
   }
   .cat-toggle {
     display: inline-flex;
@@ -108,12 +114,12 @@
   .cat-toggle.on .cat-state { color: var(--c-accent); }
 
   /* ---- Kana groups / rows / chips ---- */
-  .kana-group { margin-bottom: 16px; }
+  .kana-group { margin-bottom: 10px; }
   .kana-group-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     gap: 8px;
   }
   .kana-group-head h3 {
@@ -136,13 +142,13 @@
   .kana-row {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 6px;
+    gap: 5px;
+    margin-bottom: 4px;
   }
   .row-toggle {
     flex-shrink: 0;
-    width: 34px;
-    height: 34px;
+    width: 28px;
+    height: 42px;
     border-radius: 8px;
     border: 1px solid var(--c-line);
     background: var(--c-panel);
@@ -159,13 +165,13 @@
   .row-cells {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 5px;
     flex: 1;
   }
   .kana-chip {
-    width: 52px;
-    min-height: 50px;
-    border-radius: 10px;
+    width: 46px;
+    min-height: 42px;
+    border-radius: 9px;
     border: 1px solid var(--c-line);
     background: var(--c-panel);
     cursor: pointer;
@@ -173,15 +179,15 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1px;
+    gap: 0;
     font-family: inherit;
-    padding: 4px 2px;
+    padding: 3px 2px;
     transition: transform 0.08s ease;
     opacity: 0.45;
   }
   .kana-chip:active { transform: scale(0.94); }
-  .kana-chip .ch { font-size: 22px; line-height: 1.1; color: var(--c-text); }
-  .kana-chip .rj { font-size: 9.5px; color: var(--c-muted); }
+  .kana-chip .ch { font-size: 19px; line-height: 1.15; color: var(--c-text); }
+  .kana-chip .rj { font-size: 9px; color: var(--c-muted); }
   .kana-chip.on {
     opacity: 1;
     border-color: var(--c-accent);
@@ -193,24 +199,24 @@
   .mode-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 10px;
-    margin: 8px 0 14px;
+    gap: 8px;
+    margin: 4px 0 10px;
   }
   .mode-card {
     border: 2px solid var(--c-line);
     border-radius: var(--radius);
-    padding: 14px 16px;
+    padding: 10px 14px;
     cursor: pointer;
     background: var(--c-panel);
   }
   .mode-card.active { border-color: var(--c-accent); background: #fff5ee; }
-  .mode-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-  .mode-card p { font-size: 12px; color: var(--c-muted); line-height: 1.45; }
+  .mode-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .mode-card p { font-size: 11.5px; color: var(--c-muted); line-height: 1.4; }
   .count-options {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 10px;
+    margin-top: 8px;
   }
   .count-btn {
     background: var(--c-panel);
@@ -416,7 +422,7 @@
 
     <div id="kanaGrid"></div>
 
-    <h2 id="modeTitle" style="margin-top:8px;">モード</h2>
+    <h2 id="modeTitle">モード</h2>
     <div class="mode-grid">
       <div class="mode-card active" data-mode="master" id="modeMasterCard">
         <h4 id="modeMasterName">マスターモード</h4>
