@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>📝 かなクイズ / Kana Quiz — Osaka Support</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📝</text></svg>" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+  /* ---- Script tabs ---- */
+  .script-tabs {
+    display: flex;
+    gap: 6px;
+    margin: 16px 0 10px;
+  }
+  .script-tab {
+    flex: 1;
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--c-text);
+    font-family: inherit;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .script-tab .count {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--c-muted);
+    margin-top: 2px;
+  }
+  .script-tab.active {
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+    color: #fff;
+  }
+  .script-tab.active .count { color: rgba(255,255,255,0.85); }
+
+  /* ---- Preset buttons ---- */
+  .preset-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .preset-btn {
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    padding: 6px 13px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--c-text);
+    font-family: inherit;
+  }
+  .preset-btn:hover { background: var(--c-bg); }
+
+  /* ---- Kana groups / rows / chips ---- */
+  .kana-group { margin-bottom: 16px; }
+  .kana-group-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    gap: 8px;
+  }
+  .kana-group-head h3 {
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .group-toggle {
+    background: transparent;
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--c-muted);
+    font-family: inherit;
+  }
+  .group-toggle:hover { color: var(--c-accent); border-color: var(--c-accent); }
+
+  .kana-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .row-toggle {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--c-line);
+    background: var(--c-panel);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--c-muted);
+    font-family: ui-monospace, Menlo, monospace;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .row-toggle:hover { border-color: var(--c-accent); }
+  .row-cells {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex: 1;
+  }
+  .kana-chip {
+    width: 52px;
+    min-height: 50px;
+    border-radius: 10px;
+    border: 1px solid var(--c-line);
+    background: var(--c-panel);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    font-family: inherit;
+    padding: 4px 2px;
+    transition: transform 0.08s ease;
+    opacity: 0.45;
+  }
+  .kana-chip:active { transform: scale(0.94); }
+  .kana-chip .ch { font-size: 22px; line-height: 1.1; color: var(--c-text); }
+  .kana-chip .rj { font-size: 9.5px; color: var(--c-muted); }
+  .kana-chip.on {
+    opacity: 1;
+    border-color: var(--c-accent);
+    background: #fff5ee;
+  }
+  .kana-chip.on .rj { color: var(--c-accent); font-weight: 600; }
+
+  /* ---- Mode selection ---- */
+  .mode-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+    margin: 8px 0 14px;
+  }
+  .mode-card {
+    border: 2px solid var(--c-line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    cursor: pointer;
+    background: var(--c-panel);
+  }
+  .mode-card.active { border-color: var(--c-accent); background: #fff5ee; }
+  .mode-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .mode-card p { font-size: 12px; color: var(--c-muted); line-height: 1.45; }
+  .count-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .count-btn {
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    padding: 5px 13px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--c-text);
+    font-family: inherit;
+  }
+  .count-btn.active { background: var(--c-accent); color: #fff; border-color: var(--c-accent); }
+
+  .start-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+  .sel-summary { font-size: 12px; color: var(--c-muted); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ---- Quiz screen ---- */
+  .quiz-wrap { max-width: 460px; margin: 0 auto; }
+  .quiz-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 10px;
+  }
+  .progress-text { font-size: 13px; font-weight: 700; }
+  .progress-bar {
+    height: 8px;
+    background: var(--c-line);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--c-accent);
+    border-radius: 999px;
+    transition: width 0.3s ease;
+  }
+  .quiz-card {
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 30px 20px 22px;
+    text-align: center;
+  }
+  .quiz-script-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--c-muted);
+    margin-bottom: 6px;
+  }
+  .quiz-kana {
+    font-size: 96px;
+    line-height: 1.1;
+    margin: 4px 0 14px;
+    color: var(--c-text);
+  }
+  .quiz-input {
+    width: 100%;
+    max-width: 260px;
+    padding: 12px 14px;
+    border: 2px solid var(--c-line);
+    border-radius: 12px;
+    font-size: 20px;
+    text-align: center;
+    font-family: inherit;
+    letter-spacing: 1px;
+  }
+  .quiz-input:focus { outline: none; border-color: var(--c-accent); }
+  .quiz-input.correct { border-color: #2e7d32; background: #f1f8f1; }
+  .quiz-input.wrong { border-color: #c62828; background: #fdf2f2; }
+
+  .quiz-feedback {
+    min-height: 30px;
+    margin-top: 12px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .quiz-feedback.correct { color: #2e7d32; }
+  .quiz-feedback.wrong { color: #c62828; }
+  .quiz-feedback .ans { color: var(--c-text); font-weight: 800; }
+
+  .quiz-actions { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+  .quiz-btn {
+    border: 1px solid var(--c-line);
+    background: var(--c-panel);
+    border-radius: 999px;
+    padding: 9px 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--c-text);
+  }
+  .quiz-btn.primary { background: var(--c-accent); color: #fff; border-color: var(--c-accent); }
+  .quiz-btn.ghost { color: var(--c-muted); }
+
+  .quiz-stats-line {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 14px;
+    font-size: 12px;
+    color: var(--c-muted);
+  }
+  .quiz-stats-line b { color: var(--c-text); }
+
+  /* ---- Results ---- */
+  .result-card {
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 24px 20px;
+    text-align: center;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+  .result-big { font-size: 46px; font-weight: 800; color: var(--c-accent); line-height: 1; margin: 6px 0; }
+  .result-stats { display: flex; justify-content: center; gap: 22px; margin: 14px 0; }
+  .result-stats div { font-size: 12px; color: var(--c-muted); }
+  .result-stats b { display: block; font-size: 20px; color: var(--c-text); }
+  .review-list {
+    text-align: left;
+    margin: 14px 0 4px;
+    border-top: 1px solid var(--c-line);
+    padding-top: 12px;
+  }
+  .review-list h4 { font-size: 13px; margin-bottom: 8px; }
+  .review-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #fdf2f2;
+    border: 1px solid #f3d2d2;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 13px;
+    margin: 0 4px 6px 0;
+  }
+  .review-chip .rc-kana { font-size: 16px; }
+  .review-chip .rc-n { font-size: 11px; color: #c62828; font-weight: 700; }
+  .result-actions { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="site-brand">🏯 大阪サポート</a>
+  <nav class="site-nav">
+    <a href="index.html"   class="nav-link" data-page="home"    data-nav="home">ホーム</a>
+    <a href="game.html"    class="nav-link" data-page="game"    data-nav="game">ごみゲーム</a>
+    <a href="kana.html"    class="nav-link" data-page="kana"    data-nav="kana">かなクイズ</a>
+    <a href="videos.html"  class="nav-link" data-page="videos"  data-nav="videos">動画</a>
+    <a href="contact.html" class="nav-link" data-page="contact" data-nav="contact">相談チャット</a>
+  </nav>
+  <button class="site-lang-toggle" type="button">🌐 日本語</button>
+</header>
+
+<main class="page">
+
+  <!-- ===== Setup ===== -->
+  <section id="viewSetup">
+    <h1 id="setupTitle">📝 かなクイズ</h1>
+    <p class="lead" id="setupLead">出題するかなを選んでクイズを始めましょう。</p>
+
+    <div class="script-tabs">
+      <button class="script-tab active" type="button" data-script="h" id="tabH">
+        <span id="tabHName">ひらがな</span>
+        <span class="count" id="tabHCount">0</span>
+      </button>
+      <button class="script-tab" type="button" data-script="k" id="tabK">
+        <span id="tabKName">カタカナ</span>
+        <span class="count" id="tabKCount">0</span>
+      </button>
+    </div>
+
+    <div class="preset-row">
+      <button class="preset-btn" type="button" id="presetAll">＋ <span id="presetAllL">すべて</span></button>
+      <button class="preset-btn" type="button" id="presetNone">－ <span id="presetNoneL">なし</span></button>
+      <button class="preset-btn" type="button" id="presetBasic"><span id="presetBasicL">基本のみ</span></button>
+      <button class="preset-btn" type="button" id="presetCopy" title=""><span id="presetCopyL">もう一方からコピー</span></button>
+    </div>
+
+    <div id="kanaGrid"></div>
+
+    <h2 id="modeTitle" style="margin-top:8px;">モード</h2>
+    <div class="mode-grid">
+      <div class="mode-card active" data-mode="master" id="modeMasterCard">
+        <h4 id="modeMasterName">マスターモード</h4>
+        <p id="modeMasterDesc">選んだ全てのかなを1回ずつ正解するまで続きます。</p>
+      </div>
+      <div class="mode-card" data-mode="count" id="modeCountCard">
+        <h4 id="modeCountName">カウントモード</h4>
+        <p id="modeCountDesc">指定した数だけ正解したら終了します。</p>
+        <div class="count-options" id="countOptions"></div>
+      </div>
+    </div>
+
+    <div class="start-bar">
+      <button class="btn" type="button" id="startBtn">スタート</button>
+      <span class="sel-summary" id="selSummary"></span>
+    </div>
+  </section>
+
+  <!-- ===== Quiz ===== -->
+  <section id="viewQuiz" class="hidden">
+    <div class="quiz-wrap">
+      <div class="quiz-top">
+        <span class="progress-text" id="progressText"></span>
+        <button class="quiz-btn ghost" type="button" id="quitBtn">✕ <span id="quitL">やめる</span></button>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+      <div class="quiz-card">
+        <div class="quiz-script-label" id="quizScriptLabel"></div>
+        <div class="quiz-kana" id="quizKana">あ</div>
+        <input class="quiz-input" id="quizInput" type="text"
+               autocomplete="off" autocorrect="off" autocapitalize="off"
+               spellcheck="false" inputmode="latin" />
+        <div class="quiz-feedback" id="quizFeedback"></div>
+        <div class="quiz-actions">
+          <button class="quiz-btn ghost" type="button" id="skipBtn"><span id="skipL">わからない</span></button>
+          <button class="quiz-btn primary" type="button" id="nextBtn"><span id="checkL">こたえる</span></button>
+        </div>
+      </div>
+
+      <div class="quiz-stats-line">
+        <span><span id="statCorrectL">正解</span> <b id="statCorrect">0</b></span>
+        <span><span id="statWrongL">不正解</span> <b id="statWrong">0</b></span>
+        <span><span id="statStreakL">連続</span> <b id="statStreak">0</b></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Results ===== -->
+  <section id="viewResults" class="hidden">
+    <div class="result-card">
+      <h2 id="resultTitle">🎉 おつかれさま！</h2>
+      <div class="result-big" id="resultAccuracy">0%</div>
+      <div class="result-stats">
+        <div><b id="resTotal">0</b><span id="resTotalL">問題</span></div>
+        <div><b id="resCorrect">0</b><span id="resCorrectL">正解</span></div>
+        <div><b id="resTime">0:00</b><span id="resTimeL">時間</span></div>
+      </div>
+      <div class="review-list hidden" id="reviewBox">
+        <h4 id="reviewTitle">復習したいかな</h4>
+        <div id="reviewChips"></div>
+      </div>
+      <div class="result-actions">
+        <button class="btn" type="button" id="againBtn">もう一度</button>
+        <button class="btn btn-ghost" type="button" id="backSetupBtn">設定にもどる</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="common.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  /* ===========================================================
+     Kana data. Each cell: { h: hiragana, k: katakana, r: romaji,
+     alt: [accepted alternates] }. The hiragana char doubles as a
+     stable id for the syllable across both scripts.
+     =========================================================== */
+  const KANA_GROUPS = [
+    { id: 'basic', rows: [
+      { id: 'a',  cells: [ {h:'あ',k:'ア',r:'a'}, {h:'い',k:'イ',r:'i'}, {h:'う',k:'ウ',r:'u'}, {h:'え',k:'エ',r:'e'}, {h:'お',k:'オ',r:'o'} ] },
+      { id: 'k',  cells: [ {h:'か',k:'カ',r:'ka'}, {h:'き',k:'キ',r:'ki'}, {h:'く',k:'ク',r:'ku'}, {h:'け',k:'ケ',r:'ke'}, {h:'こ',k:'コ',r:'ko'} ] },
+      { id: 's',  cells: [ {h:'さ',k:'サ',r:'sa'}, {h:'し',k:'シ',r:'shi',alt:['si']}, {h:'す',k:'ス',r:'su'}, {h:'せ',k:'セ',r:'se'}, {h:'そ',k:'ソ',r:'so'} ] },
+      { id: 't',  cells: [ {h:'た',k:'タ',r:'ta'}, {h:'ち',k:'チ',r:'chi',alt:['ti']}, {h:'つ',k:'ツ',r:'tsu',alt:['tu']}, {h:'て',k:'テ',r:'te'}, {h:'と',k:'ト',r:'to'} ] },
+      { id: 'n',  cells: [ {h:'な',k:'ナ',r:'na'}, {h:'に',k:'ニ',r:'ni'}, {h:'ぬ',k:'ヌ',r:'nu'}, {h:'ね',k:'ネ',r:'ne'}, {h:'の',k:'ノ',r:'no'} ] },
+      { id: 'h',  cells: [ {h:'は',k:'ハ',r:'ha'}, {h:'ひ',k:'ヒ',r:'hi'}, {h:'ふ',k:'フ',r:'fu',alt:['hu']}, {h:'へ',k:'ヘ',r:'he'}, {h:'ほ',k:'ホ',r:'ho'} ] },
+      { id: 'm',  cells: [ {h:'ま',k:'マ',r:'ma'}, {h:'み',k:'ミ',r:'mi'}, {h:'む',k:'ム',r:'mu'}, {h:'め',k:'メ',r:'me'}, {h:'も',k:'モ',r:'mo'} ] },
+      { id: 'y',  cells: [ {h:'や',k:'ヤ',r:'ya'}, {h:'ゆ',k:'ユ',r:'yu'}, {h:'よ',k:'ヨ',r:'yo'} ] },
+      { id: 'r',  cells: [ {h:'ら',k:'ラ',r:'ra'}, {h:'り',k:'リ',r:'ri'}, {h:'る',k:'ル',r:'ru'}, {h:'れ',k:'レ',r:'re'}, {h:'ろ',k:'ロ',r:'ro'} ] },
+      { id: 'w',  cells: [ {h:'わ',k:'ワ',r:'wa'}, {h:'を',k:'ヲ',r:'wo',alt:['o']} ] },
+      { id: 'nn', cells: [ {h:'ん',k:'ン',r:'n',alt:['nn',"n'"]} ] },
+    ]},
+    { id: 'dakuten', rows: [
+      { id: 'g', cells: [ {h:'が',k:'ガ',r:'ga'}, {h:'ぎ',k:'ギ',r:'gi'}, {h:'ぐ',k:'グ',r:'gu'}, {h:'げ',k:'ゲ',r:'ge'}, {h:'ご',k:'ゴ',r:'go'} ] },
+      { id: 'z', cells: [ {h:'ざ',k:'ザ',r:'za'}, {h:'じ',k:'ジ',r:'ji',alt:['zi']}, {h:'ず',k:'ズ',r:'zu'}, {h:'ぜ',k:'ゼ',r:'ze'}, {h:'ぞ',k:'ゾ',r:'zo'} ] },
+      { id: 'd', cells: [ {h:'だ',k:'ダ',r:'da'}, {h:'ぢ',k:'ヂ',r:'ji',alt:['di','zi']}, {h:'づ',k:'ヅ',r:'zu',alt:['du']}, {h:'で',k:'デ',r:'de'}, {h:'ど',k:'ド',r:'do'} ] },
+      { id: 'b', cells: [ {h:'ば',k:'バ',r:'ba'}, {h:'び',k:'ビ',r:'bi'}, {h:'ぶ',k:'ブ',r:'bu'}, {h:'べ',k:'ベ',r:'be'}, {h:'ぼ',k:'ボ',r:'bo'} ] },
+      { id: 'p', cells: [ {h:'ぱ',k:'パ',r:'pa'}, {h:'ぴ',k:'ピ',r:'pi'}, {h:'ぷ',k:'プ',r:'pu'}, {h:'ぺ',k:'ペ',r:'pe'}, {h:'ぽ',k:'ポ',r:'po'} ] },
+    ]},
+    { id: 'combo', rows: [
+      { id: 'ky', cells: [ {h:'きゃ',k:'キャ',r:'kya'}, {h:'きゅ',k:'キュ',r:'kyu'}, {h:'きょ',k:'キョ',r:'kyo'} ] },
+      { id: 'sh', cells: [ {h:'しゃ',k:'シャ',r:'sha',alt:['sya']}, {h:'しゅ',k:'シュ',r:'shu',alt:['syu']}, {h:'しょ',k:'ショ',r:'sho',alt:['syo']} ] },
+      { id: 'ch', cells: [ {h:'ちゃ',k:'チャ',r:'cha',alt:['tya']}, {h:'ちゅ',k:'チュ',r:'chu',alt:['tyu']}, {h:'ちょ',k:'チョ',r:'cho',alt:['tyo']} ] },
+      { id: 'ny', cells: [ {h:'にゃ',k:'ニャ',r:'nya'}, {h:'にゅ',k:'ニュ',r:'nyu'}, {h:'にょ',k:'ニョ',r:'nyo'} ] },
+      { id: 'hy', cells: [ {h:'ひゃ',k:'ヒャ',r:'hya'}, {h:'ひゅ',k:'ヒュ',r:'hyu'}, {h:'ひょ',k:'ヒョ',r:'hyo'} ] },
+      { id: 'my', cells: [ {h:'みゃ',k:'ミャ',r:'mya'}, {h:'みゅ',k:'ミュ',r:'myu'}, {h:'みょ',k:'ミョ',r:'myo'} ] },
+      { id: 'ry', cells: [ {h:'りゃ',k:'リャ',r:'rya'}, {h:'りゅ',k:'リュ',r:'ryu'}, {h:'りょ',k:'リョ',r:'ryo'} ] },
+      { id: 'gy', cells: [ {h:'ぎゃ',k:'ギャ',r:'gya'}, {h:'ぎゅ',k:'ギュ',r:'gyu'}, {h:'ぎょ',k:'ギョ',r:'gyo'} ] },
+      { id: 'j',  cells: [ {h:'じゃ',k:'ジャ',r:'ja',alt:['jya','zya']}, {h:'じゅ',k:'ジュ',r:'ju',alt:['jyu','zyu']}, {h:'じょ',k:'ジョ',r:'jo',alt:['jyo','zyo']} ] },
+      { id: 'by', cells: [ {h:'びゃ',k:'ビャ',r:'bya'}, {h:'びゅ',k:'ビュ',r:'byu'}, {h:'びょ',k:'ビョ',r:'byo'} ] },
+      { id: 'py', cells: [ {h:'ぴゃ',k:'ピャ',r:'pya'}, {h:'ぴゅ',k:'ピュ',r:'pyu'}, {h:'ぴょ',k:'ピョ',r:'pyo'} ] },
+    ]},
+  ];
+
+  // Flat lookup of every cell by hiragana id.
+  const CELL_BY_ID = {};
+  for (const g of KANA_GROUPS) for (const row of g.rows) for (const c of row.cells) CELL_BY_ID[c.h] = c;
+
+  /* ===========================================================
+     i18n
+     =========================================================== */
+  const I18N = {
+    ja: {
+      setupTitle:'📝 かなクイズ', setupLead:'出題するかなを選んでクイズを始めましょう。',
+      hira:'ひらがな', kata:'カタカナ',
+      presetAll:'すべて', presetNone:'なし', presetBasic:'基本のみ', presetCopy:'もう一方からコピー',
+      groupBasic:'基本（五十音）', groupDakuten:'濁音・半濁音', groupCombo:'拗音',
+      modeTitle:'モード',
+      modeMasterName:'マスターモード', modeMasterDesc:'選んだ全てのかなを1回ずつ正解するまで続きます。',
+      modeCountName:'カウントモード', modeCountDesc:'指定した数だけ正解したら終了します。',
+      start:'スタート',
+      selSummary:(h,k)=>`ひらがな ${h}・カタカナ ${k} 選択中`,
+      needSelection:'かなを1つ以上選んでください。',
+      quit:'やめる', skip:'わからない', check:'こたえる', next:'つぎへ',
+      correct:'正解！', wrong:'ちがう',
+      answerWas:(r)=>`こたえ: ${r}`,
+      statCorrect:'正解', statWrong:'不正解', statStreak:'連続',
+      progMaster:(done,total)=>`マスター ${done} / ${total}`,
+      progCount:(done,total)=>`正解 ${done} / ${total}`,
+      scriptHira:'ひらがな', scriptKata:'カタカナ',
+      resultTitle:'🎉 おつかれさま！',
+      resTotal:'問題', resCorrect:'正解', resTime:'時間',
+      reviewTitle:'復習したいかな', again:'もう一度', backSetup:'設定にもどる',
+      placeholder:'ローマ字で入力',
+    },
+    en: {
+      setupTitle:'📝 Kana Quiz', setupLead:'Pick which kana to drill, then start the quiz.',
+      hira:'Hiragana', kata:'Katakana',
+      presetAll:'All', presetNone:'None', presetBasic:'Basic only', presetCopy:'Copy from other',
+      groupBasic:'Basic (Gojūon)', groupDakuten:'Dakuten / Handakuten', groupCombo:'Combos (Yōon)',
+      modeTitle:'Mode',
+      modeMasterName:'Master mode', modeMasterDesc:'Continue until every selected kana is answered correctly at least once.',
+      modeCountName:'Count mode', modeCountDesc:'Finish after a set number of correct answers.',
+      start:'Start',
+      selSummary:(h,k)=>`${h} hiragana · ${k} katakana selected`,
+      needSelection:'Select at least one kana.',
+      quit:'Quit', skip:'Skip', check:'Check', next:'Next',
+      correct:'Correct!', wrong:'Wrong',
+      answerWas:(r)=>`Answer: ${r}`,
+      statCorrect:'Correct', statWrong:'Wrong', statStreak:'Streak',
+      progMaster:(done,total)=>`Mastered ${done} / ${total}`,
+      progCount:(done,total)=>`Correct ${done} / ${total}`,
+      scriptHira:'Hiragana', scriptKata:'Katakana',
+      resultTitle:'🎉 Well done!',
+      resTotal:'Questions', resCorrect:'Correct', resTime:'Time',
+      reviewTitle:'Kana to review', again:'Play again', backSetup:'Back to setup',
+      placeholder:'Type the romaji',
+    },
+    zh: {
+      setupTitle:'📝 假名测验', setupLead:'选择要练习的假名，然后开始测验。',
+      hira:'平假名', kata:'片假名',
+      presetAll:'全部', presetNone:'清空', presetBasic:'仅基础', presetCopy:'从另一种复制',
+      groupBasic:'基础（五十音）', groupDakuten:'浊音・半浊音', groupCombo:'拗音',
+      modeTitle:'模式',
+      modeMasterName:'掌握模式', modeMasterDesc:'每个所选假名都至少答对一次才结束。',
+      modeCountName:'计数模式', modeCountDesc:'答对指定数量后结束。',
+      start:'开始',
+      selSummary:(h,k)=>`已选 平假名 ${h}・片假名 ${k}`,
+      needSelection:'请至少选择一个假名。',
+      quit:'退出', skip:'不会', check:'确认', next:'下一个',
+      correct:'正确！', wrong:'错误',
+      answerWas:(r)=>`答案：${r}`,
+      statCorrect:'正确', statWrong:'错误', statStreak:'连续',
+      progMaster:(done,total)=>`已掌握 ${done} / ${total}`,
+      progCount:(done,total)=>`答对 ${done} / ${total}`,
+      scriptHira:'平假名', scriptKata:'片假名',
+      resultTitle:'🎉 辛苦了！',
+      resTotal:'题数', resCorrect:'正确', resTime:'用时',
+      reviewTitle:'需复习的假名', again:'再来一次', backSetup:'返回设置',
+      placeholder:'输入罗马音',
+    },
+    ko: {
+      setupTitle:'📝 가나 퀴즈', setupLead:'연습할 가나를 고르고 퀴즈를 시작하세요.',
+      hira:'히라가나', kata:'가타카나',
+      presetAll:'전체', presetNone:'없음', presetBasic:'기본만', presetCopy:'다른 쪽에서 복사',
+      groupBasic:'기본 (오십음)', groupDakuten:'탁음・반탁음', groupCombo:'요음',
+      modeTitle:'모드',
+      modeMasterName:'마스터 모드', modeMasterDesc:'선택한 모든 가나를 한 번씩 맞힐 때까지 계속합니다.',
+      modeCountName:'카운트 모드', modeCountDesc:'지정한 개수만큼 맞히면 종료합니다.',
+      start:'시작',
+      selSummary:(h,k)=>`히라가나 ${h}・가타카나 ${k} 선택됨`,
+      needSelection:'가나를 하나 이상 선택하세요.',
+      quit:'그만', skip:'모름', check:'확인', next:'다음',
+      correct:'정답!', wrong:'오답',
+      answerWas:(r)=>`정답: ${r}`,
+      statCorrect:'정답', statWrong:'오답', statStreak:'연속',
+      progMaster:(done,total)=>`마스터 ${done} / ${total}`,
+      progCount:(done,total)=>`정답 ${done} / ${total}`,
+      scriptHira:'히라가나', scriptKata:'가타카나',
+      resultTitle:'🎉 수고하셨습니다!',
+      resTotal:'문제', resCorrect:'정답', resTime:'시간',
+      reviewTitle:'복습할 가나', again:'다시 하기', backSetup:'설정으로',
+      placeholder:'로마자로 입력',
+    },
+    my: {
+      setupTitle:'📝 ကာနာ ပဟေဠိ', setupLead:'လေ့ကျင့်လိုသော ကာနာများ ရွေးပြီး ပဟေဠိစတင်ပါ။',
+      hira:'ဟိရဂန', kata:'ကတခန',
+      presetAll:'အားလုံး', presetNone:'မရွေး', presetBasic:'အခြေခံသာ', presetCopy:'အခြားမှ ကူးပါ',
+      groupBasic:'အခြေခံ (ဂိုဂျုအွန်)', groupDakuten:'ဒါကုတန်／ဟန်ဒါကုတန်', groupCombo:'ယိုအွန် (ပေါင်းစပ်)',
+      modeTitle:'မုဒ်',
+      modeMasterName:'ကျွမ်းကျင်မုဒ်', modeMasterDesc:'ရွေးထားသော ကာနာအားလုံးကို တစ်ကြိမ်စီ မှန်အောင် ဆက်လုပ်ရသည်။',
+      modeCountName:'အရေအတွက်မုဒ်', modeCountDesc:'သတ်မှတ်ထားသော အရေအတွက် မှန်ပြီးနောက် ပြီးဆုံးသည်။',
+      start:'စတင်ပါ',
+      selSummary:(h,k)=>`ဟိရဂန ${h}・ကတခန ${k} ရွေးထားသည်`,
+      needSelection:'ကာနာ အနည်းဆုံး တစ်ခု ရွေးပါ။',
+      quit:'ရပ်ပါ', skip:'မသိပါ', check:'စစ်ဆေး', next:'နောက်တစ်ခု',
+      correct:'မှန်ပါသည်!', wrong:'မှား',
+      answerWas:(r)=>`အဖြေ: ${r}`,
+      statCorrect:'မှန်', statWrong:'မှား', statStreak:'ဆက်တိုက်',
+      progMaster:(done,total)=>`ကျွမ်းကျင် ${done} / ${total}`,
+      progCount:(done,total)=>`မှန် ${done} / ${total}`,
+      scriptHira:'ဟိရဂန', scriptKata:'ကတခန',
+      resultTitle:'🎉 တော်ပါပြီ!',
+      resTotal:'မေးခွန်း', resCorrect:'မှန်', resTime:'အချိန်',
+      reviewTitle:'ပြန်လေ့လာရန် ကာနာ', again:'ထပ်စမ်းပါ', backSetup:'ဆက်တင်သို့',
+      placeholder:'ရိုမာဂျိဖြင့် ရိုက်ပါ',
+    },
+    vi: {
+      setupTitle:'📝 Trắc nghiệm Kana', setupLead:'Chọn kana muốn luyện rồi bắt đầu.',
+      hira:'Hiragana', kata:'Katakana',
+      presetAll:'Tất cả', presetNone:'Bỏ chọn', presetBasic:'Chỉ cơ bản', presetCopy:'Sao từ bộ kia',
+      groupBasic:'Cơ bản (Gojūon)', groupDakuten:'Dakuten / Handakuten', groupCombo:'Âm ghép (Yōon)',
+      modeTitle:'Chế độ',
+      modeMasterName:'Chế độ thành thạo', modeMasterDesc:'Tiếp tục đến khi mỗi kana đã chọn được trả lời đúng ít nhất một lần.',
+      modeCountName:'Chế độ đếm', modeCountDesc:'Kết thúc sau số câu đúng định trước.',
+      start:'Bắt đầu',
+      selSummary:(h,k)=>`Đã chọn ${h} hiragana · ${k} katakana`,
+      needSelection:'Hãy chọn ít nhất một kana.',
+      quit:'Thoát', skip:'Không biết', check:'Kiểm tra', next:'Tiếp',
+      correct:'Đúng!', wrong:'Sai',
+      answerWas:(r)=>`Đáp án: ${r}`,
+      statCorrect:'Đúng', statWrong:'Sai', statStreak:'Chuỗi',
+      progMaster:(done,total)=>`Thành thạo ${done} / ${total}`,
+      progCount:(done,total)=>`Đúng ${done} / ${total}`,
+      scriptHira:'Hiragana', scriptKata:'Katakana',
+      resultTitle:'🎉 Làm tốt lắm!',
+      resTotal:'Câu', resCorrect:'Đúng', resTime:'Thời gian',
+      reviewTitle:'Kana cần ôn', again:'Chơi lại', backSetup:'Về thiết lập',
+      placeholder:'Nhập romaji',
+    },
+  };
+
+  const GROUP_KEY = { basic:'groupBasic', dakuten:'groupDakuten', combo:'groupCombo' };
+  const COUNT_PRESETS = [10, 20, 30, 50];
+
+  function L() { return I18N[getLang()] || I18N.ja; }
+
+  /* ===========================================================
+     State
+     =========================================================== */
+  const state = {
+    activeScript: 'h',
+    selected: { h: new Set(), k: new Set() },
+    mode: 'master',
+    count: 20,
+    // quiz runtime
+    pool: [],
+    remaining: null,
+    queue: [],
+    current: null,
+    lastChar: null,
+    answered: 0,
+    correct: 0,
+    wrong: 0,
+    streak: 0,
+    startTime: 0,
+    mistakes: {},     // char -> count
+    awaitingNext: false,
+    finished: false,
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  /* ===========================================================
+     Setup screen — build the kana grid
+     =========================================================== */
+  function buildGrid() {
+    const wrap = $('kanaGrid');
+    wrap.innerHTML = '';
+    const Li = L();
+    const sc = state.activeScript;
+    for (const group of KANA_GROUPS) {
+      const gEl = document.createElement('div');
+      gEl.className = 'kana-group';
+      const head = document.createElement('div');
+      head.className = 'kana-group-head';
+      const h3 = document.createElement('h3');
+      h3.textContent = Li[GROUP_KEY[group.id]];
+      const gToggle = document.createElement('button');
+      gToggle.className = 'group-toggle';
+      gToggle.type = 'button';
+      gToggle.textContent = '◧';
+      gToggle.title = group.id;
+      gToggle.addEventListener('click', () => toggleGroup(group));
+      head.appendChild(h3);
+      head.appendChild(gToggle);
+      gEl.appendChild(head);
+
+      for (const row of group.rows) {
+        const rEl = document.createElement('div');
+        rEl.className = 'kana-row';
+        const rToggle = document.createElement('button');
+        rToggle.className = 'row-toggle';
+        rToggle.type = 'button';
+        rToggle.textContent = row.cells[0].r;
+        rToggle.addEventListener('click', () => toggleRow(row));
+        rEl.appendChild(rToggle);
+
+        const cellsWrap = document.createElement('div');
+        cellsWrap.className = 'row-cells';
+        for (const cell of row.cells) {
+          const chip = document.createElement('button');
+          chip.type = 'button';
+          chip.className = 'kana-chip' + (state.selected[sc].has(cell.h) ? ' on' : '');
+          const ch = document.createElement('span');
+          ch.className = 'ch';
+          ch.textContent = sc === 'h' ? cell.h : cell.k;
+          const rj = document.createElement('span');
+          rj.className = 'rj';
+          rj.textContent = cell.r;
+          chip.appendChild(ch);
+          chip.appendChild(rj);
+          chip.addEventListener('click', () => {
+            const set = state.selected[sc];
+            if (set.has(cell.h)) set.delete(cell.h); else set.add(cell.h);
+            chip.classList.toggle('on');
+            refreshCounts();
+          });
+          cellsWrap.appendChild(chip);
+        }
+        rEl.appendChild(cellsWrap);
+        gEl.appendChild(rEl);
+      }
+      wrap.appendChild(gEl);
+    }
+  }
+
+  function toggleRow(row) {
+    const set = state.selected[state.activeScript];
+    const allOn = row.cells.every(c => set.has(c.h));
+    for (const c of row.cells) { if (allOn) set.delete(c.h); else set.add(c.h); }
+    buildGrid(); refreshCounts();
+  }
+  function toggleGroup(group) {
+    const set = state.selected[state.activeScript];
+    const cells = group.rows.flatMap(r => r.cells);
+    const allOn = cells.every(c => set.has(c.h));
+    for (const c of cells) { if (allOn) set.delete(c.h); else set.add(c.h); }
+    buildGrid(); refreshCounts();
+  }
+  function presetAll() {
+    const set = state.selected[state.activeScript];
+    for (const g of KANA_GROUPS) for (const r of g.rows) for (const c of r.cells) set.add(c.h);
+    buildGrid(); refreshCounts();
+  }
+  function presetNone() {
+    state.selected[state.activeScript] = new Set();
+    buildGrid(); refreshCounts();
+  }
+  function presetBasic() {
+    const set = new Set();
+    for (const r of KANA_GROUPS[0].rows) for (const c of r.cells) set.add(c.h);
+    state.selected[state.activeScript] = set;
+    buildGrid(); refreshCounts();
+  }
+  function presetCopy() {
+    const other = state.activeScript === 'h' ? 'k' : 'h';
+    state.selected[state.activeScript] = new Set(state.selected[other]);
+    buildGrid(); refreshCounts();
+  }
+
+  function refreshCounts() {
+    const h = state.selected.h.size, k = state.selected.k.size;
+    $('tabHCount').textContent = h;
+    $('tabKCount').textContent = k;
+    $('selSummary').textContent = L().selSummary(h, k);
+    $('startBtn').disabled = (h + k) === 0;
+  }
+
+  function setActiveScript(sc) {
+    state.activeScript = sc;
+    $('tabH').classList.toggle('active', sc === 'h');
+    $('tabK').classList.toggle('active', sc === 'k');
+    buildGrid();
+  }
+
+  function buildCountOptions() {
+    const wrap = $('countOptions');
+    wrap.innerHTML = '';
+    for (const n of COUNT_PRESETS) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'count-btn' + (state.count === n ? ' active' : '');
+      b.textContent = n;
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        state.count = n;
+        state.mode = 'count';
+        setMode('count');
+        buildCountOptions();
+      });
+      wrap.appendChild(b);
+    }
+  }
+
+  function setMode(mode) {
+    state.mode = mode;
+    $('modeMasterCard').classList.toggle('active', mode === 'master');
+    $('modeCountCard').classList.toggle('active', mode === 'count');
+  }
+
+  /* ===========================================================
+     Quiz
+     =========================================================== */
+  function buildPool() {
+    const pool = [];
+    for (const g of KANA_GROUPS) for (const row of g.rows) for (const cell of row.cells) {
+      if (state.selected.h.has(cell.h)) pool.push({ char: cell.h, script: 'h', r: cell.r, alt: cell.alt || [] });
+      if (state.selected.k.has(cell.h)) pool.push({ char: cell.k, script: 'k', r: cell.r, alt: cell.alt || [] });
+    }
+    return pool;
+  }
+
+  function startQuiz() {
+    const pool = buildPool();
+    if (!pool.length) { alert(L().needSelection); return; }
+    state.pool = pool;
+    state.answered = 0;
+    state.correct = 0;
+    state.wrong = 0;
+    state.streak = 0;
+    state.mistakes = {};
+    state.lastChar = null;
+    state.awaitingNext = false;
+    state.finished = false;
+    state.startTime = Date.now();
+
+    if (state.mode === 'master') {
+      state.remaining = new Set(pool.map(p => p.char));
+    } else {
+      state.remaining = null;
+    }
+
+    showView('viewQuiz');
+    applyI18n();
+    nextQuestion();
+  }
+
+  function poolByChar(char) { return state.pool.find(p => p.char === char); }
+
+  function pickNext() {
+    if (state.mode === 'master') {
+      const chars = [...state.remaining];
+      if (!chars.length) return null;
+      let candidates = chars;
+      if (chars.length > 1 && state.lastChar) candidates = chars.filter(c => c !== state.lastChar);
+      const char = candidates[Math.floor(Math.random() * candidates.length)];
+      return poolByChar(char);
+    } else {
+      let candidates = state.pool;
+      if (state.pool.length > 1 && state.lastChar) candidates = state.pool.filter(p => p.char !== state.lastChar);
+      return candidates[Math.floor(Math.random() * candidates.length)];
+    }
+  }
+
+  function nextQuestion() {
+    const q = pickNext();
+    if (!q) { finishQuiz(); return; }
+    state.current = q;
+    state.lastChar = q.char;
+    state.awaitingNext = false;
+
+    $('quizKana').textContent = q.char;
+    $('quizScriptLabel').textContent = q.script === 'h' ? L().scriptHira : L().scriptKata;
+    const input = $('quizInput');
+    input.value = '';
+    input.className = 'quiz-input';
+    input.disabled = false;
+    $('quizFeedback').textContent = '';
+    $('quizFeedback').className = 'quiz-feedback';
+    $('nextBtn').querySelector('span').textContent = L().check;
+    updateProgress();
+    setTimeout(() => input.focus(), 30);
+  }
+
+  function normalize(s) {
+    return (s || '').trim().toLowerCase().replace(/[^a-z']/g, '');
+  }
+  function isCorrectAnswer(q, raw) {
+    const v = normalize(raw);
+    if (!v) return false;
+    if (v === normalize(q.r)) return true;
+    return (q.alt || []).some(a => normalize(a) === v);
+  }
+
+  function submitAnswer() {
+    if (state.awaitingNext) { nextQuestion(); return; }
+    const q = state.current;
+    if (!q) return;
+    const input = $('quizInput');
+    const raw = input.value;
+    if (!normalize(raw)) return; // ignore empty
+    state.answered++;
+    const ok = isCorrectAnswer(q, raw);
+    if (ok) {
+      state.correct++;
+      state.streak++;
+      input.classList.add('correct');
+      $('quizFeedback').textContent = '◯ ' + L().correct;
+      $('quizFeedback').className = 'quiz-feedback correct';
+      if (state.mode === 'master') state.remaining.delete(q.char);
+      updateStats(); updateProgress();
+      // auto-advance quickly
+      input.disabled = true;
+      setTimeout(() => {
+        if (state.finished) return;
+        if (reachedEnd()) finishQuiz(); else nextQuestion();
+      }, 550);
+    } else {
+      state.wrong++;
+      state.streak = 0;
+      state.mistakes[q.char] = (state.mistakes[q.char] || 0) + 1;
+      input.classList.add('wrong');
+      $('quizFeedback').innerHTML = '✕ ' + L().wrong + ' — <span class="ans">' + L().answerWas(q.r) + '</span>';
+      $('quizFeedback').className = 'quiz-feedback wrong';
+      updateStats();
+      // pause: require Enter / Next to continue so the user absorbs it
+      state.awaitingNext = true;
+      input.disabled = true;
+      $('nextBtn').querySelector('span').textContent = L().next;
+      setTimeout(() => $('nextBtn').focus(), 30);
+    }
+  }
+
+  function skipQuestion() {
+    if (state.awaitingNext) { nextQuestion(); return; }
+    const q = state.current;
+    if (!q) return;
+    state.answered++;
+    state.wrong++;
+    state.streak = 0;
+    state.mistakes[q.char] = (state.mistakes[q.char] || 0) + 1;
+    const input = $('quizInput');
+    input.classList.add('wrong');
+    input.disabled = true;
+    $('quizFeedback').innerHTML = '✕ ' + L().wrong + ' — <span class="ans">' + L().answerWas(q.r) + '</span>';
+    $('quizFeedback').className = 'quiz-feedback wrong';
+    updateStats();
+    state.awaitingNext = true;
+    $('nextBtn').querySelector('span').textContent = L().next;
+    setTimeout(() => $('nextBtn').focus(), 30);
+  }
+
+  function reachedEnd() {
+    if (state.mode === 'master') return state.remaining.size === 0;
+    return state.correct >= state.count;
+  }
+
+  function updateStats() {
+    $('statCorrect').textContent = state.correct;
+    $('statWrong').textContent = state.wrong;
+    $('statStreak').textContent = state.streak;
+  }
+
+  function updateProgress() {
+    const Li = L();
+    if (state.mode === 'master') {
+      const total = state.pool.length;
+      const done = total - state.remaining.size;
+      $('progressText').textContent = Li.progMaster(done, total);
+      $('progressFill').style.width = total ? (done / total * 100) + '%' : '0%';
+    } else {
+      const done = Math.min(state.correct, state.count);
+      $('progressText').textContent = Li.progCount(done, state.count);
+      $('progressFill').style.width = (done / state.count * 100) + '%';
+    }
+  }
+
+  function finishQuiz() {
+    state.finished = true;
+    showView('viewResults');
+    const Li = L();
+    const acc = state.answered ? Math.round(state.correct / state.answered * 100) : 0;
+    $('resultAccuracy').textContent = acc + '%';
+    $('resTotal').textContent = state.answered;
+    $('resCorrect').textContent = state.correct;
+    const secs = Math.round((Date.now() - state.startTime) / 1000);
+    $('resTime').textContent = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
+
+    const missed = Object.entries(state.mistakes).sort((a, b) => b[1] - a[1]);
+    const box = $('reviewBox');
+    const chips = $('reviewChips');
+    chips.innerHTML = '';
+    if (missed.length) {
+      box.classList.remove('hidden');
+      for (const [char, n] of missed) {
+        const cell = CELL_BY_ID[char] || findCellByAnyChar(char);
+        const r = cell ? cell.r : '';
+        const chip = document.createElement('span');
+        chip.className = 'review-chip';
+        chip.innerHTML = `<span class="rc-kana">${char}</span> <span class="rj">${r}</span> <span class="rc-n">×${n}</span>`;
+        chips.appendChild(chip);
+      }
+    } else {
+      box.classList.add('hidden');
+    }
+  }
+
+  function findCellByAnyChar(char) {
+    for (const g of KANA_GROUPS) for (const row of g.rows) for (const c of row.cells)
+      if (c.h === char || c.k === char) return c;
+    return null;
+  }
+
+  /* ===========================================================
+     View switching + i18n apply
+     =========================================================== */
+  function showView(id) {
+    for (const v of ['viewSetup', 'viewQuiz', 'viewResults']) $(v).classList.toggle('hidden', v !== id);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  function applyI18n() {
+    const Li = L();
+    $('setupTitle').textContent = Li.setupTitle;
+    $('setupLead').textContent = Li.setupLead;
+    $('tabHName').textContent = Li.hira;
+    $('tabKName').textContent = Li.kata;
+    $('presetAllL').textContent = Li.presetAll;
+    $('presetNoneL').textContent = Li.presetNone;
+    $('presetBasicL').textContent = Li.presetBasic;
+    $('presetCopyL').textContent = Li.presetCopy;
+    $('modeTitle').textContent = Li.modeTitle;
+    $('modeMasterName').textContent = Li.modeMasterName;
+    $('modeMasterDesc').textContent = Li.modeMasterDesc;
+    $('modeCountName').textContent = Li.modeCountName;
+    $('modeCountDesc').textContent = Li.modeCountDesc;
+    $('startBtn').textContent = Li.start;
+    $('quitL').textContent = Li.quit;
+    $('skipL').textContent = Li.skip;
+    $('statCorrectL').textContent = Li.statCorrect;
+    $('statWrongL').textContent = Li.statWrong;
+    $('statStreakL').textContent = Li.statStreak;
+    $('resultTitle').textContent = Li.resultTitle;
+    $('resTotalL').textContent = Li.resTotal;
+    $('resCorrectL').textContent = Li.resCorrect;
+    $('resTimeL').textContent = Li.resTime;
+    $('reviewTitle').textContent = Li.reviewTitle;
+    $('againBtn').textContent = Li.again;
+    $('backSetupBtn').textContent = Li.backSetup;
+    $('quizInput').placeholder = Li.placeholder;
+    // Buttons that depend on state
+    const checkSpan = $('nextBtn').querySelector('span');
+    if (checkSpan) checkSpan.textContent = state.awaitingNext ? Li.next : Li.check;
+    refreshCounts();
+    rebuildGridLabels();
+  }
+
+  // Rebuild grid so group/row labels follow language (kana chars don't change,
+  // but group headers are localized).
+  function rebuildGridLabels() {
+    if (!$('viewSetup').classList.contains('hidden')) buildGrid();
+  }
+
+  /* ===========================================================
+     Events
+     =========================================================== */
+  $('tabH').addEventListener('click', () => setActiveScript('h'));
+  $('tabK').addEventListener('click', () => setActiveScript('k'));
+  $('presetAll').addEventListener('click', presetAll);
+  $('presetNone').addEventListener('click', presetNone);
+  $('presetBasic').addEventListener('click', presetBasic);
+  $('presetCopy').addEventListener('click', presetCopy);
+  $('modeMasterCard').addEventListener('click', () => setMode('master'));
+  $('modeCountCard').addEventListener('click', () => setMode('count'));
+  $('startBtn').addEventListener('click', startQuiz);
+
+  $('nextBtn').addEventListener('click', submitAnswer);
+  $('skipBtn').addEventListener('click', skipQuestion);
+  $('quizInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); submitAnswer(); }
+  });
+  $('quitBtn').addEventListener('click', () => { state.finished = true; showView('viewSetup'); });
+  $('againBtn').addEventListener('click', startQuiz);
+  $('backSetupBtn').addEventListener('click', () => showView('viewSetup'));
+
+  /* ===========================================================
+     Boot
+     =========================================================== */
+  // Default selection: all basic hiragana, to make first run friendly.
+  for (const r of KANA_GROUPS[0].rows) for (const c of r.cells) state.selected.h.add(c.h);
+
+  applySiteHeader('kana');
+  setupLangToggle(() => { applySiteHeader('kana'); applyI18n(); });
+
+  setActiveScript('h');
+  buildCountOptions();
+  setMode('master');
+  applyI18n();
+  refreshCounts();
+})();
+</script>
+</body>
+</html>

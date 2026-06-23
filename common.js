@@ -33,12 +33,12 @@
 
   // ---------- Site-wide header strings ----------
   const SITE_I18N = {
-    ja: { brand: '🏯 大阪サポート', navHome: 'ホーム', navGame: 'ごみゲーム', navVideos: '動画', navContact: '相談チャット' },
-    en: { brand: '🏯 Osaka Support', navHome: 'Home', navGame: 'Trash Game', navVideos: 'Videos', navContact: 'Contact' },
-    zh: { brand: '🏯 大阪支援',     navHome: '首页', navGame: '垃圾游戏', navVideos: '视频', navContact: '咨询' },
-    ko: { brand: '🏯 오사카 서포트', navHome: '홈',   navGame: '쓰레기 게임', navVideos: '동영상', navContact: '상담' },
-    my: { brand: '🏯 အိုဆာကာ အကူအညီ', navHome: 'ပင်မ', navGame: 'အမှိုက်ဂိမ်း', navVideos: 'ဗီဒီယို', navContact: 'ဆက်သွယ်ရန်' },
-    vi: { brand: '🏯 Hỗ trợ Osaka',   navHome: 'Trang chủ', navGame: 'Trò chơi rác', navVideos: 'Video', navContact: 'Liên hệ' },
+    ja: { brand: '🏯 大阪サポート', navHome: 'ホーム', navGame: 'ごみゲーム', navKana: 'かなクイズ', navVideos: '動画', navContact: '相談チャット' },
+    en: { brand: '🏯 Osaka Support', navHome: 'Home', navGame: 'Trash Game', navKana: 'Kana Quiz', navVideos: 'Videos', navContact: 'Contact' },
+    zh: { brand: '🏯 大阪支援',     navHome: '首页', navGame: '垃圾游戏', navKana: '假名测验', navVideos: '视频', navContact: '咨询' },
+    ko: { brand: '🏯 오사카 서포트', navHome: '홈',   navGame: '쓰레기 게임', navKana: '가나 퀴즈', navVideos: '동영상', navContact: '상담' },
+    my: { brand: '🏯 အိုဆာကာ အကူအညီ', navHome: 'ပင်မ', navGame: 'အမှိုက်ဂိမ်း', navKana: 'ကာနာ ပဟေဠိ', navVideos: 'ဗီဒီယို', navContact: 'ဆက်သွယ်ရန်' },
+    vi: { brand: '🏯 Hỗ trợ Osaka',   navHome: 'Trang chủ', navGame: 'Trò chơi rác', navKana: 'Trắc nghiệm Kana', navVideos: 'Video', navContact: 'Liên hệ' },
   };
 
   // ---------- Header rendering ----------
