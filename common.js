@@ -170,6 +170,109 @@
     },
   };
 
+  // ============================================================
+  // Reaction popups (maru / batsu image + sound) for the games.
+  // ============================================================
+  //
+  // ┌─────────────────────────────────────────────────────────┐
+  // │ EDIT HERE to add more reaction images.                    │
+  // │ Drop image files under images/reactions/correct/ or       │
+  // │ images/reactions/wrong/ and add their paths below. One    │
+  // │ is picked at random each time. Transparent PNG looks best │
+  // │ but JPG works too — just match the path.                  │
+  // └─────────────────────────────────────────────────────────┘
+  const REACTION_IMAGES = {
+    correct: [
+      'images/reactions/correct/maru1.png',
+    ],
+    wrong: [
+      'images/reactions/wrong/batsu1.png',
+    ],
+  };
+
+  // ---------- Reaction sound (Web Audio, no files needed) ----------
+  let reactionAudioCtx = null;
+  function reactionCtx() {
+    try {
+      if (!reactionAudioCtx) reactionAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (reactionAudioCtx.state === 'suspended') reactionAudioCtx.resume().catch(() => {});
+    } catch (_) {}
+    return reactionAudioCtx;
+  }
+  function tone(ctx, freq, start, dur, type, peak) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.value = freq;
+    osc.connect(gain); gain.connect(ctx.destination);
+    const t = ctx.currentTime + start;
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(peak || 0.18, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.start(t); osc.stop(t + dur + 0.02);
+  }
+  function playReactionSound(outcome) {
+    const ctx = reactionCtx();
+    if (!ctx) return;
+    if (outcome === 'correct') {
+      // bright two-note ping
+      tone(ctx, 880, 0, 0.32, 'sine', 0.2);
+      tone(ctx, 1320, 0.05, 0.32, 'sine', 0.16);
+    } else {
+      // descending "du dunn" buzzer
+      tone(ctx, 196, 0, 0.22, 'triangle', 0.22);
+      tone(ctx, 130, 0.18, 0.42, 'triangle', 0.24);
+    }
+  }
+
+  // ---------- Reaction image popup ----------
+  // outcome: 'correct' | 'wrong'
+  // busyRects: optional array of DOMRect-likes to avoid (game content).
+  function showReaction(outcome, busyRects) {
+    playReactionSound(outcome);
+    const imgs = REACTION_IMAGES[outcome] || [];
+    if (!imgs.length) return;
+    const src = imgs[(Math.random() * imgs.length) | 0];
+
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const size = Math.max(80, Math.min(150, Math.round(Math.min(vw, vh) * 0.22)));
+    const inset = 10;
+    const avoid = busyRects || [];
+
+    // Candidate top-left anchor points around the edges.
+    const candidates = [
+      { x: inset,            y: inset + 54 },
+      { x: vw - size - inset, y: inset + 54 },
+      { x: inset,            y: Math.round(vh * 0.42) },
+      { x: vw - size - inset, y: Math.round(vh * 0.42) },
+      { x: inset,            y: vh - size - inset },
+      { x: vw - size - inset, y: vh - size - inset },
+    ];
+    const overlaps = (p) => {
+      const r = { left: p.x, top: p.y, right: p.x + size, bottom: p.y + size };
+      return avoid.some(b => !(r.right < b.left || r.left > b.right || r.bottom < b.top || r.top > b.bottom));
+    };
+    let pool = candidates.filter(p => !overlaps(p));
+    if (!pool.length) pool = candidates;
+    const p = pool[(Math.random() * pool.length) | 0];
+
+    const el = document.createElement('img');
+    el.className = 'reaction-pop ' + outcome;
+    el.src = src;
+    el.alt = '';
+    el.onerror = () => el.remove();
+    el.style.width = size + 'px';
+    el.style.left = Math.round(p.x) + 'px';
+    el.style.top = Math.round(p.y) + 'px';
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('in'));
+    setTimeout(() => {
+      el.classList.remove('in');
+      el.classList.add('out');
+      setTimeout(() => el.remove(), 340);
+    }, 1000);
+  }
+
   // ---------- Public API ----------
   window.LANGS = LANGS;
   window.getLang = getLang;
@@ -177,4 +280,7 @@
   window.applySiteHeader = applySiteHeader;
   window.setupLangToggle = setupLangToggle;
   window.VideoDB = VideoDB;
+  window.REACTION_IMAGES = REACTION_IMAGES;
+  window.playReactionSound = playReactionSound;
+  window.showReaction = showReaction;
 })();

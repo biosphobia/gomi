@@ -1041,6 +1041,12 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
     state.answered++;
     const ok = isCorrectAnswer(q, raw);
     if (state.ttsOn) playKanaTTS(q.char);
+    // Maru / batsu reaction popup + sound, avoiding the quiz card.
+    if (window.showReaction) {
+      const busy = ['.site-header', '.quiz-card'].map(s => document.querySelector(s))
+        .filter(Boolean).map(e => e.getBoundingClientRect());
+      showReaction(ok ? 'correct' : 'wrong', busy);
+    }
     if (ok) {
       state.correct++;
       state.streak++;

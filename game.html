@@ -1312,6 +1312,16 @@
     updateHUD();
     updateStreak();
     showFeedback(isCorrect, item, points);
+
+    // Maru / batsu reaction popup + sound in an empty corner, avoiding
+    // the header, the bins, and the centered feedback popup.
+    if (window.showReaction) {
+      const busy = ['.site-header', '.header', '.bins'].map(s => document.querySelector(s))
+        .filter(Boolean).map(e => e.getBoundingClientRect());
+      const fb = document.getElementById('feedback');
+      if (fb) busy.push(fb.getBoundingClientRect());
+      showReaction(isCorrect ? 'correct' : 'wrong', busy);
+    }
   }
 
   function returnToCenter() {

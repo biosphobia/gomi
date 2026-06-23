@@ -95,6 +95,23 @@ Bureau) household sorting guide. Tips share 17 reason keys
 (`kitchen`, `leather`, `glass_bottle`, `plastic_tray`, etc.) translated
 once per language instead of per item.
 
+### Reaction popups (shared with the Kana Quiz)
+
+On every answer, both games pop a small **maru (○) / batsu (✗)** image
+in an empty corner of the screen (avoiding the header, bins, and the
+centered card/feedback) and play a sound — a bright ping for correct,
+a descending "du-dunn" buzzer for wrong. The image fades out after ~1s
+and never blocks input (`pointer-events: none`).
+
+- Sounds are synthesized with the Web Audio API — no audio files.
+- Images live under `images/reactions/correct/` and
+  `images/reactions/wrong/`. The manifest is `REACTION_IMAGES` near the
+  bottom of `common.js`; one image is chosen at random per outcome, so
+  you can add as many as you like. See the `README.md` in each image
+  folder. The two starter files are `maru1.png` and `batsu1.png`.
+- A missing image file is removed on error (no broken icon); the sound
+  still plays.
+
 ---
 
 ## The Kana Quiz
