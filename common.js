@@ -235,7 +235,7 @@
     const src = imgs[(Math.random() * imgs.length) | 0];
 
     const vw = window.innerWidth, vh = window.innerHeight;
-    const size = Math.max(80, Math.min(150, Math.round(Math.min(vw, vh) * 0.22)));
+    const size = Math.max(140, Math.min(300, Math.round(Math.min(vw, vh) * 0.34)));
     const inset = 10;
     const avoid = busyRects || [];
 

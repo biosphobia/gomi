@@ -305,9 +305,8 @@ body {
   z-index: 300;
   pointer-events: none;
   height: auto;
-  border-radius: 14px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
-  background: rgba(255, 255, 255, 0.6);
+  background: none;
+  border: none;
   opacity: 0;
   transform: scale(0.3) rotate(-8deg);
   transition: transform 0.28s cubic-bezier(.34, 1.56, .64, 1), opacity 0.2s ease;
@@ -320,8 +319,6 @@ body {
   transform: scale(0.6) rotate(6deg);
   transition: transform 0.34s ease, opacity 0.34s ease;
 }
-.reaction-pop.correct { outline: 3px solid rgba(46, 125, 50, 0.5); }
-.reaction-pop.wrong   { outline: 3px solid rgba(198, 40, 40, 0.5); }
 @media (prefers-reduced-motion: reduce) {
   .reaction-pop, .reaction-pop.in, .reaction-pop.out { transition: opacity 0.2s ease; transform: none; }
 }
