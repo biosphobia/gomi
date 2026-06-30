@@ -13,39 +13,45 @@
   #viewSetup > .lead { margin-bottom: 8px; font-size: 13px; }
   #modeTitle { margin-top: 4px; margin-bottom: 4px; font-size: 16px; }
 
-  /* ---- Script tabs ---- */
-  .script-tabs {
+  /* ---- Script on/off toggles ---- */
+  .script-toggle-row {
     display: flex;
-    gap: 6px;
-    margin: 8px 0 8px;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0;
   }
-  .script-tab {
-    flex: 1;
+  .script-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     background: var(--c-panel);
     border: 1px solid var(--c-line);
-    border-radius: 12px;
-    padding: 6px 12px;
+    border-radius: 999px;
+    padding: 7px 16px 7px 8px;
     font-size: 13.5px;
     font-weight: 700;
     cursor: pointer;
-    color: var(--c-text);
-    font-family: inherit;
-    text-align: center;
-    line-height: 1.25;
-  }
-  .script-tab .count {
-    display: inline;
-    margin-left: 6px;
-    font-size: 11px;
-    font-weight: 500;
     color: var(--c-muted);
+    font-family: inherit;
   }
-  .script-tab.active {
-    background: var(--c-accent);
+  .script-pill .cat-kana {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 28px;
+    border-radius: 999px;
+    background: var(--c-bg);
+    font-size: 17px;
+    line-height: 1;
+  }
+  .script-pill .cat-state { font-size: 11px; font-weight: 700; }
+  .script-pill.on {
     border-color: var(--c-accent);
-    color: #fff;
+    background: #fff5ee;
+    color: var(--c-accent);
   }
-  .script-tab.active .count { color: rgba(255,255,255,0.85); }
+  .script-pill.on .cat-kana { background: var(--c-accent); color: #fff; }
 
   /* ---- Preset buttons ---- */
   .preset-row {
@@ -169,8 +175,8 @@
     flex: 1;
   }
   .kana-chip {
-    width: 46px;
-    min-height: 42px;
+    width: 66px;
+    min-height: 44px;
     border-radius: 9px;
     border: 1px solid var(--c-line);
     background: var(--c-panel);
@@ -186,13 +192,21 @@
     opacity: 0.45;
   }
   .kana-chip:active { transform: scale(0.94); }
-  .kana-chip .ch { font-size: 19px; line-height: 1.15; color: var(--c-text); }
-  .kana-chip .rj { font-size: 9px; color: var(--c-muted); }
+  .kana-chip .ch-pair {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    line-height: 1.15;
+  }
+  .kana-chip .ch-h { font-size: 19px; color: var(--c-text); }
+  .kana-chip .ch-k { font-size: 19px; color: var(--c-muted); }
+  .kana-chip .rj { font-size: 9px; color: var(--c-muted); margin-top: 1px; }
   .kana-chip.on {
     opacity: 1;
     border-color: var(--c-accent);
     background: #fff5ee;
   }
+  .kana-chip.on .ch-k { color: #d98a63; }
   .kana-chip.on .rj { color: var(--c-accent); font-weight: 600; }
 
   /* ---- Mode selection ---- */
@@ -389,14 +403,16 @@
     <h1 id="setupTitle">📝 かなクイズ</h1>
     <p class="lead" id="setupLead">出題するかなを選んでクイズを始めましょう。</p>
 
-    <div class="script-tabs">
-      <button class="script-tab active" type="button" data-script="h" id="tabH">
-        <span id="tabHName">ひらがな</span>
-        <span class="count" id="tabHCount">0</span>
+    <div class="script-toggle-row">
+      <button class="script-pill on" type="button" id="scriptH">
+        <span class="cat-kana">あ</span>
+        <span id="scriptHName">ひらがな</span>
+        <span class="cat-state" id="scriptHState">ON</span>
       </button>
-      <button class="script-tab" type="button" data-script="k" id="tabK">
-        <span id="tabKName">カタカナ</span>
-        <span class="count" id="tabKCount">0</span>
+      <button class="script-pill on" type="button" id="scriptK">
+        <span class="cat-kana">ア</span>
+        <span id="scriptKName">カタカナ</span>
+        <span class="cat-state" id="scriptKState">ON</span>
       </button>
     </div>
 
@@ -404,7 +420,6 @@
       <button class="preset-btn" type="button" id="presetAll">＋ <span id="presetAllL">すべて</span></button>
       <button class="preset-btn" type="button" id="presetNone">－ <span id="presetNoneL">なし</span></button>
       <button class="preset-btn" type="button" id="presetBasic"><span id="presetBasicL">基本のみ</span></button>
-      <button class="preset-btn" type="button" id="presetCopy" title=""><span id="presetCopyL">もう一方からコピー</span></button>
     </div>
 
     <div class="cat-toggle-row">
@@ -568,7 +583,7 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
       modeMasterName:'マスターモード', modeMasterDesc:'選んだ全てのかなを1回ずつ正解するまで続きます。',
       modeCountName:'カウントモード', modeCountDesc:'指定した数だけ正解したら終了します。',
       start:'スタート',
-      selSummary:(h,k)=>`ひらがな ${h}・カタカナ ${k} 選択中`,
+      selSummary:(n)=>`出題範囲: ${n} 問`,
       needSelection:'かなを1つ以上選んでください。',
       quit:'やめる', check:'こたえる', next:'つぎへ', tts:'音声',
       correct:'正解！', wrong:'ちがう',
@@ -591,7 +606,7 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
       modeMasterName:'Master mode', modeMasterDesc:'Continue until every selected kana is answered correctly at least once.',
       modeCountName:'Count mode', modeCountDesc:'Finish after a set number of correct answers.',
       start:'Start',
-      selSummary:(h,k)=>`${h} hiragana · ${k} katakana selected`,
+      selSummary:(n)=>`${n} kana in the quiz pool`,
       needSelection:'Select at least one kana.',
       quit:'Quit', check:'Check', next:'Next', tts:'Audio',
       correct:'Correct!', wrong:'Wrong',
@@ -614,7 +629,7 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
       modeMasterName:'掌握模式', modeMasterDesc:'每个所选假名都至少答对一次才结束。',
       modeCountName:'计数模式', modeCountDesc:'答对指定数量后结束。',
       start:'开始',
-      selSummary:(h,k)=>`已选 平假名 ${h}・片假名 ${k}`,
+      selSummary:(n)=>`题库共 ${n} 个假名`,
       needSelection:'请至少选择一个假名。',
       quit:'退出', check:'确认', next:'下一个', tts:'语音',
       correct:'正确！', wrong:'错误',
@@ -637,7 +652,7 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
       modeMasterName:'마스터 모드', modeMasterDesc:'선택한 모든 가나를 한 번씩 맞힐 때까지 계속합니다.',
       modeCountName:'카운트 모드', modeCountDesc:'지정한 개수만큼 맞히면 종료합니다.',
       start:'시작',
-      selSummary:(h,k)=>`히라가나 ${h}・가타카나 ${k} 선택됨`,
+      selSummary:(n)=>`출제 범위 ${n}개`,
       needSelection:'가나를 하나 이상 선택하세요.',
       quit:'그만', check:'확인', next:'다음', tts:'음성',
       correct:'정답!', wrong:'오답',
@@ -660,7 +675,7 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
       modeMasterName:'ကျွမ်းကျင်မုဒ်', modeMasterDesc:'ရွေးထားသော ကာနာအားလုံးကို တစ်ကြိမ်စီ မှန်အောင် ဆက်လုပ်ရသည်။',
       modeCountName:'အရေအတွက်မုဒ်', modeCountDesc:'သတ်မှတ်ထားသော အရေအတွက် မှန်ပြီးနောက် ပြီးဆုံးသည်။',
       start:'စတင်ပါ',
-      selSummary:(h,k)=>`ဟိရဂန ${h}・ကတခန ${k} ရွေးထားသည်`,
+      selSummary:(n)=>`မေးခွန်း ${n} ခု`,
       needSelection:'ကာနာ အနည်းဆုံး တစ်ခု ရွေးပါ။',
       quit:'ရပ်ပါ', check:'စစ်ဆေး', next:'နောက်တစ်ခု', tts:'အသံ',
       correct:'မှန်ပါသည်!', wrong:'မှား',
@@ -683,7 +698,7 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
       modeMasterName:'Chế độ thành thạo', modeMasterDesc:'Tiếp tục đến khi mỗi kana đã chọn được trả lời đúng ít nhất một lần.',
       modeCountName:'Chế độ đếm', modeCountDesc:'Kết thúc sau số câu đúng định trước.',
       start:'Bắt đầu',
-      selSummary:(h,k)=>`Đã chọn ${h} hiragana · ${k} katakana`,
+      selSummary:(n)=>`${n} kana trong bộ đề`,
       needSelection:'Hãy chọn ít nhất một kana.',
       quit:'Thoát', check:'Kiểm tra', next:'Tiếp', tts:'Âm thanh',
       correct:'Đúng!', wrong:'Sai',
@@ -762,8 +777,8 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
      State
      =========================================================== */
   const state = {
-    activeScript: 'h',
-    selected: { h: new Set(), k: new Set() },
+    selected: new Set(),          // syllable ids (cell.h) — one shared set
+    scripts: { h: true, k: true }, // which scripts get drilled in the quiz
     mode: 'master',
     count: 20,
     // quiz runtime
@@ -793,7 +808,6 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
     const wrap = $('kanaGrid');
     wrap.innerHTML = '';
     const Li = L();
-    const sc = state.activeScript;
     for (const group of KANA_GROUPS) {
       const gEl = document.createElement('div');
       gEl.className = 'kana-group';
@@ -826,18 +840,25 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
         for (const cell of row.cells) {
           const chip = document.createElement('button');
           chip.type = 'button';
-          chip.className = 'kana-chip' + (state.selected[sc].has(cell.h) ? ' on' : '');
-          const ch = document.createElement('span');
-          ch.className = 'ch';
-          ch.textContent = sc === 'h' ? cell.h : cell.k;
+          chip.className = 'kana-chip' + (state.selected.has(cell.h) ? ' on' : '');
+          const pair = document.createElement('span');
+          pair.className = 'ch-pair';
+          const chH = document.createElement('span');
+          chH.className = 'ch-h';
+          chH.textContent = cell.h;
+          const chK = document.createElement('span');
+          chK.className = 'ch-k';
+          chK.textContent = cell.k;
+          pair.appendChild(chH);
+          pair.appendChild(chK);
           const rj = document.createElement('span');
           rj.className = 'rj';
           rj.textContent = cell.r;
-          chip.appendChild(ch);
+          chip.appendChild(pair);
           chip.appendChild(rj);
           chip.addEventListener('click', () => {
-            const set = state.selected[sc];
-            if (set.has(cell.h)) set.delete(cell.h); else set.add(cell.h);
+            if (state.selected.has(cell.h)) state.selected.delete(cell.h);
+            else state.selected.add(cell.h);
             chip.classList.toggle('on');
             refreshCounts();
           });
@@ -851,61 +872,51 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
   }
 
   function toggleRow(row) {
-    const set = state.selected[state.activeScript];
+    const set = state.selected;
     const allOn = row.cells.every(c => set.has(c.h));
     for (const c of row.cells) { if (allOn) set.delete(c.h); else set.add(c.h); }
     buildGrid(); refreshCounts();
   }
   function toggleGroup(group) {
-    const set = state.selected[state.activeScript];
+    const set = state.selected;
     const cells = group.rows.flatMap(r => r.cells);
     const allOn = cells.every(c => set.has(c.h));
     for (const c of cells) { if (allOn) set.delete(c.h); else set.add(c.h); }
     buildGrid(); refreshCounts();
   }
   function presetAll() {
-    const set = state.selected[state.activeScript];
-    for (const g of KANA_GROUPS) for (const r of g.rows) for (const c of r.cells) set.add(c.h);
+    for (const g of KANA_GROUPS) for (const r of g.rows) for (const c of r.cells) state.selected.add(c.h);
     buildGrid(); refreshCounts();
   }
   function presetNone() {
-    state.selected[state.activeScript] = new Set();
+    state.selected = new Set();
     buildGrid(); refreshCounts();
   }
   function presetBasic() {
     const set = new Set();
     for (const r of KANA_GROUPS[0].rows) for (const c of r.cells) set.add(c.h);
-    state.selected[state.activeScript] = set;
-    buildGrid(); refreshCounts();
-  }
-  function presetCopy() {
-    const other = state.activeScript === 'h' ? 'k' : 'h';
-    state.selected[state.activeScript] = new Set(state.selected[other]);
+    state.selected = set;
     buildGrid(); refreshCounts();
   }
 
   function refreshCounts() {
-    const h = state.selected.h.size, k = state.selected.k.size;
-    $('tabHCount').textContent = h;
-    $('tabKCount').textContent = k;
-    $('selSummary').textContent = L().selSummary(h, k);
-    $('startBtn').disabled = (h + k) === 0;
+    const nScripts = (state.scripts.h ? 1 : 0) + (state.scripts.k ? 1 : 0);
+    const poolSize = state.selected.size * nScripts;
+    $('selSummary').textContent = L().selSummary(poolSize);
+    $('startBtn').disabled = poolSize === 0;
     refreshCatToggles();
+    updateScriptPills();
   }
 
-  // Whole-category quick toggles (dakuten / yoon) for the active script.
+  // Whole-category quick toggles (dakuten / yoon).
   function groupAllSelected(groupId) {
-    const set = state.selected[state.activeScript];
     const g = KANA_GROUPS.find(x => x.id === groupId);
-    return g.rows.flatMap(r => r.cells).every(c => set.has(c.h));
+    return g.rows.flatMap(r => r.cells).every(c => state.selected.has(c.h));
   }
   function toggleGroupById(groupId) {
     toggleGroup(KANA_GROUPS.find(x => x.id === groupId));
   }
   function refreshCatToggles() {
-    const sc = state.activeScript;
-    $('catDakutenKana').textContent = sc === 'h' ? 'が' : 'ガ';
-    $('catComboKana').textContent   = sc === 'h' ? 'きゃ' : 'キャ';
     const dOn = groupAllSelected('dakuten');
     const cOn = groupAllSelected('combo');
     $('catDakuten').classList.toggle('on', dOn);
@@ -914,12 +925,15 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
     $('catComboState').textContent   = cOn ? 'ON' : 'OFF';
   }
 
-  function setActiveScript(sc) {
-    state.activeScript = sc;
-    $('tabH').classList.toggle('active', sc === 'h');
-    $('tabK').classList.toggle('active', sc === 'k');
-    buildGrid();
+  function toggleScript(s) {
+    state.scripts[s] = !state.scripts[s];
     refreshCounts();
+  }
+  function updateScriptPills() {
+    $('scriptH').classList.toggle('on', state.scripts.h);
+    $('scriptK').classList.toggle('on', state.scripts.k);
+    $('scriptHState').textContent = state.scripts.h ? 'ON' : 'OFF';
+    $('scriptKState').textContent = state.scripts.k ? 'ON' : 'OFF';
   }
 
   function buildCountOptions() {
@@ -953,8 +967,9 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
   function buildPool() {
     const pool = [];
     for (const g of KANA_GROUPS) for (const row of g.rows) for (const cell of row.cells) {
-      if (state.selected.h.has(cell.h)) pool.push({ char: cell.h, script: 'h', r: cell.r, alt: cell.alt || [] });
-      if (state.selected.k.has(cell.h)) pool.push({ char: cell.k, script: 'k', r: cell.r, alt: cell.alt || [] });
+      if (!state.selected.has(cell.h)) continue;
+      if (state.scripts.h) pool.push({ char: cell.h, script: 'h', r: cell.r, alt: cell.alt || [] });
+      if (state.scripts.k) pool.push({ char: cell.k, script: 'k', r: cell.r, alt: cell.alt || [] });
     }
     return pool;
   }
@@ -1151,12 +1166,11 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
     const Li = L();
     $('setupTitle').textContent = Li.setupTitle;
     $('setupLead').textContent = Li.setupLead;
-    $('tabHName').textContent = Li.hira;
-    $('tabKName').textContent = Li.kata;
+    $('scriptHName').textContent = Li.hira;
+    $('scriptKName').textContent = Li.kata;
     $('presetAllL').textContent = Li.presetAll;
     $('presetNoneL').textContent = Li.presetNone;
     $('presetBasicL').textContent = Li.presetBasic;
-    $('presetCopyL').textContent = Li.presetCopy;
     $('modeTitle').textContent = Li.modeTitle;
     $('modeMasterName').textContent = Li.modeMasterName;
     $('modeMasterDesc').textContent = Li.modeMasterDesc;
@@ -1194,12 +1208,11 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
   /* ===========================================================
      Events
      =========================================================== */
-  $('tabH').addEventListener('click', () => setActiveScript('h'));
-  $('tabK').addEventListener('click', () => setActiveScript('k'));
+  $('scriptH').addEventListener('click', () => toggleScript('h'));
+  $('scriptK').addEventListener('click', () => toggleScript('k'));
   $('presetAll').addEventListener('click', presetAll);
   $('presetNone').addEventListener('click', presetNone);
   $('presetBasic').addEventListener('click', presetBasic);
-  $('presetCopy').addEventListener('click', presetCopy);
   $('catDakuten').addEventListener('click', () => toggleGroupById('dakuten'));
   $('catCombo').addEventListener('click', () => toggleGroupById('combo'));
   $('modeMasterCard').addEventListener('click', () => setMode('master'));
@@ -1222,13 +1235,13 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
   /* ===========================================================
      Boot
      =========================================================== */
-  // Default selection: all basic hiragana, to make first run friendly.
-  for (const r of KANA_GROUPS[0].rows) for (const c of r.cells) state.selected.h.add(c.h);
+  // Default selection: all basic syllables, both scripts on.
+  for (const r of KANA_GROUPS[0].rows) for (const c of r.cells) state.selected.add(c.h);
 
   applySiteHeader('kana');
   setupLangToggle(() => { applySiteHeader('kana'); applyI18n(); });
 
-  setActiveScript('h');
+  buildGrid();
   buildCountOptions();
   setMode('master');
   updateTtsButton();
