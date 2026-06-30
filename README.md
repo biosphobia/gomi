@@ -126,6 +126,27 @@ Mechanic:
 - The left/right edges of the play area are kept clear so the
   maru/batsu reaction popups have room.
 
+### Single-player vs Versus
+
+The start screen offers **Single** and **Versus (2P)**. Single-player
+works with no setup. Versus is a quick 1-v-1 score race backed by
+Firebase (the same project the chat uses):
+
+- One player taps **Versus**, enters a username, and **creates a
+  lobby** — they get a 4-character code. The other player enters their
+  name and **joins** with that code.
+- The host taps **Start**; both play their own board at the same time.
+  A small HUD shows the opponent's live **score** and **lives**.
+- When a player's lives run out their run ends; once both are done the
+  result screen shows **Win / Lose / Draw** with both scores. (Each
+  board has its own random trash, so it's a fair score race rather than
+  an identical board.)
+- Versus needs Firebase configured (`FIREBASE_*` env vars) **and** the
+  `lobbies` Firestore rule above. Without it, the Versus screen shows a
+  "setup needed" notice and single-player still works. The Firebase
+  config is injected into `game.html` at build time, exactly like
+  `contact.html`.
+
 All 100 items are based on the 大阪市環境局 (Osaka City Environmental
 Bureau) household sorting guide. Tips share 17 reason keys
 (`kitchen`, `leather`, `glass_bottle`, `plastic_tray`, etc.) translated
@@ -344,6 +365,13 @@ of one-time setup in the Firebase Console.
            allow update: if false;
            allow delete: if isOwner(chatId) || isAdmin();
          }
+       }
+
+       // Trash-game Versus lobbies. Any signed-in (anonymous) player
+       // may create / join / update a lobby. Casual game data — kept
+       // simple on purpose.
+       match /lobbies/{code} {
+         allow read, create, update, delete: if request.auth != null;
        }
      }
    }

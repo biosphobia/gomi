@@ -90,12 +90,12 @@ services:
         -e "s|@@OSAKA_ADMIN_EMAIL@@|${OSAKA_ADMIN_EMAIL:-}|g" \
         -e "s|@@GOOGLE_TRANSLATE_API_KEY@@|${GOOGLE_TRANSLATE_API_KEY:-}|g" \
         -e "s|@@GOOGLE_TTS_API_KEY@@|${GOOGLE_TTS_API_KEY:-}|g" \
-        contact.html kana.html
-      echo "[build] contact.html + kana.html tokens substituted from env vars"
-      remaining=$(grep -l '@@FIREBASE\|@@OSAKA\|@@GOOGLE' contact.html kana.html 2>/dev/null || true)
+        contact.html kana.html game.html
+      echo "[build] contact.html + kana.html + game.html tokens substituted from env vars"
+      remaining=$(grep -l '@@FIREBASE\|@@OSAKA\|@@GOOGLE' contact.html kana.html game.html 2>/dev/null || true)
       if [ -n "$remaining" ]; then
         echo "[build] WARNING: placeholder(s) still present in: $remaining"
-        grep -n '@@FIREBASE\|@@OSAKA\|@@GOOGLE' contact.html kana.html || true
+        grep -n '@@FIREBASE\|@@OSAKA\|@@GOOGLE' contact.html kana.html game.html || true
       fi
     staticPublishPath: .
     # Disabled because preview URLs would need to be re-added to
@@ -129,6 +129,10 @@ services:
         value: no-store, no-cache, must-revalidate, max-age=0
       # kana.html carries the TTS API key after build — same treatment.
       - path: /kana.html
+        name: Cache-Control
+        value: no-store, no-cache, must-revalidate, max-age=0
+      # game.html carries the Firebase config (Versus lobby) after build.
+      - path: /game.html
         name: Cache-Control
         value: no-store, no-cache, must-revalidate, max-age=0
       - path: /*
