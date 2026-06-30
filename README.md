@@ -103,7 +103,9 @@ The Game and Videos tabs work fully offline. The Contact tab shows a
 
 ## The Trash Sorting Game
 
-`game.html`. Drag the item that appears in the center to one of three bins:
+`game.html`. An endless arcade round: trash items keep appearing and
+**grow over time**. Drag each one to the correct bin before it gets too
+big — three bins:
 
 | Bin                   | What goes in it                                    |
 | --------------------- | -------------------------------------------------- |
@@ -111,9 +113,18 @@ The Game and Videos tabs work fully offline. The Contact tab shows a
 | **資源ごみ**          | Cans, glass bottles, PET bottles. Rinsed.          |
 | **容器包装プラスチック** | Plastic packaging with the プラ ♻️ mark.           |
 
-20 rounds per game, 3 lives, score grows with streak. Correct answers
-auto-advance; wrong answers pause on a popup explaining the correct
-category until you click **Continue**.
+Mechanic:
+- Several items are on screen at once; new ones fade in slowly at
+  random spots and grow from small to large.
+- An item turns red as it nears full size, then **shakes and explodes**,
+  costing a life. Sorting it correctly scores points (streak bonus);
+  sorting it wrong also costs a life.
+- A correct or wrong drop briefly **pauses** the game to show a popup
+  explaining the right category, then play resumes.
+- 3 lives; the run ends when they're gone. Difficulty ramps up (faster
+  spawns and growth) the longer you survive. Rank by final score.
+- The left/right edges of the play area are kept clear so the
+  maru/batsu reaction popups have room.
 
 All 100 items are based on the 大阪市環境局 (Osaka City Environmental
 Bureau) household sorting guide. Tips share 17 reason keys

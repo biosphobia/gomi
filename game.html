@@ -92,28 +92,7 @@
     box-shadow: var(--shadow-sm);
     position: relative;
     overflow: hidden;
-    min-height: 240px;
-  }
-  /* Living target ring behind the item — fills the empty centre. */
-  .play-area::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 230px;
-    height: 230px;
-    border-radius: 50%;
-    border: 2px dashed rgba(0, 0, 0, 0.07);
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    animation: ringPulse 3s ease-in-out infinite;
-  }
-  @keyframes ringPulse {
-    0%, 100% { transform: translate(-50%, -50%) scale(1);    opacity: 0.55; }
-    50%      { transform: translate(-50%, -50%) scale(1.13); opacity: 0.9; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .play-area::before { animation: none; }
+    min-height: 300px;
   }
   .hint {
     position: absolute;
@@ -151,43 +130,67 @@
   }
   .streak-badge.show { opacity: 1; transform: scale(1); }
 
-  /* Item */
-  .item {
+  /* Game items (multiple, growing) */
+  .gitem {
     position: absolute;
-    width: 158px;
-    height: 158px;
     background: white;
-    border-radius: 20px;
+    border: 2px solid var(--c-line);
+    border-radius: 18px;
     box-shadow: var(--shadow-md);
-    display: none;
+    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     cursor: grab;
     z-index: 50;
     touch-action: none;
-    will-change: transform, left, top;
-    border: 1px solid var(--c-line);
+    will-change: left, top, width, height, transform;
+    overflow: hidden;
+    user-select: none;
   }
-  .item.shown { display: flex; }
-  .item.dragging {
+  .gitem.dragging {
     cursor: grabbing;
-    transform: scale(1.05);
     box-shadow: var(--shadow-lg);
     border-color: var(--c-accent);
+    z-index: 80;
   }
-  .item.return {
-    transition: left 0.28s cubic-bezier(.34,1.56,.64,1), top 0.28s cubic-bezier(.34,1.56,.64,1);
+  .gitem.danger {
+    border-color: var(--c-red);
+    box-shadow: 0 0 0 3px rgba(216,58,58,0.18), var(--shadow-md);
   }
-  .item-icon { font-size: 88px; line-height: 1; margin-bottom: 8px; pointer-events: none; }
-  .item-name {
-    font-size: 13px;
+  .gitem-icon { line-height: 1; pointer-events: none; }
+  .gitem-name {
     font-weight: 700;
     text-align: center;
-    padding: 0 8px;
     pointer-events: none;
     color: #444;
-    line-height: 1.25;
+    line-height: 1.15;
+    padding: 0 4px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .gitem.spawn  { animation: gitemSpawn 0.3s ease-out; }
+  .gitem.shake  { animation: gitemShake 0.16s ease-in-out infinite; }
+  .gitem.explode { animation: gitemExplode 0.42s ease-out forwards; }
+  @keyframes gitemSpawn {
+    from { transform: scale(0.2); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+  }
+  @keyframes gitemShake {
+    0%,100% { transform: translate(0,0) rotate(0deg); }
+    25%     { transform: translate(-5px,3px) rotate(-4deg); }
+    75%     { transform: translate(5px,-3px) rotate(4deg); }
+  }
+  @keyframes gitemExplode {
+    0%   { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.9); opacity: 0; }
+  }
+  .play-area.flash { animation: redFlash 0.4s ease; }
+  @keyframes redFlash {
+    0%,100% { background: radial-gradient(circle at 50% 44%, #ffffff 0%, #eef7f0 100%); }
+    40%     { background: radial-gradient(circle at 50% 44%, #ffe3e3 0%, #ffd0d0 100%); }
   }
 
   /* Bins */
@@ -490,11 +493,6 @@
       <div class="bin-sub" id="binSub_plastic">プラマーク付きの<br>容器・包装</div>
     </div>
   </section>
-
-  <div class="item" id="item">
-    <div class="item-icon" id="itemIcon"></div>
-    <div class="item-name" id="itemName"></div>
-  </div>
 
   <!-- Start overlay -->
   <div class="overlay" id="startOverlay">
@@ -816,7 +814,7 @@
           { tagKey: 'recycle',  tagText: '資源ごみ', body: '週1回｜空き缶・空きびん・ペットボトル（中身をすすぐ）' },
           { tagKey: 'plastic',  tagText: '容器包装プラスチック', body: '週1回｜プラマーク♻️の付いた容器や包装' },
         ],
-        challenge: '全20問・ミスは3回まで！がんばって！',
+        challenge: 'ごみは時間とともに大きくなり、大きくなりすぎると爆発します。爆発する前に分別しよう！ライフは3つ。',
         btn: 'スタート',
         note: '※ 本ゲームは大阪市環境局の家庭ごみ分別ルールに基づいています。実際の分別は最新の公式情報をご確認ください。',
       },
@@ -865,7 +863,7 @@
           { tagKey: 'recycle',  tagText: '資源ごみ', body: '1×/week | Empty cans, glass bottles, PET bottles (rinsed)' },
           { tagKey: 'plastic',  tagText: '容器包装プラスチック', body: '1×/week | Containers / packaging with the プラ ♻️ mark' },
         ],
-        challenge: '20 rounds, 3 lives max. Good luck!',
+        challenge: 'Trash grows over time and blows up if it gets too big — sort it before it does! 3 lives.',
         btn: 'Start',
         note: '※ Based on the Osaka City Environmental Bureau household sorting rules. Please check the latest official guide for actual sorting.',
       },
@@ -914,7 +912,7 @@
           { tagKey: 'recycle',  tagText: '資源ごみ', body: '每周1次｜空罐・空瓶・宝特瓶（清洗后）' },
           { tagKey: 'plastic',  tagText: '容器包装プラスチック', body: '每周1次｜带プラ♻️标志的容器与包装' },
         ],
-        challenge: '共20题，最多失误3次！加油！',
+        challenge: '垃圾会随时间变大，太大就会爆炸。在爆炸前分类吧！3 条命。',
         btn: '开始',
         note: '※ 本游戏依据大阪市环境局家庭垃圾分类规则。实际分类请参考最新官方信息。',
       },
@@ -963,7 +961,7 @@
           { tagKey: 'recycle',  tagText: '資源ごみ', body: '주1회｜빈 캔・빈 병・페트병 (헹궈서)' },
           { tagKey: 'plastic',  tagText: '容器包装プラスチック', body: '주1회｜プラ♻️ 마크가 있는 용기와 포장' },
         ],
-        challenge: '총 20문제, 실수는 3번까지! 화이팅!',
+        challenge: '쓰레기는 시간이 지나면 커지고, 너무 커지면 터집니다. 터지기 전에 분리하세요! 라이프 3개.',
         btn: '시작',
         note: '※ 본 게임은 오사카시 환경국 가정 쓰레기 분리 규칙을 기반으로 합니다. 실제 분리는 최신 공식 정보를 확인하세요.',
       },
@@ -1012,7 +1010,7 @@
           { tagKey: 'recycle',  tagText: '資源ごみ', body: 'တစ်ပတ်၁ကြိမ်｜သတ္တုဘူး၊ ဖန်ပုလင်း၊ PET ဘူး (ဆေးကြောပြီး)' },
           { tagKey: 'plastic',  tagText: '容器包装プラスチック', body: 'တစ်ပတ်၁ကြိမ်｜プラ♻️ အမှတ်ပါသော ထုပ်ပိုးပလပ်စတစ်' },
         ],
-        challenge: 'စုစုပေါင်း ၂၀ ပုစ္ဆာ၊ အမှား ၃ ကြိမ်ထိ ခွင့်ပြုသည်!',
+        challenge: 'အမှိုက်များသည် အချိန်ကြာလာသည်နှင့် ကြီးလာပြီး အလွန်ကြီးလျှင် ပေါက်ကွဲသည်။ မပေါက်ကွဲမီ ခွဲခြားပါ! အသက် ၃ ခု။',
         btn: 'စတင်ပါ',
         note: '※ ဤဂိမ်းသည် အိုဆာကာမြို့ ပတ်ဝန်းကျင်ဌာန၏ အိမ်တွင်းအမှိုက်ခွဲခြားရေး စည်းမျဉ်းများကို အခြေပြုထားသည်။',
       },
@@ -1061,7 +1059,7 @@
           { tagKey: 'recycle',  tagText: '資源ごみ', body: '1 lần/tuần｜Lon, chai thủy tinh, chai PET (đã rửa sạch)' },
           { tagKey: 'plastic',  tagText: '容器包装プラスチック', body: '1 lần/tuần｜Bao bì có dấu プラ♻️' },
         ],
-        challenge: 'Tổng 20 câu, tối đa 3 lần sai! Cố lên!',
+        challenge: 'Rác lớn dần theo thời gian và sẽ nổ nếu quá to — hãy phân loại trước khi nổ! 3 mạng.',
         btn: 'Bắt đầu',
         note: '※ Trò chơi dựa trên quy tắc phân loại rác của Cục Môi trường thành phố Osaka. Vui lòng tham khảo thông tin chính thức mới nhất.',
       },
@@ -1088,31 +1086,44 @@
     },
   };
 
-  const TOTAL_ROUNDS = 20;
   const MAX_LIVES = 3;
+
+  // ---- Tuning ----
+  const MIN_SIZE      = 58;    // spawn size (px)
+  const MAX_SIZE      = 150;   // size at which an item explodes
+  const GROW_TIME     = 9000;  // ms from MIN to MAX at base difficulty
+  const DANGER_AT     = 0.78;  // fraction of max where the item turns red
+  const SHAKE_TIME    = 700;   // ms shaking before it blows up
+  const SPAWN_BASE    = 2300;  // ms between spawns at base difficulty
+  const SPAWN_MIN     = 900;   // fastest spawn interval
+  const MAX_ITEMS     = 6;     // max items on screen at once
+  const SIDE_GUTTER   = 76;    // px reserved on each side for reaction popups
+  const PAUSE_CORRECT = 650;   // ms the game freezes for a correct popup
+  const PAUSE_WRONG   = 1200;  // ms the game freezes for a wrong popup
 
   // ============ State ============
   const state = {
     lang: 'ja',
     score: 0,
     lives: MAX_LIVES,
-    queue: [],
-    current: null,
+    items: [],            // active game items
+    nextId: 1,
     streak: 0,
     maxStreak: 0,
     correct: 0,
     wrong: 0,
-    busy: false,
-    awaitingResume: false,
+    running: false,       // game in progress
+    paused: false,        // momentarily frozen for a feedback popup
+    elapsed: 0,           // ms since start (for difficulty ramp)
+    spawnTimer: 0,        // ms until next spawn
+    lastTs: 0,            // last rAF timestamp
+    rafId: 0,
   };
 
   // ============ DOM helpers ============
   const $ = (s) => document.querySelector(s);
   const app        = $('#app');
   const playArea   = $('#playArea');
-  const itemEl     = $('#item');
-  const itemIcon   = $('#itemIcon');
-  const itemName   = $('#itemName');
   const scoreEl    = $('#score');
   const remainingEl= $('#remaining');
   const livesEl    = $('#lives');
@@ -1167,8 +1178,9 @@
     $('#endLblStreak').textContent  = L.end.maxStreak + ' ';
     $('#restartBtn').textContent    = L.end.restart;
 
-    if (state.current) {
-      itemName.textContent = getName(state.current);
+    for (const it of state.items) {
+      const nm = it.el && it.el.querySelector('.gitem-name');
+      if (nm) nm.textContent = getName(it.data);
     }
 
     if (state.streak >= 2) streakEl.textContent = L.streak(state.streak);
@@ -1213,27 +1225,23 @@
     return a;
   }
 
-  function getItemSize() { return itemEl.offsetWidth || 120; }
-
-  function getCenterPos() {
-    const playRect = playArea.getBoundingClientRect();
-    const appRect  = app.getBoundingClientRect();
-    const size = getItemSize();
-    return {
-      x: (playRect.left - appRect.left) + (playRect.width  - size) / 2,
-      y: (playRect.top  - appRect.top)  + (playRect.height - size) / 2,
-    };
+  // Reshuffling bag so items don't repeat too soon.
+  let bag = [];
+  function drawData() {
+    if (!bag.length) bag = shuffle(ITEMS);
+    return bag.pop();
   }
 
-  function setItemPos(x, y) {
-    itemEl.style.left = x + 'px';
-    itemEl.style.top  = y + 'px';
+  function rectInApp(el) {
+    const r = el.getBoundingClientRect();
+    const a = app.getBoundingClientRect();
+    return { left: r.left - a.left, top: r.top - a.top, right: r.right - a.left, bottom: r.bottom - a.top };
   }
 
   function updateHUD() {
-    scoreEl.textContent     = state.score;
-    remainingEl.textContent = state.queue.length + (state.current ? 1 : 0);
-    livesEl.textContent     = '❤️'.repeat(state.lives) + '🖤'.repeat(MAX_LIVES - state.lives);
+    scoreEl.textContent = state.score;
+    remainingEl.textContent = state.items.length;
+    livesEl.textContent = '❤️'.repeat(Math.max(0, state.lives)) + '🖤'.repeat(Math.max(0, MAX_LIVES - state.lives));
   }
 
   function updateStreak() {
@@ -1245,42 +1253,144 @@
     }
   }
 
+  // ---- difficulty ramp (0 at start, ~1 after 90s) ----
+  function difficulty() { return Math.min(1, state.elapsed / 90000); }
+  function growTime()      { return GROW_TIME - difficulty() * 3500; }
+  function spawnInterval() { return SPAWN_BASE - difficulty() * (SPAWN_BASE - SPAWN_MIN); }
+
+  function styleItem(it) {
+    const s = it.size;
+    it.el.style.width = s + 'px';
+    it.el.style.height = s + 'px';
+    const icon = it.el.querySelector('.gitem-icon');
+    const name = it.el.querySelector('.gitem-name');
+    icon.style.fontSize = Math.round(s * 0.46) + 'px';
+    name.style.fontSize = Math.max(9, Math.round(s * 0.085)) + 'px';
+    name.style.marginTop = Math.round(s * 0.03) + 'px';
+    it.el.classList.toggle('danger', s >= MAX_SIZE * DANGER_AT);
+  }
+
+  function setItemPos(it, x, y) {
+    it.x = x; it.y = y;
+    it.el.style.left = x + 'px';
+    it.el.style.top = y + 'px';
+  }
+
+  // Play-area bounds in app coords, inset by the side gutters reserved
+  // for the maru / batsu reaction popups.
+  function spawnZone(size) {
+    const p = rectInApp(playArea);
+    const left = p.left + SIDE_GUTTER;
+    const right = p.right - SIDE_GUTTER - size;
+    const top = p.top + 12;
+    const bottom = p.bottom - size - 12;
+    return { left, right: Math.max(left, right), top, bottom: Math.max(top, bottom) };
+  }
+
+  function farFromOthers(x, y, size) {
+    const cx = x + size / 2, cy = y + size / 2;
+    for (const it of state.items) {
+      const ox = it.x + it.size / 2, oy = it.y + it.size / 2;
+      if (Math.hypot(cx - ox, cy - oy) < (size / 2 + it.size / 2) * 0.85) return false;
+    }
+    return true;
+  }
+
   function spawnItem() {
-    if (state.lives <= 0) { endGame(); return; }
-    state.current = state.queue.shift() || null;
-    if (!state.current) { endGame(); return; }
+    if (state.items.length >= MAX_ITEMS) return;
+    const data = drawData();
+    const el = document.createElement('div');
+    el.className = 'gitem spawn';
+    el.innerHTML = '<div class="gitem-icon"></div><div class="gitem-name"></div>';
+    el.querySelector('.gitem-icon').textContent = data.i;
+    el.querySelector('.gitem-name').textContent = getName(data);
+    app.appendChild(el);
 
-    itemIcon.textContent = state.current.i;
-    itemName.textContent = getName(state.current);
+    const it = { id: state.nextId++, el, data, size: MIN_SIZE, x: 0, y: 0, phase: 'grow', shakeT: 0 };
+    styleItem(it);
 
-    const c = getCenterPos();
-    itemEl.classList.remove('return');
-    setItemPos(c.x, c.y);
-    itemEl.classList.add('shown');
-    itemEl.classList.remove('spawning');
-    void itemEl.offsetWidth;
-    itemEl.classList.add('spawning');
-
-    hintEl.style.opacity = '1';
+    const z = spawnZone(MIN_SIZE);
+    let x = z.left, y = z.top;
+    for (let tries = 0; tries < 24; tries++) {
+      const tx = z.left + Math.random() * Math.max(1, z.right - z.left);
+      const ty = z.top + Math.random() * Math.max(1, z.bottom - z.top);
+      if (farFromOthers(tx, ty, MIN_SIZE)) { x = tx; y = ty; break; }
+      x = tx; y = ty;
+    }
+    setItemPos(it, x, y);
+    state.items.push(it);
+    hintEl.style.opacity = '0';
+    setTimeout(() => el.classList.remove('spawn'), 320);
+    el.addEventListener('pointerdown', (e) => onPointerDown(e, it));
     updateHUD();
   }
 
-  function nextAfterFeedback() {
-    feedbackEl.classList.remove('show');
-    setTimeout(() => {
-      state.busy = false;
-      state.awaitingResume = false;
-      if (state.lives <= 0 || state.queue.length === 0) endGame();
-      else spawnItem();
-    }, 220);
+  function removeItem(it) {
+    const i = state.items.indexOf(it);
+    if (i >= 0) state.items.splice(i, 1);
+    if (it.el && it.el.parentNode) it.el.parentNode.removeChild(it.el);
+    updateHUD();
   }
 
+  function explodeItem(it) {
+    if (it.phase === 'exploding') return;
+    it.phase = 'exploding';
+    if (dragItem === it) endDrag();
+    it.el.classList.remove('shake');
+    it.el.classList.add('explode');
+    playArea.classList.remove('flash'); void playArea.offsetWidth; playArea.classList.add('flash');
+    if (window.playReactionSound) playReactionSound('wrong');
+    setTimeout(() => removeItem(it), 420);
+    state.wrong++;
+    state.streak = 0;
+    updateStreak();
+    state.lives--;
+    updateHUD();
+    if (state.lives <= 0) endGame();
+  }
+
+  // ============ Main loop ============
+  function tick(ts) {
+    if (!state.running) return;
+    if (!state.lastTs) state.lastTs = ts;
+    let dt = ts - state.lastTs;
+    state.lastTs = ts;
+    if (dt > 100) dt = 100; // clamp after tab switches
+
+    if (!state.paused) {
+      state.elapsed += dt;
+      const rate = (MAX_SIZE - MIN_SIZE) / growTime();
+      for (const it of state.items.slice()) {
+        if (it.phase === 'grow') {
+          it.size += rate * dt;
+          if (it.size >= MAX_SIZE) {
+            it.size = MAX_SIZE;
+            it.phase = 'shake';
+            it.shakeT = 0;
+            it.el.classList.add('shake');
+          }
+          styleItem(it);
+        } else if (it.phase === 'shake') {
+          it.shakeT += dt;
+          if (it.shakeT >= SHAKE_TIME) explodeItem(it);
+        }
+      }
+      if (!state.running) return;   // a blow-up may have ended the game
+      state.spawnTimer -= dt;
+      if (state.spawnTimer <= 0) {
+        spawnItem();
+        state.spawnTimer = spawnInterval();
+      }
+    }
+    state.rafId = requestAnimationFrame(tick);
+  }
+
+  // ============ Feedback ============
   function showFeedback(correct, item, points) {
     const L = t();
     const name = getName(item);
     const typeLabel = L.typeLabel[item.t];
     const tip = getReason(item);
-
     if (correct) {
       feedbackEl.className = 'feedback show correct';
       feedbackEl.innerHTML = `
@@ -1288,39 +1398,39 @@
         <div class="feedback-title">${L.fb.correct}</div>
         <div class="feedback-answer">${L.fb.is(name, typeLabel)}</div>
         <div class="points">+${points}</div>
-        <div class="feedback-tip">${tip}</div>
-      `;
-      setTimeout(nextAfterFeedback, 1100);
+        <div class="feedback-tip">${tip}</div>`;
     } else {
-      // Wrong: pause until player clicks Continue
-      state.awaitingResume = true;
       feedbackEl.className = 'feedback show wrong';
       feedbackEl.innerHTML = `
         <span class="feedback-emoji">😢</span>
         <div class="feedback-title">${L.fb.wrong}</div>
         <div class="feedback-answer">${L.fb.isWrong(name, typeLabel)}</div>
-        <div class="feedback-tip">${tip}</div>
-        <button class="feedback-btn" id="continueBtn" type="button">${L.continueBtn}</button>
-      `;
-      const btn = $('#continueBtn');
-      btn.addEventListener('click', () => {
-        if (!state.awaitingResume) return;
-        nextAfterFeedback();
-      });
+        <div class="feedback-tip">${tip}</div>`;
     }
+    state.paused = true;
+    clearTimeout(state._fbTimer);
+    state._fbTimer = setTimeout(() => {
+      feedbackEl.classList.remove('show');
+      state.paused = false;
+    }, correct ? PAUSE_CORRECT : PAUSE_WRONG);
   }
 
-  function handleDrop(targetType) {
-    if (!state.current || state.busy) return;
-    state.busy = true;
-    itemEl.classList.remove('shown');
+  // Reaction popup pushed into the reserved side gutters / corners.
+  function reactAt(correct) {
+    if (!window.showReaction) return;
+    const busy = ['.site-header', '.header', '.bins'].map(s => document.querySelector(s))
+      .filter(Boolean).map(e => e.getBoundingClientRect());
+    const p = playArea.getBoundingClientRect();
+    busy.push({ left: p.left + SIDE_GUTTER, top: p.top, right: p.right - SIDE_GUTTER, bottom: p.bottom });
+    busy.push(feedbackEl.getBoundingClientRect());
+    showReaction(correct ? 'correct' : 'wrong', busy);
+  }
 
-    const item = state.current;
-    state.current = null;
-    const isCorrect = targetType === item.t;
-
+  function sortItem(it, targetType) {
+    if (it.phase === 'exploding') return;
+    const correct = targetType === it.data.t;
     let points = 0;
-    if (isCorrect) {
+    if (correct) {
       state.correct++;
       state.streak++;
       if (state.streak > state.maxStreak) state.maxStreak = state.streak;
@@ -1330,142 +1440,140 @@
       state.wrong++;
       state.streak = 0;
       state.lives--;
-      playArea.classList.remove('shake');
-      void playArea.offsetWidth;
-      playArea.classList.add('shake');
     }
-    updateHUD();
     updateStreak();
-    showFeedback(isCorrect, item, points);
+    showFeedback(correct, it.data, points);
+    reactAt(correct);
+    removeItem(it);
+    if (!correct && state.lives <= 0) endGame();
+  }
 
-    // Maru / batsu reaction popup + sound in an empty corner, avoiding
-    // the header, the bins, and the centered feedback popup.
-    if (window.showReaction) {
-      const busy = ['.site-header', '.header', '.bins'].map(s => document.querySelector(s))
-        .filter(Boolean).map(e => e.getBoundingClientRect());
-      const fb = document.getElementById('feedback');
-      if (fb) busy.push(fb.getBoundingClientRect());
-      showReaction(isCorrect ? 'correct' : 'wrong', busy);
+  // ============ Drag (Pointer Events) ============
+  let dragItem = null;
+  let dragPointerId = null;
+  let offsetX = 0, offsetY = 0;
+
+  function onPointerDown(e, it) {
+    if (!state.running || state.paused || it.phase === 'exploding') return;
+    if (e.button !== undefined && e.button !== 0) return;
+    if (dragItem) return;
+    dragItem = it;
+    it.phase = 'dragging';
+    it.el.classList.remove('shake');
+    it.el.classList.add('dragging');
+    dragPointerId = e.pointerId;
+    const rect = it.el.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    try { it.el.setPointerCapture(dragPointerId); } catch (_) {}
+    e.preventDefault();
+  }
+
+  function onPointerMove(e) {
+    if (!dragItem || e.pointerId !== dragPointerId) return;
+    const appRect = app.getBoundingClientRect();
+    setItemPos(dragItem, e.clientX - appRect.left - offsetX, e.clientY - appRect.top - offsetY);
+    let hovered = null;
+    for (const b of bins) {
+      const r = b.getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) { hovered = b; break; }
+    }
+    for (const b of bins) b.classList.toggle('hover', b === hovered);
+  }
+
+  function endDrag() {
+    if (!dragItem) return null;
+    const it = dragItem;
+    try { it.el.releasePointerCapture(dragPointerId); } catch (_) {}
+    it.el.classList.remove('dragging');
+    dragItem = null; dragPointerId = null;
+    for (const b of bins) b.classList.remove('hover');
+    return it;
+  }
+
+  function onPointerUp(e) {
+    if (!dragItem || e.pointerId !== dragPointerId) return;
+    const it = dragItem;
+    let target = null;
+    for (const b of bins) {
+      const r = b.getBoundingClientRect();
+      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) target = b;
+    }
+    endDrag();
+    if (target) {
+      sortItem(it, target.dataset.type);
+    } else if (it.phase === 'dragging') {
+      // dropped in the open — resume growing from where it is
+      if (it.size >= MAX_SIZE) { it.phase = 'shake'; it.shakeT = 0; it.el.classList.add('shake'); }
+      else it.phase = 'grow';
     }
   }
 
-  function returnToCenter() {
-    const c = getCenterPos();
-    itemEl.classList.add('return');
-    setItemPos(c.x, c.y);
-    hintEl.style.opacity = '1';
-    setTimeout(() => itemEl.classList.remove('return'), 300);
+  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointerup', onPointerUp);
+  window.addEventListener('pointercancel', onPointerUp);
+
+  // ============ Start / end ============
+  function clearItems() {
+    for (const it of state.items.slice()) { if (it.el && it.el.parentNode) it.el.parentNode.removeChild(it.el); }
+    state.items = [];
   }
 
   function endGame() {
-    itemEl.classList.remove('shown');
+    if (!state.running) return;
+    state.running = false;
+    state.paused = false;
+    cancelAnimationFrame(state.rafId);
+    clearTimeout(state._fbTimer);
+    feedbackEl.classList.remove('show');
+    if (dragItem) endDrag();
+    clearItems();
     streakEl.classList.remove('show');
-    const L = t();
 
+    const L = t();
     $('#finalScore').textContent = state.score;
     $('#endCorrect').textContent = state.correct;
     $('#endWrong').textContent   = state.wrong;
     $('#endStreak').textContent  = state.maxStreak;
 
-    let rankKey, msgKey;
-    if (state.lives <= 0) {
-      $('#endTitle').textContent = L.end.gameOver;
-      rankKey = 'fail'; msgKey = 'fail';
-    } else {
-      $('#endTitle').textContent = L.end.clear;
-      const ratio = state.correct / TOTAL_ROUNDS;
-      if (state.wrong === 0 && state.score >= 2400) { rankKey = 'master'; msgKey = 'master'; }
-      else if (ratio >= 0.9) { rankKey = 'gold';   msgKey = 'gold'; }
-      else if (ratio >= 0.7) { rankKey = 'silver'; msgKey = 'silver'; }
-      else                    { rankKey = 'bronze'; msgKey = 'bronze'; }
-    }
+    $('#endTitle').textContent = L.end.gameOver;
+    let rankKey;
+    if (state.score >= 3000) rankKey = 'master';
+    else if (state.score >= 1800) rankKey = 'gold';
+    else if (state.score >= 900) rankKey = 'silver';
+    else rankKey = 'bronze';
     $('#rank').textContent       = L.end.ranks[rankKey];
-    $('#endMessage').textContent = L.end.msgs[msgKey];
-
+    $('#endMessage').textContent = L.end.msgs[rankKey];
     $('#endOverlay').classList.remove('hidden');
+    updateHUD();
   }
 
   function startGame() {
+    cancelAnimationFrame(state.rafId);
+    clearTimeout(state._fbTimer);
+    if (dragItem) { dragItem = null; dragPointerId = null; }
+    clearItems();
     state.score = 0;
     state.lives = MAX_LIVES;
     state.streak = 0;
     state.maxStreak = 0;
     state.correct = 0;
     state.wrong = 0;
-    state.busy = false;
-    state.awaitingResume = false;
-    state.current = null;
-    state.queue = shuffle(ITEMS).slice(0, TOTAL_ROUNDS);
+    state.elapsed = 0;
+    state.spawnTimer = 400;
+    state.lastTs = 0;
+    state.paused = false;
+    state.running = true;
+    bag = [];
 
     feedbackEl.classList.remove('show');
     $('#startOverlay').classList.add('hidden');
     $('#endOverlay').classList.add('hidden');
+    hintEl.style.opacity = '1';
     updateHUD();
     updateStreak();
-    spawnItem();
+    state.rafId = requestAnimationFrame(tick);
   }
-
-  // ============ Drag (Pointer Events) ============
-  let dragging = false;
-  let pointerId = null;
-  let offsetX = 0, offsetY = 0;
-
-  function onPointerDown(e) {
-    if (state.busy || !state.current) return;
-    if (e.button !== undefined && e.button !== 0) return;
-    dragging = true;
-    pointerId = e.pointerId;
-    itemEl.classList.add('dragging');
-    itemEl.classList.remove('return');
-    hintEl.style.opacity = '0';
-
-    const rect = itemEl.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-    try { itemEl.setPointerCapture(pointerId); } catch (_) {}
-    e.preventDefault();
-  }
-
-  function onPointerMove(e) {
-    if (!dragging) return;
-    const appRect = app.getBoundingClientRect();
-    const x = e.clientX - appRect.left - offsetX;
-    const y = e.clientY - appRect.top  - offsetY;
-    setItemPos(x, y);
-
-    let hovered = null;
-    for (const b of bins) {
-      const r = b.getBoundingClientRect();
-      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
-        hovered = b; break;
-      }
-    }
-    for (const b of bins) b.classList.toggle('hover', b === hovered);
-  }
-
-  function onPointerUp(e) {
-    if (!dragging) return;
-    dragging = false;
-    itemEl.classList.remove('dragging');
-    try { itemEl.releasePointerCapture(pointerId); } catch (_) {}
-    pointerId = null;
-
-    let target = null;
-    for (const b of bins) {
-      b.classList.remove('hover');
-      const r = b.getBoundingClientRect();
-      if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
-        target = b;
-      }
-    }
-    if (target) handleDrop(target.dataset.type);
-    else returnToCenter();
-  }
-
-  itemEl.addEventListener('pointerdown',  onPointerDown);
-  itemEl.addEventListener('pointermove',  onPointerMove);
-  itemEl.addEventListener('pointerup',    onPointerUp);
-  itemEl.addEventListener('pointercancel', onPointerUp);
 
   $('#startBtn').addEventListener('click', startGame);
   $('#restartBtn').addEventListener('click', startGame);
@@ -1481,13 +1589,6 @@
       }
     } catch (_) {}
   };
-
-  window.addEventListener('resize', () => {
-    if (!dragging && state.current && itemEl.classList.contains('shown')) {
-      const c = getCenterPos();
-      setItemPos(c.x, c.y);
-    }
-  });
 
   document.addEventListener('gesturestart', (e) => e.preventDefault());
   document.addEventListener('contextmenu', (e) => e.preventDefault());
