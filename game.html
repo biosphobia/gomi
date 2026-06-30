@@ -294,7 +294,7 @@
   .overlay {
     position: absolute;
     inset: 0;
-    background: rgba(250, 246, 240, 0.97);
+    background: rgba(241, 248, 243, 0.97);
     z-index: 100;
     display: flex;
     flex-direction: column;
@@ -396,6 +396,60 @@
   .rank { font-size: 20px; font-weight: 700; margin: 12px 0 8px; }
   .end-stats { display: flex; gap: 18px; margin: 8px 0 16px; color: #555; font-size: 12px; }
   .end-stats div b { color: #333; font-size: 16px; display: block; }
+
+  /* Results: what you sorted right / wrong */
+  .result-lists {
+    width: 100%;
+    max-width: 460px;
+    margin: 4px 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .result-group {
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    text-align: left;
+  }
+  .result-group h4 {
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .result-group.ok h4   { color: #1f9d4d; }
+  .result-group.bad h4  { color: var(--c-red); }
+  .result-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .result-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 4px 10px 4px 8px;
+    font-size: 12px;
+    line-height: 1.2;
+    border: 1px solid var(--c-line);
+    background: var(--c-bg);
+    max-width: 100%;
+  }
+  .result-group.ok  .result-chip { border-color: #bfe6cd; background: var(--c-accent-soft); }
+  .result-group.bad .result-chip { border-color: #f3c9c9; background: var(--c-red-soft); }
+  .result-chip .rc-ic { font-size: 16px; line-height: 1; flex-shrink: 0; }
+  .result-chip .rc-nm { font-weight: 600; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .result-chip .rc-cat {
+    font-size: 10px;
+    color: var(--c-red);
+    background: #fff;
+    border-radius: 999px;
+    padding: 1px 7px;
+    border: 1px solid #f3c9c9;
+    flex-shrink: 0;
+  }
+  .result-empty { font-size: 12px; color: var(--c-muted); }
   .footer-note {
     font-size: 10px;
     color: var(--c-muted);
@@ -520,6 +574,7 @@
       <div><span id="endLblStreak"></span><b id="endStreak">0</b></div>
     </div>
     <p class="lead" id="endMessage"></p>
+    <div class="result-lists" id="resultLists"></div>
     <button class="btn" id="restartBtn">もう一度</button>
   </div>
 </div>
@@ -1112,6 +1167,7 @@
     score: 0,
     lives: MAX_LIVES,
     items: [],            // active game items
+    results: [],          // every sorted item: { data, correct }
     nextId: 1,
     streak: 0,
     maxStreak: 0,
@@ -1451,6 +1507,7 @@
       state.streak = 0;
       state.lives--;
     }
+    state.results.push({ data: it.data, correct });
     updateStreak();
     showFeedback(correct, it.data, points);
     reactAt(correct);
@@ -1554,8 +1611,37 @@
     else rankKey = 'bronze';
     $('#rank').textContent       = L.end.ranks[rankKey];
     $('#endMessage').textContent = L.end.msgs[rankKey];
+    renderResults(L);
     $('#endOverlay').classList.remove('hidden');
     updateHUD();
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  // List every sorted item, split into Correct and Wrong groups.
+  function renderResults(L) {
+    const box = $('#resultLists');
+    box.innerHTML = '';
+    const right = state.results.filter(r => r.correct);
+    const wrong = state.results.filter(r => !r.correct);
+
+    const group = (cls, mark, label, list, showCat) => {
+      const g = document.createElement('div');
+      g.className = 'result-group ' + cls;
+      const chips = list.map(r => {
+        const nm = getName(r.data);
+        const cat = showCat ? `<span class="rc-cat">${escapeHtml(L.bin[r.data.t].name.replace(/<[^>]*>/g, ''))}</span>` : '';
+        return `<span class="result-chip"><span class="rc-ic">${r.data.i}</span><span class="rc-nm">${escapeHtml(nm)}</span>${cat}</span>`;
+      }).join('');
+      g.innerHTML = `<h4>${mark} ${escapeHtml(label)} (${list.length})</h4>` +
+        (list.length ? `<div class="result-chips">${chips}</div>` : `<div class="result-empty">—</div>`);
+      return g;
+    };
+
+    box.appendChild(group('ok',  '◯', L.end.correct, right, false));
+    box.appendChild(group('bad', '✕', L.end.wrong,   wrong, true));
   }
 
   function startGame() {
@@ -1569,6 +1655,7 @@
     state.maxStreak = 0;
     state.correct = 0;
     state.wrong = 0;
+    state.results = [];
     state.elapsed = 0;
     state.spawnTimer = 400;
     state.lastTs = 0;
