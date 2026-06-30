@@ -7,8 +7,9 @@
 <link rel="icon" href="images/logo.svg" />
 <link rel="stylesheet" href="styles.css" />
 <style>
+  /* White field with a red disc in the corner — Japanese-flag motif. */
   .hero {
-    background: linear-gradient(135deg, #e9f6ee 0%, #d6efdd 100%);
+    background: #ffffff;
     border: 1px solid var(--c-line);
     border-radius: var(--radius);
     padding: 26px 22px;
@@ -19,14 +20,17 @@
   .hero::after {
     content: '';
     position: absolute;
-    top: -30px; right: -30px;
-    width: 120px; height: 120px;
+    top: 18px; right: 20px;
+    width: 84px; height: 84px;
     border-radius: 50%;
     background: var(--c-red);
-    opacity: 0.10;
   }
-  .hero h1 { margin-bottom: 8px; }
-  .hero .lead { margin-bottom: 0; font-size: 14px; }
+  .hero h1 { margin-bottom: 8px; max-width: calc(100% - 96px); }
+  .hero .lead { margin-bottom: 0; font-size: 14px; max-width: calc(100% - 96px); }
+  @media (max-width: 420px) {
+    .hero::after { width: 60px; height: 60px; top: 16px; right: 16px; }
+    .hero h1, .hero .lead { max-width: calc(100% - 72px); }
+  }
 
   .cat-grid {
     display: grid;
