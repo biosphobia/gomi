@@ -33,12 +33,12 @@
 
   // ---------- Site-wide header strings ----------
   const SITE_I18N = {
-    ja: { brand: '🏯 大阪サポート', navHome: 'ホーム', navGame: 'ごみゲーム', navKana: 'かなクイズ', navVideos: '動画', navContact: '相談チャット' },
-    en: { brand: '🏯 Osaka Support', navHome: 'Home', navGame: 'Trash Game', navKana: 'Kana Quiz', navVideos: 'Videos', navContact: 'Contact' },
-    zh: { brand: '🏯 大阪支援',     navHome: '首页', navGame: '垃圾游戏', navKana: '假名测验', navVideos: '视频', navContact: '咨询' },
-    ko: { brand: '🏯 오사카 서포트', navHome: '홈',   navGame: '쓰레기 게임', navKana: '가나 퀴즈', navVideos: '동영상', navContact: '상담' },
-    my: { brand: '🏯 အိုဆာကာ အကူအညီ', navHome: 'ပင်မ', navGame: 'အမှိုက်ဂိမ်း', navKana: 'ကာနာ ပဟေဠိ', navVideos: 'ဗီဒီယို', navContact: 'ဆက်သွယ်ရန်' },
-    vi: { brand: '🏯 Hỗ trợ Osaka',   navHome: 'Trang chủ', navGame: 'Trò chơi rác', navKana: 'Trắc nghiệm Kana', navVideos: 'Video', navContact: 'Liên hệ' },
+    ja: { brand: '大阪サポート', navHome: 'ホーム', navDaily: '生活', navGames: 'ゲーム', navEju: 'EJU' },
+    en: { brand: 'Osaka Support', navHome: 'Home', navDaily: 'Daily Life', navGames: 'Games', navEju: 'EJU' },
+    zh: { brand: '大阪支援',     navHome: '首页', navDaily: '日常生活', navGames: '游戏', navEju: 'EJU' },
+    ko: { brand: '오사카 서포트', navHome: '홈',   navDaily: '생활', navGames: '게임', navEju: 'EJU' },
+    my: { brand: 'အိုဆာကာ အကူအညီ', navHome: 'ပင်မ', navDaily: 'နေ့စဉ်ဘဝ', navGames: 'ဂိမ်းများ', navEju: 'EJU' },
+    vi: { brand: 'Hỗ trợ Osaka',   navHome: 'Trang chủ', navDaily: 'Đời sống', navGames: 'Trò chơi', navEju: 'EJU' },
   };
 
   // ---------- Header rendering ----------
@@ -47,8 +47,14 @@
     const L = SITE_I18N[lang] || SITE_I18N.ja;
     document.documentElement.lang = lang;
 
-    const brand = document.querySelector('.site-brand');
-    if (brand) brand.textContent = L.brand;
+    // Brand text sits in .site-brand-text (next to the logo image).
+    // Fall back to the whole .site-brand if the span isn't present.
+    const brandText = document.querySelector('.site-brand-text');
+    if (brandText) brandText.textContent = L.brand;
+    else {
+      const brand = document.querySelector('.site-brand');
+      if (brand) brand.textContent = L.brand;
+    }
 
     document.querySelectorAll('[data-nav]').forEach(el => {
       const key = 'nav' + el.dataset.nav.charAt(0).toUpperCase() + el.dataset.nav.slice(1);

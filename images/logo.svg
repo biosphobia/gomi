@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Site logo. This is the editable logo for the whole website.
+  It is plain SVG text, so you can edit it directly on GitHub
+  (colors, shape, text) or replace this file entirely with your
+  own logo (keep the filename images/logo.svg, or change the
+  <img src="images/logo.svg"> reference in each page's header).
+
+  Theme colors:
+    green  #1f9d4d
+    white  #ffffff
+    red    #d83a3a
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Osaka Support logo">
+  <!-- green badge background -->
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="#1f9d4d"/>
+  <!-- red rising-sun disc -->
+  <circle cx="32" cy="28" r="11" fill="#d83a3a"/>
+  <!-- white torii gate -->
+  <g fill="#ffffff">
+    <!-- top beam (kasagi) -->
+    <rect x="13" y="14" width="38" height="5" rx="2"/>
+    <!-- second beam (nuki) -->
+    <rect x="18" y="22" width="28" height="4" rx="1.5"/>
+    <!-- left pillar -->
+    <rect x="21" y="14" width="5" height="34" rx="1.5"/>
+    <!-- right pillar -->
+    <rect x="38" y="14" width="5" height="34" rx="1.5"/>
+  </g>
+</svg>

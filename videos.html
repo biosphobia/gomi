@@ -17,7 +17,7 @@
     transition: background 0.15s ease, border-color 0.15s ease;
   }
   .upload-box.drag {
-    background: #fff5ee;
+    background: var(--c-accent-soft);
     border-color: var(--c-accent);
   }
   .upload-box input[type="file"] { display: none; }
@@ -32,7 +32,7 @@
     font-weight: 700;
     font-size: 13px;
     cursor: pointer;
-    box-shadow: 0 3px 8px rgba(255, 106, 77, 0.3);
+    box-shadow: 0 3px 8px rgba(31, 157, 77, 0.3);
   }
   .upload-label:active { transform: translateY(1px); }
   .upload-hint {
@@ -42,7 +42,7 @@
   }
   .upload-current-lang {
     display: inline-block;
-    background: #fff3e8;
+    background: var(--c-accent-soft);
     color: var(--c-accent);
     border-radius: 999px;
     padding: 2px 10px;
@@ -121,13 +121,15 @@
 <body>
 
 <header class="site-header">
-  <a href="index.html" class="site-brand">🏯 大阪サポート</a>
+  <a href="index.html" class="site-brand">
+    <img src="images/logo.svg" class="site-logo" alt="" />
+    <span class="site-brand-text">大阪サポート</span>
+  </a>
   <nav class="site-nav">
-    <a href="index.html"  class="nav-link" data-page="home"   data-nav="home">ホーム</a>
-    <a href="game.html"   class="nav-link" data-page="game"   data-nav="game">ごみゲーム</a>
-    <a href="kana.html"   class="nav-link" data-page="kana"   data-nav="kana">かなクイズ</a>
-    <a href="videos.html" class="nav-link" data-page="videos" data-nav="videos">動画</a>
-    <a href="contact.html" class="nav-link" data-page="contact" data-nav="contact">相談チャット</a>
+    <a href="index.html" class="nav-link" data-page="home"  data-nav="home">ホーム</a>
+    <a href="daily.html" class="nav-link" data-page="daily" data-nav="daily">生活</a>
+    <a href="games.html" class="nav-link" data-page="games" data-nav="games">ゲーム</a>
+    <a href="eju.html"   class="nav-link" data-page="eju"   data-nav="eju">EJU</a>
   </nav>
   <button class="site-lang-toggle" type="button">🌐 日本語</button>
 </header>
@@ -377,7 +379,7 @@
   });
 
   function refreshAll() {
-    applySiteHeader('videos');
+    applySiteHeader('daily');
     applyI18n();
     buildLangPills();
     renderVideos();

@@ -134,7 +134,7 @@
   }
   .cat-toggle.on {
     border-color: var(--c-accent);
-    background: #fff5ee;
+    background: var(--c-accent-soft);
     color: var(--c-accent);
   }
   .cat-toggle.on .cat-kana { background: var(--c-accent); color: #fff; }
@@ -224,7 +224,7 @@
   .kana-chip.on {
     opacity: 1;
     border-color: var(--c-accent);
-    background: #fff5ee;
+    background: var(--c-accent-soft);
   }
   .kana-chip.on .rj { color: var(--c-accent); font-weight: 600; }
 
@@ -250,7 +250,7 @@
     cursor: pointer;
     background: var(--c-panel);
   }
-  .mode-card.active { border-color: var(--c-accent); background: #fff5ee; }
+  .mode-card.active { border-color: var(--c-accent); background: var(--c-accent-soft); }
   .mode-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
   .mode-card p { font-size: 11.5px; color: var(--c-muted); line-height: 1.4; }
   .count-options {
@@ -412,13 +412,15 @@
 <body>
 
 <header class="site-header">
-  <a href="index.html" class="site-brand">🏯 大阪サポート</a>
+  <a href="index.html" class="site-brand">
+    <img src="images/logo.svg" class="site-logo" alt="" />
+    <span class="site-brand-text">大阪サポート</span>
+  </a>
   <nav class="site-nav">
-    <a href="index.html"   class="nav-link" data-page="home"    data-nav="home">ホーム</a>
-    <a href="game.html"    class="nav-link" data-page="game"    data-nav="game">ごみゲーム</a>
-    <a href="kana.html"    class="nav-link" data-page="kana"    data-nav="kana">かなクイズ</a>
-    <a href="videos.html"  class="nav-link" data-page="videos"  data-nav="videos">動画</a>
-    <a href="contact.html" class="nav-link" data-page="contact" data-nav="contact">相談チャット</a>
+    <a href="index.html" class="nav-link" data-page="home"  data-nav="home">ホーム</a>
+    <a href="daily.html" class="nav-link" data-page="daily" data-nav="daily">生活</a>
+    <a href="games.html" class="nav-link" data-page="games" data-nav="games">ゲーム</a>
+    <a href="eju.html"   class="nav-link" data-page="eju"   data-nav="eju">EJU</a>
   </nav>
   <button class="site-lang-toggle" type="button">🌐 日本語</button>
 </header>
@@ -1300,8 +1302,8 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
     state.selected.k.add(c.h);
   }
 
-  applySiteHeader('kana');
-  setupLangToggle(() => { applySiteHeader('kana'); applyI18n(); });
+  applySiteHeader('games');
+  setupLangToggle(() => { applySiteHeader('games'); applyI18n(); });
 
   buildGrid();
   buildCountOptions();

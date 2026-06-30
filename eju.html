@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>EJU — Osaka Support</title>
+<link rel="icon" href="images/logo.svg" />
+<link rel="stylesheet" href="styles.css" />
+<style>
+  .coming {
+    text-align: center;
+    padding: 50px 20px;
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+  .coming .big { font-size: 64px; line-height: 1; margin-bottom: 12px; }
+  .coming h1 { font-size: 26px; margin-bottom: 8px; }
+  .coming p { color: var(--c-muted); font-size: 14px; line-height: 1.6; max-width: 420px; margin: 0 auto; }
+  .coming .badge {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--c-red);
+    background: var(--c-red-soft);
+    border-radius: 999px;
+    padding: 4px 14px;
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <a href="index.html" class="site-brand">
+    <img src="images/logo.svg" class="site-logo" alt="" />
+    <span class="site-brand-text">大阪サポート</span>
+  </a>
+  <nav class="site-nav">
+    <a href="index.html" class="nav-link" data-page="home"  data-nav="home">ホーム</a>
+    <a href="daily.html" class="nav-link" data-page="daily" data-nav="daily">生活</a>
+    <a href="games.html" class="nav-link" data-page="games" data-nav="games">ゲーム</a>
+    <a href="eju.html"   class="nav-link" data-page="eju"   data-nav="eju">EJU</a>
+  </nav>
+  <button class="site-lang-toggle" type="button">🌐 日本語</button>
+</header>
+
+<main class="page">
+  <section class="coming">
+    <div class="big">📚</div>
+    <h1 id="ejuTitle">EJU 対策</h1>
+    <p id="ejuLead">日本留学試験（EJU）の対策コンテンツを準備しています。もうしばらくお待ちください。</p>
+    <span class="badge" id="ejuBadge">準備中</span>
+  </section>
+</main>
+
+<script src="common.js"></script>
+<script>
+(() => {
+  'use strict';
+  const I18N = {
+    ja: { ejuTitle:'EJU 対策', ejuLead:'日本留学試験（EJU）の対策コンテンツを準備しています。もうしばらくお待ちください。', ejuBadge:'準備中' },
+    en: { ejuTitle:'EJU Prep', ejuLead:'Content to help you prepare for the Examination for Japanese University Admission (EJU) is on the way. Stay tuned.', ejuBadge:'Coming soon' },
+    zh: { ejuTitle:'EJU 备考', ejuLead:'日本留学考试（EJU）的备考内容正在筹备中，敬请期待。', ejuBadge:'敬请期待' },
+    ko: { ejuTitle:'EJU 대비', ejuLead:'일본 유학 시험(EJU) 대비 콘텐츠를 준비 중입니다. 조금만 기다려 주세요.', ejuBadge:'준비 중' },
+    my: { ejuTitle:'EJU ပြင်ဆင်ရေး', ejuLead:'ဂျပန်တက္ကသိုလ်ဝင်ခွင့်စာမေးပွဲ (EJU) ပြင်ဆင်ရေး အကြောင်းအရာများကို ပြင်ဆင်နေပါသည်။ ခဏစောင့်ပါ။', ejuBadge:'ပြင်ဆင်ဆဲ' },
+    vi: { ejuTitle:'Ôn thi EJU', ejuLead:'Nội dung giúp bạn ôn thi Kỳ thi Du học Nhật Bản (EJU) đang được chuẩn bị. Hãy đón chờ nhé.', ejuBadge:'Sắp có' },
+  };
+  function apply() {
+    const L = I18N[getLang()] || I18N.ja;
+    for (const k in L) { const el = document.getElementById(k); if (el) el.textContent = L[k]; }
+  }
+  function refresh() { applySiteHeader('eju'); apply(); }
+  refresh();
+  setupLangToggle(refresh);
+})();
+</script>
+</body>
+</html>

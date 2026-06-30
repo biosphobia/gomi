@@ -6,19 +6,28 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --c-burnable: #e25b5b;
-  --c-recycle:  #d99431;
-  --c-plastic:  #3f7cb8;
-  --c-bg:       #faf6f0;
+  /* ---- Theme: green / white / a little red ---- */
+  --c-accent:      #1f9d4d;  /* green — primary */
+  --c-accent-2:    #157a3a;  /* darker green */
+  --c-accent-soft: #e9f6ee;  /* light green tint for selected / hover fills */
+  --c-red:         #d83a3a;  /* red — small accents, danger */
+  --c-red-soft:    #fcebeb;  /* light red tint */
+
+  --c-bg:       #f1f8f3;     /* near-white, faint green */
   --c-panel:    #ffffff;
-  --c-text:     #2a2a2a;
-  --c-muted:    #777777;
-  --c-line:     #ececec;
-  --c-accent:   #ff6a4d;
-  --c-accent-2: #ff8a3c;
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.06);
-  --shadow-md:  0 4px 12px rgba(0,0,0,0.08);
-  --shadow-lg:  0 10px 24px rgba(0,0,0,0.14);
+  --c-text:     #1d2a22;
+  --c-muted:    #6a7a6f;
+  --c-line:     #e0ece3;
+
+  /* Trash-game bin categories — kept distinct but on-theme
+     (green / red / neutral-blue-grey). */
+  --c-burnable: #d83a3a;
+  --c-recycle:  #1f9d4d;
+  --c-plastic:  #3f7cb8;
+
+  --shadow-sm:  0 1px 3px rgba(20,60,35,0.07);
+  --shadow-md:  0 4px 12px rgba(20,60,35,0.10);
+  --shadow-lg:  0 10px 24px rgba(20,60,35,0.16);
   --radius:     14px;
   --site-header-h: 56px;
 }
@@ -62,6 +71,19 @@ body {
   white-space: nowrap;
   color: var(--c-text);
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.site-logo {
+  width: 30px;
+  height: 30px;
+  display: block;
+  flex-shrink: 0;
+}
+.site-brand-text { white-space: nowrap; }
+@media (max-width: 480px) {
+  .site-brand-text { display: none; }   /* logo only on small screens */
 }
 
 .site-nav {
@@ -254,7 +276,7 @@ body {
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 3px 8px rgba(255, 106, 77, 0.3);
+  box-shadow: 0 3px 8px rgba(31, 157, 77, 0.28);
   font-family: inherit;
   text-decoration: none;
   display: inline-block;

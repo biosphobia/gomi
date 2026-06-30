@@ -9,7 +9,7 @@
 <style>
   /* ----- Privacy banner ----- */
   .privacy-banner {
-    background: #fff8eb;
+    background: #eef7f0;
     border: 1px solid #f3e0b8;
     border-radius: var(--radius);
     padding: 14px 16px;
@@ -200,7 +200,7 @@
     color: var(--c-text);
     white-space: nowrap;
   }
-  .chat-icon-btn:hover { background: #f0ebe2; }
+  .chat-icon-btn:hover { background: var(--c-bg); }
   .chat-icon-btn.active {
     background: var(--c-accent);
     color: white;
@@ -383,7 +383,7 @@
   }
   .topic-chip:hover { background: var(--c-bg); }
   .topic-chip.active {
-    background: #fff3e8;
+    background: var(--c-accent-soft);
     border-color: var(--c-accent);
     color: var(--c-accent);
   }
@@ -400,13 +400,15 @@
 <body>
 
 <header class="site-header">
-  <a href="index.html" class="site-brand">🏯 大阪サポート</a>
+  <a href="index.html" class="site-brand">
+    <img src="images/logo.svg" class="site-logo" alt="" />
+    <span class="site-brand-text">大阪サポート</span>
+  </a>
   <nav class="site-nav">
-    <a href="index.html"   class="nav-link" data-page="home"    data-nav="home">ホーム</a>
-    <a href="game.html"    class="nav-link" data-page="game"    data-nav="game">ごみゲーム</a>
-    <a href="kana.html"    class="nav-link" data-page="kana"    data-nav="kana">かなクイズ</a>
-    <a href="videos.html"  class="nav-link" data-page="videos"  data-nav="videos">動画</a>
-    <a href="contact.html" class="nav-link" data-page="contact" data-nav="contact">相談チャット</a>
+    <a href="index.html" class="nav-link" data-page="home"  data-nav="home">ホーム</a>
+    <a href="daily.html" class="nav-link" data-page="daily" data-nav="daily">生活</a>
+    <a href="games.html" class="nav-link" data-page="games" data-nav="games">ゲーム</a>
+    <a href="eju.html"   class="nav-link" data-page="eju"   data-nav="eju">EJU</a>
   </nav>
   <button class="site-lang-toggle" type="button">🌐 日本語</button>
 </header>
@@ -1698,9 +1700,9 @@ $('lightbox').addEventListener('click', () => {
 /* ====================================================
    Site header + language sync
    ==================================================== */
-applySiteHeader('contact');
+applySiteHeader('daily');
 setupLangToggle(() => {
-  applySiteHeader('contact');
+  applySiteHeader('daily');
   state.selectedLang = getLang();
   applyI18n();
   if (state.view === 'chat') renderMessages();

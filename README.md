@@ -38,19 +38,44 @@ persists across pages.
 
 ```
 .
-├── index.html        landing page (hero, feature cards, emergency contacts, tips)
+├── index.html        home — 3 category cards (Daily Life / Games / EJU)
+├── daily.html        Daily Life hub → Videos + Contact, emergency info, tips
+├── games.html        Games hub → Trash game + Kana quiz
+├── eju.html          EJU placeholder ("coming soon")
 ├── game.html         trash-sorting game
 ├── kana.html         hiragana/katakana quiz (optional Google TTS audio)
 ├── videos.html       per-language video library
 ├── contact.html      anonymous chat (Firebase)
-├── styles.css        shared site styles (header, nav, cards, language picker)
-├── common.js         LANGS, getLang/setLang, site-header rendering, VideoDB
+├── images/
+│   └── logo.svg      site logo (editable SVG — see "Branding" below)
+├── styles.css        shared site styles + theme colors (the :root block)
+├── common.js         LANGS, header/nav rendering, VideoDB, reaction popups
 ├── render.yaml       Render Blueprint — declares env vars, build command, headers
 └── README.md         this file
 ```
 
 No build system. The whole site is plain HTML / CSS / vanilla JS. Firebase
 is loaded as ES modules from the Google CDN at runtime.
+
+### Navigation
+
+The header is the same on every page: a logo + four top-level tabs —
+**Home**, **Daily Life**, **Games**, **EJU**. Daily Life and Games are hub
+pages that link to the actual tools; the individual tool pages (videos,
+contact, game, kana) highlight their parent tab.
+
+### Branding (logo & colors)
+
+- **Logo:** `images/logo.svg` is plain SVG text, so you can edit it
+  directly on GitHub (change shapes/colors) or replace the file with your
+  own logo — keep the path `images/logo.svg` (every page's header points at
+  it) or update the `<img src="images/logo.svg">` in each header.
+- **Colors:** the whole site is themed from the `:root` block at the top of
+  `styles.css` — green (`--c-accent`), white (`--c-bg` / `--c-panel`), and a
+  little red (`--c-red`). Change those variables to re-theme everything,
+  games included. The trash-game bin categories use `--c-burnable` (red),
+  `--c-recycle` (green), and `--c-plastic` (blue) so the three bins stay
+  distinguishable.
 
 ---
 

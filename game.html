@@ -71,7 +71,7 @@
     font-family: inherit;
     white-space: nowrap;
   }
-  .lang-toggle:hover { background: #f0ebe2; }
+  .lang-toggle:hover { background: var(--c-bg); }
 
   .stats { display: flex; gap: 10px; }
   .stat {
@@ -87,7 +87,7 @@
   /* Play area */
   .play-area {
     flex: 1;
-    background: radial-gradient(circle at 50% 44%, #ffffff 0%, #fbf4e9 100%);
+    background: radial-gradient(circle at 50% 44%, #ffffff 0%, #eef7f0 100%);
     border-radius: var(--radius);
     box-shadow: var(--shadow-sm);
     position: relative;
@@ -137,13 +137,13 @@
     position: absolute;
     top: 14px;
     right: 14px;
-    background: #fff3e8;
+    background: var(--c-accent-soft);
     color: var(--c-accent);
     font-size: 12px;
     font-weight: 700;
     padding: 4px 10px;
     border-radius: 999px;
-    border: 1px solid #ffd5c0;
+    border: 1px solid #cdebd6;
     opacity: 0;
     transform: scale(0.6);
     transition: all 0.2s ease;
@@ -218,7 +218,7 @@
   .bin.plastic  { border-top-color: var(--c-plastic); }
   .bin.hover { transform: translateY(-6px) scale(1.02); box-shadow: var(--shadow-md); }
   .bin.hover.burnable { background: #fff5f5; }
-  .bin.hover.recycle  { background: #fff8eb; }
+  .bin.hover.recycle  { background: #eef7f0; }
   .bin.hover.plastic  { background: #f0f6fc; }
   .bin-icon { font-size: 46px; line-height: 1; }
   .bin-name { font-size: 15px; font-weight: 800; color: #333; line-height: 1.2; }
@@ -264,7 +264,7 @@
   }
   .points {
     display: inline-block;
-    background: #fff3e8;
+    background: var(--c-accent-soft);
     color: var(--c-accent);
     font-weight: 700;
     padding: 2px 10px;
@@ -283,7 +283,7 @@
     cursor: pointer;
     margin-top: 12px;
     font-family: inherit;
-    box-shadow: 0 3px 8px rgba(255, 106, 77, 0.3);
+    box-shadow: 0 3px 8px rgba(31, 157, 77, 0.3);
   }
   .feedback-btn:active { transform: translateY(1px); }
 
@@ -376,11 +376,11 @@
     font-size: 16px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(255, 106, 77, 0.3);
+    box-shadow: 0 4px 10px rgba(31, 157, 77, 0.3);
     font-family: inherit;
     transition: transform 0.1s ease, box-shadow 0.1s ease;
   }
-  .btn:active { transform: translateY(2px); box-shadow: 0 2px 4px rgba(255, 106, 77, 0.3); }
+  .btn:active { transform: translateY(2px); box-shadow: 0 2px 4px rgba(31, 157, 77, 0.3); }
 
   .score-big {
     font-size: 52px;
@@ -432,13 +432,15 @@
 <body>
 
 <header class="site-header">
-  <a href="index.html" class="site-brand">🏯 大阪サポート</a>
+  <a href="index.html" class="site-brand">
+    <img src="images/logo.svg" class="site-logo" alt="" />
+    <span class="site-brand-text">大阪サポート</span>
+  </a>
   <nav class="site-nav">
-    <a href="index.html"  class="nav-link" data-page="home"   data-nav="home">ホーム</a>
-    <a href="game.html"   class="nav-link" data-page="game"   data-nav="game">ごみゲーム</a>
-    <a href="kana.html"   class="nav-link" data-page="kana"   data-nav="kana">かなクイズ</a>
-    <a href="videos.html" class="nav-link" data-page="videos" data-nav="videos">動画</a>
-    <a href="contact.html" class="nav-link" data-page="contact" data-nav="contact">相談チャット</a>
+    <a href="index.html" class="nav-link" data-page="home"  data-nav="home">ホーム</a>
+    <a href="daily.html" class="nav-link" data-page="daily" data-nav="daily">生活</a>
+    <a href="games.html" class="nav-link" data-page="games" data-nav="games">ゲーム</a>
+    <a href="eju.html"   class="nav-link" data-page="eju"   data-nav="eju">EJU</a>
   </nav>
   <button class="site-lang-toggle" type="button">🌐 日本語</button>
 </header>
@@ -1503,9 +1505,9 @@
 <!-- Shared site header wiring -->
 <script src="common.js"></script>
 <script>
-  applySiteHeader('game');
+  applySiteHeader('games');
   setupLangToggle(() => {
-    applySiteHeader('game');
+    applySiteHeader('games');
     if (window.__gameSyncLang) window.__gameSyncLang();
   });
 </script>

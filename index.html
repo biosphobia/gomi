@@ -3,31 +3,80 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>🏯 大阪サポート / Osaka Support</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏯</text></svg>" />
+<title>大阪サポート / Osaka Support</title>
+<link rel="icon" href="images/logo.svg" />
 <link rel="stylesheet" href="styles.css" />
 <style>
   .hero {
-    background: linear-gradient(135deg, #fff3e8 0%, #ffe0c8 100%);
+    background: linear-gradient(135deg, #e9f6ee 0%, #d6efdd 100%);
     border: 1px solid var(--c-line);
     border-radius: var(--radius);
     padding: 26px 22px;
-    margin-bottom: 8px;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: var(--c-red);
+    opacity: 0.10;
   }
   .hero h1 { margin-bottom: 8px; }
   .hero .lead { margin-bottom: 0; font-size: 14px; }
+
+  .cat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin-bottom: 8px;
+  }
+  .cat-card {
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    text-decoration: none;
+    color: var(--c-text);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-top: 5px solid var(--c-accent);
+  }
+  .cat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .cat-card.soon { border-top-color: var(--c-red); opacity: 0.92; }
+  .cat-icon { font-size: 42px; line-height: 1; margin-bottom: 4px; }
+  .cat-card h3 { font-size: 18px; font-weight: 800; }
+  .cat-card p { font-size: 13px; color: var(--c-muted); line-height: 1.5; }
+  .cat-badge {
+    align-self: flex-start;
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--c-red);
+    background: var(--c-red-soft);
+    border-radius: 999px;
+    padding: 2px 10px;
+  }
 </style>
 </head>
 <body>
 
 <header class="site-header">
-  <a href="index.html" class="site-brand">🏯 大阪サポート</a>
+  <a href="index.html" class="site-brand">
+    <img src="images/logo.svg" class="site-logo" alt="" />
+    <span class="site-brand-text">大阪サポート</span>
+  </a>
   <nav class="site-nav">
-    <a href="index.html"  class="nav-link" data-page="home"   data-nav="home">ホーム</a>
-    <a href="game.html"   class="nav-link" data-page="game"   data-nav="game">ごみゲーム</a>
-    <a href="kana.html"   class="nav-link" data-page="kana"   data-nav="kana">かなクイズ</a>
-    <a href="videos.html" class="nav-link" data-page="videos" data-nav="videos">動画</a>
-    <a href="contact.html" class="nav-link" data-page="contact" data-nav="contact">相談チャット</a>
+    <a href="index.html" class="nav-link" data-page="home"  data-nav="home">ホーム</a>
+    <a href="daily.html" class="nav-link" data-page="daily" data-nav="daily">生活</a>
+    <a href="games.html" class="nav-link" data-page="games" data-nav="games">ゲーム</a>
+    <a href="eju.html"   class="nav-link" data-page="eju"   data-nav="eju">EJU</a>
   </nav>
   <button class="site-lang-toggle" type="button">🌐 日本語</button>
 </header>
@@ -38,41 +87,23 @@
     <p class="lead" id="heroLead">大阪での生活に役立つガイドとツールをまとめました。</p>
   </section>
 
-  <section class="feature-grid">
-    <a href="game.html" class="feature-card">
-      <div class="feature-icon">🗑️</div>
-      <h3 id="card1Title">大阪市ごみ分別ゲーム</h3>
-      <p  id="card1Desc">大阪市の分別ルールをゲームで学ぼう。100種類のごみを正しい箱に分けよう。</p>
+  <section class="cat-grid">
+    <a href="daily.html" class="cat-card">
+      <div class="cat-icon">🌸</div>
+      <h3 id="catDailyT">生活</h3>
+      <p id="catDailyD">動画ガイドと、匿名の相談チャット。</p>
     </a>
-    <a href="kana.html" class="feature-card">
-      <div class="feature-icon">📝</div>
-      <h3 id="card3Title">かなクイズ</h3>
-      <p  id="card3Desc">ひらがな・カタカナを練習しよう。行ごとに出題範囲を選べます。</p>
+    <a href="games.html" class="cat-card">
+      <div class="cat-icon">🎮</div>
+      <h3 id="catGamesT">ゲーム</h3>
+      <p id="catGamesD">ごみ分別ゲームとかなクイズで楽しく学ぼう。</p>
     </a>
-    <a href="videos.html" class="feature-card">
-      <div class="feature-icon">🎬</div>
-      <h3 id="card2Title">アニメーション動画</h3>
-      <p  id="card2Desc">言語別に解説アニメーション動画をアップロード・視聴できます。</p>
+    <a href="eju.html" class="cat-card soon">
+      <div class="cat-icon">📚</div>
+      <h3 id="catEjuT">EJU</h3>
+      <p id="catEjuD">日本留学試験の対策。近日公開。</p>
+      <span class="cat-badge" id="catEjuBadge">準備中</span>
     </a>
-  </section>
-
-  <section class="info-card">
-    <h3 id="infoTitle">🚨 緊急連絡先 / Emergency</h3>
-    <ul>
-      <li><span class="icon">👮</span><span class="num">110</span> <span id="info110">警察（けいさつ）</span></li>
-      <li><span class="icon">🚑</span><span class="num">119</span> <span id="info119">救急・消防</span></li>
-      <li><span class="icon">📞</span><span class="num">06-6773-6533</span> <span id="infoOsaka">大阪国際交流センター・外国人相談</span></li>
-    </ul>
-  </section>
-
-  <section class="info-card">
-    <h3 id="tipsTitle">📌 大阪での生活のヒント</h3>
-    <ul>
-      <li><span class="icon">🗑️</span><span id="tip1">ごみは決められた曜日に、地域のルールに従って出します。</span></li>
-      <li><span class="icon">🚇</span><span id="tip2">交通系ICカード（ICOCA / PiTaPa）が便利です。</span></li>
-      <li><span class="icon">🏥</span><span id="tip3">国民健康保険への加入は市役所で手続きできます。</span></li>
-      <li><span class="icon">📑</span><span id="tip4">在留カードは常に携帯しましょう。</span></li>
-    </ul>
   </section>
 
   <p class="muted center" id="footerNote" style="margin-top:24px;font-size:11px;">
@@ -84,144 +115,43 @@
 <script>
 (() => {
   'use strict';
-
   const HOME_I18N = {
-    ja: {
-      heroTitle: '大阪で暮らす皆さんへ',
-      heroLead: '大阪での生活に役立つガイドとツールをまとめました。',
-      card1Title: '大阪市ごみ分別ゲーム',
-      card1Desc:  '大阪市の分別ルールをゲームで学ぼう。100種類のごみを正しい箱に分けよう。',
-      card2Title: 'アニメーション動画',
-      card2Desc:  '言語別に解説アニメーション動画をアップロード・視聴できます。',
-      card3Title: 'かなクイズ',
-      card3Desc:  'ひらがな・カタカナを練習しよう。行ごとに出題範囲を選べます。',
-      infoTitle:  '🚨 緊急連絡先 / Emergency',
-      info110:    '警察（けいさつ）',
-      info119:    '救急・消防',
-      infoOsaka:  '大阪国際交流センター・外国人相談',
-      tipsTitle:  '📌 大阪での生活のヒント',
-      tip1: 'ごみは決められた曜日に、地域のルールに従って出します。',
-      tip2: '交通系ICカード（ICOCA / PiTaPa）が便利です。',
-      tip3: '国民健康保険への加入は市役所で手続きできます。',
-      tip4: '在留カードは常に携帯しましょう。',
-      footerNote: '本サイトは個人の参考用です。公式情報は大阪市公式サイトをご確認ください。',
-    },
-    en: {
-      heroTitle: 'Welcome to life in Osaka',
-      heroLead:  'A small collection of guides and tools to help with daily life in Osaka.',
-      card1Title: 'Trash Sorting Game',
-      card1Desc:  'Learn Osaka’s sorting rules through play — 100 trash items, three bins.',
-      card2Title: 'Animation Videos',
-      card2Desc:  'Upload and watch explanation animations organized by language.',
-      card3Title: 'Kana Quiz',
-      card3Desc:  'Practice hiragana & katakana. Pick exactly which rows and kana to drill.',
-      infoTitle:  '🚨 Emergency contacts',
-      info110:    'Police',
-      info119:    'Ambulance / Fire',
-      infoOsaka:  'Osaka International House — foreign resident hotline',
-      tipsTitle:  '📌 Living tips',
-      tip1: 'Put out trash on the scheduled day following your district’s rules.',
-      tip2: 'IC transit cards (ICOCA / PiTaPa) make getting around much easier.',
-      tip3: 'You can sign up for National Health Insurance at the ward office.',
-      tip4: 'Always carry your Residence Card (在留カード).',
-      footerNote: 'This site is for personal reference. Please check the Osaka City official site for current rules.',
-    },
-    zh: {
-      heroTitle: '欢迎在大阪生活',
-      heroLead:  '为在大阪生活的人士整理的实用指南和工具。',
-      card1Title: '大阪垃圾分类游戏',
-      card1Desc:  '通过游戏学习大阪的垃圾分类规则 —— 100 种垃圾，3 个垃圾桶。',
-      card2Title: '动画视频',
-      card2Desc:  '按语言分类上传和观看解说动画视频。',
-      card3Title: '假名测验',
-      card3Desc:  '练习平假名和片假名，可自由选择要测验的行与假名。',
-      infoTitle:  '🚨 紧急联系电话',
-      info110:    '警察',
-      info119:    '救护车 / 消防',
-      infoOsaka:  '大阪国际交流中心・外国人咨询',
-      tipsTitle:  '📌 生活小贴士',
-      tip1: '请按所在地区的规则在指定日期投放垃圾。',
-      tip2: '交通 IC 卡 (ICOCA / PiTaPa) 出行非常方便。',
-      tip3: '可以在区役所办理国民健康保险。',
-      tip4: '请随身携带在留卡。',
-      footerNote: '本网站仅供个人参考。请以大阪市官方网站信息为准。',
-    },
-    ko: {
-      heroTitle: '오사카에서의 생활을 응원합니다',
-      heroLead:  '오사카에서의 생활에 도움이 되는 가이드와 도구 모음입니다.',
-      card1Title: '오사카 쓰레기 분리 게임',
-      card1Desc:  '게임으로 오사카의 분리수거 규칙을 배워보세요. 100가지 쓰레기, 3개의 통.',
-      card2Title: '애니메이션 동영상',
-      card2Desc:  '언어별로 설명 애니메이션을 업로드하고 시청할 수 있습니다.',
-      card3Title: '가나 퀴즈',
-      card3Desc:  '히라가나·가타카나를 연습하세요. 행과 가나를 자유롭게 선택할 수 있습니다.',
-      infoTitle:  '🚨 긴급 연락처',
-      info110:    '경찰',
-      info119:    '구급・소방',
-      infoOsaka:  '오사카 국제교류센터・외국인 상담',
-      tipsTitle:  '📌 생활 팁',
-      tip1: '쓰레기는 지역 규칙에 따라 지정된 요일에 배출하세요.',
-      tip2: '교통 IC 카드 (ICOCA / PiTaPa)가 매우 편리합니다.',
-      tip3: '국민건강보험 가입은 구청에서 신청할 수 있습니다.',
-      tip4: '재류 카드는 항상 휴대하세요.',
-      footerNote: '본 사이트는 개인 참고용입니다. 공식 정보는 오사카시 공식 사이트를 확인하세요.',
-    },
-    my: {
-      heroTitle: 'အိုဆာကာတွင် နေထိုင်ကြသူများအတွက်',
-      heroLead:  'အိုဆာကာတွင် နေထိုင်ရာ၌ အသုံးဝင်သော လမ်းညွှန်များနှင့် ကိရိယာများ။',
-      card1Title: 'အိုဆာကာ အမှိုက်ခွဲခြားရေးဂိမ်း',
-      card1Desc:  'ဂိမ်းဖြင့် အိုဆာကာအမှိုက်ခွဲခြားရေးစည်းမျဉ်းကို လေ့လာပါ။ အမှိုက် ၁၀၀ မျိုး၊ အမှိုက်ပုံး ၃ ခု။',
-      card2Title: 'အန်နီမေးရှင်း ဗီဒီယိုများ',
-      card2Desc:  'ဘာသာစကားအလိုက် ရှင်းပြ ဗီဒီယိုများကို တင်ပြီး ကြည့်ရှုနိုင်ပါသည်။',
-      card3Title: 'ကာနာ ပဟေဠိ',
-      card3Desc:  'ဟိရဂန၊ ကတခန ကို လေ့ကျင့်ပါ။ မေးခွန်းထုတ်မည့် အတန်းနှင့် ကာနာများကို ရွေးနိုင်သည်။',
-      infoTitle:  '🚨 အရေးပေါ်ဆက်သွယ်ရန်',
-      info110:    'ရဲ',
-      info119:    'အရေးပေါ်/မီးသတ်',
-      infoOsaka:  'အိုဆာကာ နိုင်ငံတကာစင်တာ၊ နိုင်ငံခြားသား အကြံပေး',
-      tipsTitle:  '📌 နေထိုင်ရေး အကြံပေးချက်များ',
-      tip1: 'အမှိုက်ကို သင့်ဒေသ စည်းမျဉ်းအတိုင်း သတ်မှတ်ထားသောနေ့တွင်သာ ထုတ်ပါ။',
-      tip2: 'ပို့ဆောင်ရေး IC ကတ် (ICOCA / PiTaPa) သုံးခြင်းသည် အလွန်အဆင်ပြေပါသည်။',
-      tip3: 'အမျိုးသား ကျန်းမာရေးအာမခံကို ခရိုင်ရုံးတွင် လျှောက်ထားနိုင်သည်။',
-      tip4: 'နေထိုင်ခွင့်ကတ်ကို အမြဲဆောင်ထားပါ။',
-      footerNote: 'ဤဆိုက်သည် ကိုယ်ပိုင်အကိုးအကားအတွက်သာ။ တရားဝင်အချက်အလက်များကို အိုဆာကာမြို့တရားဝင်ဆိုက်တွင် ကြည့်ပါ။',
-    },
-    vi: {
-      heroTitle: 'Chào mừng đến với cuộc sống ở Osaka',
-      heroLead:  'Một bộ sưu tập nhỏ các hướng dẫn và công cụ giúp ích cho cuộc sống ở Osaka.',
-      card1Title: 'Trò chơi phân loại rác Osaka',
-      card1Desc:  'Học quy tắc phân loại rác của Osaka qua trò chơi — 100 món rác, 3 thùng.',
-      card2Title: 'Video hoạt hình',
-      card2Desc:  'Tải lên và xem các video hoạt hình giải thích, phân loại theo ngôn ngữ.',
-      card3Title: 'Trắc nghiệm Kana',
-      card3Desc:  'Luyện hiragana & katakana. Chọn chính xác hàng và kana muốn ôn.',
-      infoTitle:  '🚨 Liên hệ khẩn cấp',
-      info110:    'Cảnh sát',
-      info119:    'Cấp cứu / Cứu hỏa',
-      infoOsaka:  'Trung tâm quốc tế Osaka — đường dây tư vấn cho người nước ngoài',
-      tipsTitle:  '📌 Mẹo sinh sống',
-      tip1: 'Đổ rác đúng ngày quy định theo quy tắc của khu vực bạn ở.',
-      tip2: 'Thẻ IC giao thông (ICOCA / PiTaPa) rất tiện lợi khi đi lại.',
-      tip3: 'Bạn có thể đăng ký bảo hiểm y tế quốc dân tại văn phòng quận.',
-      tip4: 'Luôn mang theo Thẻ cư trú (在留カード).',
-      footerNote: 'Trang web này chỉ để tham khảo cá nhân. Vui lòng xem trang chính thức của thành phố Osaka để biết thông tin mới nhất.',
-    },
+    ja: { heroTitle:'大阪で暮らす皆さんへ', heroLead:'大阪での生活に役立つガイドとツールをまとめました。',
+      catDailyT:'生活', catDailyD:'動画ガイドと、匿名の相談チャット。',
+      catGamesT:'ゲーム', catGamesD:'ごみ分別ゲームとかなクイズで楽しく学ぼう。',
+      catEjuT:'EJU', catEjuD:'日本留学試験の対策。近日公開。', catEjuBadge:'準備中',
+      footerNote:'本サイトは個人の参考用です。公式情報は大阪市公式サイトをご確認ください。' },
+    en: { heroTitle:'Welcome to life in Osaka', heroLead:'Guides and tools to help with daily life in Osaka.',
+      catDailyT:'Daily Life', catDailyD:'Video guides and an anonymous help chat.',
+      catGamesT:'Games', catGamesD:'Learn through the trash-sorting game and kana quiz.',
+      catEjuT:'EJU', catEjuD:'Exam prep for the EJU. Coming soon.', catEjuBadge:'Coming soon',
+      footerNote:'This site is for personal reference. Please check the Osaka City official site for current rules.' },
+    zh: { heroTitle:'欢迎在大阪生活', heroLead:'为在大阪生活的人士整理的实用指南和工具。',
+      catDailyT:'日常生活', catDailyD:'视频指南与匿名咨询聊天。',
+      catGamesT:'游戏', catGamesD:'通过垃圾分类游戏和假名测验快乐学习。',
+      catEjuT:'EJU', catEjuD:'日本留学考试备考。即将推出。', catEjuBadge:'敬请期待',
+      footerNote:'本网站仅供个人参考。请以大阪市官方网站信息为准。' },
+    ko: { heroTitle:'오사카에서의 생활을 응원합니다', heroLead:'오사카 생활에 도움이 되는 가이드와 도구 모음입니다.',
+      catDailyT:'생활', catDailyD:'동영상 가이드와 익명 상담 채팅.',
+      catGamesT:'게임', catGamesD:'쓰레기 분리 게임과 가나 퀴즈로 즐겁게 배우기.',
+      catEjuT:'EJU', catEjuD:'일본 유학 시험 대비. 곧 공개.', catEjuBadge:'준비 중',
+      footerNote:'본 사이트는 개인 참고용입니다. 공식 정보는 오사카시 공식 사이트를 확인하세요.' },
+    my: { heroTitle:'အိုဆာကာတွင် နေထိုင်ကြသူများအတွက်', heroLead:'အိုဆာကာတွင် နေထိုင်ရာ၌ အသုံးဝင်သော လမ်းညွှန်များနှင့် ကိရိယာများ။',
+      catDailyT:'နေ့စဉ်ဘဝ', catDailyD:'ဗီဒီယိုလမ်းညွှန်နှင့် အမည်ဝှက်အကူအညီ ချက်တင်။',
+      catGamesT:'ဂိမ်းများ', catGamesD:'အမှိုက်ခွဲခြားဂိမ်းနှင့် ကာနာပဟေဠိဖြင့် ပျော်ရွှင်စွာ လေ့လာပါ။',
+      catEjuT:'EJU', catEjuD:'EJU စာမေးပွဲ ပြင်ဆင်ရေး။ မကြာမီ ထွက်ရှိမည်။', catEjuBadge:'ပြင်ဆင်ဆဲ',
+      footerNote:'ဤဆိုက်သည် ကိုယ်ပိုင်အကိုးအကားအတွက်သာ။ တရားဝင်အချက်အလက်များကို အိုဆာကာမြို့တရားဝင်ဆိုက်တွင် ကြည့်ပါ။' },
+    vi: { heroTitle:'Chào mừng đến với cuộc sống ở Osaka', heroLead:'Các hướng dẫn và công cụ giúp ích cho cuộc sống ở Osaka.',
+      catDailyT:'Đời sống', catDailyD:'Video hướng dẫn và chat hỗ trợ ẩn danh.',
+      catGamesT:'Trò chơi', catGamesD:'Học qua trò chơi phân loại rác và trắc nghiệm kana.',
+      catEjuT:'EJU', catEjuD:'Ôn thi EJU. Sắp ra mắt.', catEjuBadge:'Sắp có',
+      footerNote:'Trang web này chỉ để tham khảo cá nhân. Vui lòng xem trang chính thức của thành phố Osaka.' },
   };
-
   function applyHome() {
-    const lang = getLang();
-    const L = HOME_I18N[lang] || HOME_I18N.ja;
-    for (const key in L) {
-      const el = document.getElementById(key);
-      if (el) el.textContent = L[key];
-    }
+    const L = HOME_I18N[getLang()] || HOME_I18N.ja;
+    for (const k in L) { const el = document.getElementById(k); if (el) el.textContent = L[k]; }
   }
-
-  function refresh() {
-    applySiteHeader('home');
-    applyHome();
-  }
-
+  function refresh() { applySiteHeader('home'); applyHome(); }
   refresh();
   setupLangToggle(refresh);
 })();
