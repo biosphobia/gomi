@@ -430,6 +430,19 @@
     <h1 id="setupTitle">📝 かなクイズ</h1>
     <p class="lead" id="setupLead">出題するかなを選んでクイズを始めましょう。</p>
 
+    <h2 id="modeTitle">モード</h2>
+    <div class="mode-grid">
+      <div class="mode-card active" data-mode="master" id="modeMasterCard">
+        <h4 id="modeMasterName">マスターモード</h4>
+        <p id="modeMasterDesc">選んだ全てのかなを1回ずつ正解するまで続きます。</p>
+      </div>
+      <div class="mode-card" data-mode="count" id="modeCountCard">
+        <h4 id="modeCountName">カウントモード</h4>
+        <p id="modeCountDesc">指定した数だけ正解したら終了します。</p>
+        <div class="count-options" id="countOptions"></div>
+      </div>
+    </div>
+
     <div class="preset-row">
       <button class="preset-btn" type="button" id="presetAll">＋ <span id="presetAllL">すべて</span></button>
       <button class="preset-btn" type="button" id="presetNone">－ <span id="presetNoneL">なし</span></button>
@@ -450,19 +463,6 @@
     </div>
 
     <div id="kanaGrid"></div>
-
-    <h2 id="modeTitle">モード</h2>
-    <div class="mode-grid">
-      <div class="mode-card active" data-mode="master" id="modeMasterCard">
-        <h4 id="modeMasterName">マスターモード</h4>
-        <p id="modeMasterDesc">選んだ全てのかなを1回ずつ正解するまで続きます。</p>
-      </div>
-      <div class="mode-card" data-mode="count" id="modeCountCard">
-        <h4 id="modeCountName">カウントモード</h4>
-        <p id="modeCountDesc">指定した数だけ正解したら終了します。</p>
-        <div class="count-options" id="countOptions"></div>
-      </div>
-    </div>
 
     <div class="start-bar">
       <button class="btn" type="button" id="startBtn">スタート</button>
