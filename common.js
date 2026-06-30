@@ -184,9 +184,11 @@
   const REACTION_IMAGES = {
     correct: [
       'images/reactions/correct/maru1.png',
+      'images/reactions/correct/maru2.png',
     ],
     wrong: [
       'images/reactions/wrong/batsu1.png',
+      'images/reactions/wrong/batsu2.png',
     ],
   };
 
