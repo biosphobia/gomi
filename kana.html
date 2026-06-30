@@ -13,45 +13,30 @@
   #viewSetup > .lead { margin-bottom: 8px; font-size: 13px; }
   #modeTitle { margin-top: 4px; margin-bottom: 4px; font-size: 16px; }
 
-  /* ---- Script on/off toggles ---- */
-  .script-toggle-row {
+  /* ---- Side-by-side column headers (hiragana | katakana) ---- */
+  .grid-col-head {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 8px 0;
+    align-items: stretch;
+    gap: var(--kana-gap);
+    margin: 6px 0 6px;
   }
-  .script-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--c-panel);
+  .col-head-spacer { width: var(--rowtoggle-w); flex-shrink: 0; }
+  .col-head {
+    width: var(--block-w);
+    flex-shrink: 0;
+    text-align: left;
+    padding: 6px 12px;
+    border-radius: 8px;
     border: 1px solid var(--c-line);
-    border-radius: 999px;
-    padding: 7px 16px 7px 8px;
-    font-size: 13.5px;
+    background: var(--c-panel);
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    color: var(--c-muted);
+    color: var(--c-text);
     font-family: inherit;
   }
-  .script-pill .cat-kana {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 30px;
-    height: 28px;
-    border-radius: 999px;
-    background: var(--c-bg);
-    font-size: 17px;
-    line-height: 1;
-  }
-  .script-pill .cat-state { font-size: 11px; font-weight: 700; }
-  .script-pill.on {
-    border-color: var(--c-accent);
-    background: #fff5ee;
-    color: var(--c-accent);
-  }
-  .script-pill.on .cat-kana { background: var(--c-accent); color: #fff; }
+  .col-head:hover { border-color: var(--c-accent); }
+  .col-head .cnt { color: var(--c-muted); font-weight: 500; margin-left: 6px; }
 
   /* ---- Preset buttons ---- */
   .preset-row {
@@ -120,6 +105,14 @@
   .cat-toggle.on .cat-state { color: var(--c-accent); }
 
   /* ---- Kana groups / rows / chips ---- */
+  /* Shared sizing so the katakana column lines up under its header.
+     --chip-w * 5 + --kana-gap * 4 == --block-w (one script's 5 cells). */
+  #viewSetup {
+    --chip-w: 46px;
+    --kana-gap: 5px;
+    --rowtoggle-w: 28px;
+    --block-w: 250px; /* 5*46 + 4*5 */
+  }
   .kana-group { margin-bottom: 10px; }
   .kana-group-head {
     display: flex;
@@ -148,12 +141,12 @@
   .kana-row {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: var(--kana-gap);
     margin-bottom: 4px;
   }
   .row-toggle {
     flex-shrink: 0;
-    width: 28px;
+    width: var(--rowtoggle-w);
     height: 42px;
     border-radius: 8px;
     border: 1px solid var(--c-line);
@@ -168,14 +161,16 @@
     justify-content: center;
   }
   .row-toggle:hover { border-color: var(--c-accent); }
+  /* One script's cells. Fixed width so the katakana block always starts
+     at the same x, even on rows with fewer than 5 kana. */
   .row-cells {
     display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    flex: 1;
+    gap: var(--kana-gap);
+    width: var(--block-w);
+    flex-shrink: 0;
   }
   .kana-chip {
-    width: 66px;
+    width: var(--chip-w);
     min-height: 44px;
     border-radius: 9px;
     border: 1px solid var(--c-line);
@@ -192,22 +187,21 @@
     opacity: 0.45;
   }
   .kana-chip:active { transform: scale(0.94); }
-  .kana-chip .ch-pair {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-    line-height: 1.15;
-  }
-  .kana-chip .ch-h { font-size: 19px; color: var(--c-text); }
-  .kana-chip .ch-k { font-size: 19px; color: var(--c-muted); }
+  .kana-chip .ch { font-size: 19px; line-height: 1.15; color: var(--c-text); }
   .kana-chip .rj { font-size: 9px; color: var(--c-muted); margin-top: 1px; }
   .kana-chip.on {
     opacity: 1;
     border-color: var(--c-accent);
     background: #fff5ee;
   }
-  .kana-chip.on .ch-k { color: #d98a63; }
   .kana-chip.on .rj { color: var(--c-accent); font-weight: 600; }
+
+  /* Narrow screens: shrink chips so both columns still fit. */
+  @media (max-width: 560px) {
+    #viewSetup { --chip-w: 30px; --block-w: 170px; } /* 5*30 + 4*5 */
+    .kana-chip .ch { font-size: 16px; }
+    .col-head { font-size: 11.5px; padding: 5px 8px; }
+  }
 
   /* ---- Mode selection ---- */
   .mode-grid {
@@ -402,19 +396,6 @@
   <section id="viewSetup">
     <h1 id="setupTitle">📝 かなクイズ</h1>
     <p class="lead" id="setupLead">出題するかなを選んでクイズを始めましょう。</p>
-
-    <div class="script-toggle-row">
-      <button class="script-pill on" type="button" id="scriptH">
-        <span class="cat-kana">あ</span>
-        <span id="scriptHName">ひらがな</span>
-        <span class="cat-state" id="scriptHState">ON</span>
-      </button>
-      <button class="script-pill on" type="button" id="scriptK">
-        <span class="cat-kana">ア</span>
-        <span id="scriptKName">カタカナ</span>
-        <span class="cat-state" id="scriptKState">ON</span>
-      </button>
-    </div>
 
     <div class="preset-row">
       <button class="preset-btn" type="button" id="presetAll">＋ <span id="presetAllL">すべて</span></button>
@@ -777,8 +758,7 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
      State
      =========================================================== */
   const state = {
-    selected: new Set(),          // syllable ids (cell.h) — one shared set
-    scripts: { h: true, k: true }, // which scripts get drilled in the quiz
+    selected: { h: new Set(), k: new Set() }, // independent per-script selection
     mode: 'master',
     count: 20,
     // quiz runtime
@@ -804,10 +784,58 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
   /* ===========================================================
      Setup screen — build the kana grid
      =========================================================== */
+  const ALL_CELLS = Object.values(CELL_BY_ID);
+
+  function makeChip(cell, sc) {
+    const set = state.selected[sc];
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'kana-chip' + (set.has(cell.h) ? ' on' : '');
+    const ch = document.createElement('span');
+    ch.className = 'ch';
+    ch.textContent = sc === 'h' ? cell.h : cell.k;
+    const rj = document.createElement('span');
+    rj.className = 'rj';
+    rj.textContent = cell.r;
+    chip.appendChild(ch);
+    chip.appendChild(rj);
+    chip.addEventListener('click', () => {
+      if (set.has(cell.h)) set.delete(cell.h); else set.add(cell.h);
+      chip.classList.toggle('on');
+      refreshCounts();
+    });
+    return chip;
+  }
+
   function buildGrid() {
     const wrap = $('kanaGrid');
     wrap.innerHTML = '';
     const Li = L();
+
+    // Column headers: Hiragana | Katakana, each a select-all toggle + count.
+    const colHead = document.createElement('div');
+    colHead.className = 'grid-col-head';
+    const spacer = document.createElement('span');
+    spacer.className = 'col-head-spacer';
+    colHead.appendChild(spacer);
+    for (const sc of ['h', 'k']) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'col-head';
+      b.id = sc === 'h' ? 'colHeadH' : 'colHeadK';
+      const label = document.createElement('span');
+      label.textContent = sc === 'h' ? Li.hira : Li.kata;
+      const cnt = document.createElement('span');
+      cnt.className = 'cnt';
+      cnt.id = sc === 'h' ? 'colCountH' : 'colCountK';
+      cnt.textContent = state.selected[sc].size;
+      b.appendChild(label);
+      b.appendChild(cnt);
+      b.addEventListener('click', () => toggleScriptAll(sc));
+      colHead.appendChild(b);
+    }
+    wrap.appendChild(colHead);
+
     for (const group of KANA_GROUPS) {
       const gEl = document.createElement('div');
       gEl.className = 'kana-group';
@@ -832,86 +860,78 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
         rToggle.className = 'row-toggle';
         rToggle.type = 'button';
         rToggle.textContent = row.cells[0].r;
+        rToggle.title = row.cells[0].r;
         rToggle.addEventListener('click', () => toggleRow(row));
         rEl.appendChild(rToggle);
 
-        const cellsWrap = document.createElement('div');
-        cellsWrap.className = 'row-cells';
-        for (const cell of row.cells) {
-          const chip = document.createElement('button');
-          chip.type = 'button';
-          chip.className = 'kana-chip' + (state.selected.has(cell.h) ? ' on' : '');
-          const pair = document.createElement('span');
-          pair.className = 'ch-pair';
-          const chH = document.createElement('span');
-          chH.className = 'ch-h';
-          chH.textContent = cell.h;
-          const chK = document.createElement('span');
-          chK.className = 'ch-k';
-          chK.textContent = cell.k;
-          pair.appendChild(chH);
-          pair.appendChild(chK);
-          const rj = document.createElement('span');
-          rj.className = 'rj';
-          rj.textContent = cell.r;
-          chip.appendChild(pair);
-          chip.appendChild(rj);
-          chip.addEventListener('click', () => {
-            if (state.selected.has(cell.h)) state.selected.delete(cell.h);
-            else state.selected.add(cell.h);
-            chip.classList.toggle('on');
-            refreshCounts();
-          });
-          cellsWrap.appendChild(chip);
+        // Hiragana block, then katakana block to its right.
+        for (const sc of ['h', 'k']) {
+          const block = document.createElement('div');
+          block.className = 'row-cells';
+          for (const cell of row.cells) block.appendChild(makeChip(cell, sc));
+          rEl.appendChild(block);
         }
-        rEl.appendChild(cellsWrap);
         gEl.appendChild(rEl);
       }
       wrap.appendChild(gEl);
     }
   }
 
+  // Bulk helpers act on BOTH scripts (the column headers do per-script).
+  function bothAllOn(cells) {
+    return cells.every(c => state.selected.h.has(c.h) && state.selected.k.has(c.h));
+  }
+  function setBoth(cells, on) {
+    for (const c of cells) {
+      if (on) { state.selected.h.add(c.h); state.selected.k.add(c.h); }
+      else    { state.selected.h.delete(c.h); state.selected.k.delete(c.h); }
+    }
+  }
   function toggleRow(row) {
-    const set = state.selected;
-    const allOn = row.cells.every(c => set.has(c.h));
-    for (const c of row.cells) { if (allOn) set.delete(c.h); else set.add(c.h); }
+    setBoth(row.cells, !bothAllOn(row.cells));
     buildGrid(); refreshCounts();
   }
   function toggleGroup(group) {
-    const set = state.selected;
     const cells = group.rows.flatMap(r => r.cells);
-    const allOn = cells.every(c => set.has(c.h));
-    for (const c of cells) { if (allOn) set.delete(c.h); else set.add(c.h); }
+    setBoth(cells, !bothAllOn(cells));
     buildGrid(); refreshCounts();
   }
   function presetAll() {
-    for (const g of KANA_GROUPS) for (const r of g.rows) for (const c of r.cells) state.selected.add(c.h);
+    setBoth(ALL_CELLS, true);
     buildGrid(); refreshCounts();
   }
   function presetNone() {
-    state.selected = new Set();
+    state.selected = { h: new Set(), k: new Set() };
     buildGrid(); refreshCounts();
   }
   function presetBasic() {
-    const set = new Set();
-    for (const r of KANA_GROUPS[0].rows) for (const c of r.cells) set.add(c.h);
-    state.selected = set;
+    state.selected = { h: new Set(), k: new Set() };
+    for (const r of KANA_GROUPS[0].rows) setBoth(r.cells, true);
+    buildGrid(); refreshCounts();
+  }
+  // Per-script select-all / clear from a column header.
+  function toggleScriptAll(sc) {
+    const set = state.selected[sc];
+    const allOn = ALL_CELLS.every(c => set.has(c.h));
+    state.selected[sc] = new Set();
+    if (!allOn) for (const c of ALL_CELLS) state.selected[sc].add(c.h);
     buildGrid(); refreshCounts();
   }
 
   function refreshCounts() {
-    const nScripts = (state.scripts.h ? 1 : 0) + (state.scripts.k ? 1 : 0);
-    const poolSize = state.selected.size * nScripts;
-    $('selSummary').textContent = L().selSummary(poolSize);
-    $('startBtn').disabled = poolSize === 0;
+    const h = state.selected.h.size, k = state.selected.k.size;
+    if ($('colCountH')) $('colCountH').textContent = h;
+    if ($('colCountK')) $('colCountK').textContent = k;
+    $('selSummary').textContent = L().selSummary(h + k);
+    $('startBtn').disabled = (h + k) === 0;
     refreshCatToggles();
-    updateScriptPills();
   }
 
-  // Whole-category quick toggles (dakuten / yoon).
+  // Category quick toggles (dakuten / yoon) — "on" when the whole
+  // category is selected in BOTH scripts.
   function groupAllSelected(groupId) {
-    const g = KANA_GROUPS.find(x => x.id === groupId);
-    return g.rows.flatMap(r => r.cells).every(c => state.selected.has(c.h));
+    const cells = KANA_GROUPS.find(x => x.id === groupId).rows.flatMap(r => r.cells);
+    return bothAllOn(cells);
   }
   function toggleGroupById(groupId) {
     toggleGroup(KANA_GROUPS.find(x => x.id === groupId));
@@ -923,17 +943,6 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
     $('catCombo').classList.toggle('on', cOn);
     $('catDakutenState').textContent = dOn ? 'ON' : 'OFF';
     $('catComboState').textContent   = cOn ? 'ON' : 'OFF';
-  }
-
-  function toggleScript(s) {
-    state.scripts[s] = !state.scripts[s];
-    refreshCounts();
-  }
-  function updateScriptPills() {
-    $('scriptH').classList.toggle('on', state.scripts.h);
-    $('scriptK').classList.toggle('on', state.scripts.k);
-    $('scriptHState').textContent = state.scripts.h ? 'ON' : 'OFF';
-    $('scriptKState').textContent = state.scripts.k ? 'ON' : 'OFF';
   }
 
   function buildCountOptions() {
@@ -967,9 +976,8 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
   function buildPool() {
     const pool = [];
     for (const g of KANA_GROUPS) for (const row of g.rows) for (const cell of row.cells) {
-      if (!state.selected.has(cell.h)) continue;
-      if (state.scripts.h) pool.push({ char: cell.h, script: 'h', r: cell.r, alt: cell.alt || [] });
-      if (state.scripts.k) pool.push({ char: cell.k, script: 'k', r: cell.r, alt: cell.alt || [] });
+      if (state.selected.h.has(cell.h)) pool.push({ char: cell.h, script: 'h', r: cell.r, alt: cell.alt || [] });
+      if (state.selected.k.has(cell.h)) pool.push({ char: cell.k, script: 'k', r: cell.r, alt: cell.alt || [] });
     }
     return pool;
   }
@@ -1166,8 +1174,6 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
     const Li = L();
     $('setupTitle').textContent = Li.setupTitle;
     $('setupLead').textContent = Li.setupLead;
-    $('scriptHName').textContent = Li.hira;
-    $('scriptKName').textContent = Li.kata;
     $('presetAllL').textContent = Li.presetAll;
     $('presetNoneL').textContent = Li.presetNone;
     $('presetBasicL').textContent = Li.presetBasic;
@@ -1208,8 +1214,6 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
   /* ===========================================================
      Events
      =========================================================== */
-  $('scriptH').addEventListener('click', () => toggleScript('h'));
-  $('scriptK').addEventListener('click', () => toggleScript('k'));
   $('presetAll').addEventListener('click', presetAll);
   $('presetNone').addEventListener('click', presetNone);
   $('presetBasic').addEventListener('click', presetBasic);
@@ -1235,8 +1239,11 @@ window.GOOGLE_TTS_API_KEY = "@@GOOGLE_TTS_API_KEY@@";
   /* ===========================================================
      Boot
      =========================================================== */
-  // Default selection: all basic syllables, both scripts on.
-  for (const r of KANA_GROUPS[0].rows) for (const c of r.cells) state.selected.add(c.h);
+  // Default selection: all basic kana, both scripts.
+  for (const r of KANA_GROUPS[0].rows) for (const c of r.cells) {
+    state.selected.h.add(c.h);
+    state.selected.k.add(c.h);
+  }
 
   applySiteHeader('kana');
   setupLangToggle(() => { applySiteHeader('kana'); applyI18n(); });
