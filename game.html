@@ -1091,15 +1091,20 @@
   // ---- Tuning ----
   const MIN_SIZE      = 58;    // spawn size (px)
   const MAX_SIZE      = 150;   // size at which an item explodes
-  const GROW_TIME     = 9000;  // ms from MIN to MAX at base difficulty
   const DANGER_AT     = 0.78;  // fraction of max where the item turns red
   const SHAKE_TIME    = 700;   // ms shaking before it blows up
-  const SPAWN_BASE    = 2300;  // ms between spawns at base difficulty
-  const SPAWN_MIN     = 900;   // fastest spawn interval
-  const MAX_ITEMS     = 6;     // max items on screen at once
   const SIDE_GUTTER   = 76;    // px reserved on each side for reaction popups
   const PAUSE_CORRECT = 650;   // ms the game freezes for a correct popup
   const PAUSE_WRONG   = 1200;  // ms the game freezes for a wrong popup
+
+  // ---- Difficulty ramp (the game keeps speeding up over time) ----
+  const RAMP_TIME   = 150000; // ms to reach full difficulty (~2.5 min)
+  const GROW_TIME   = 9000;   // ms MIN->MAX at the start (slow)
+  const GROW_MIN    = 2600;   // ms MIN->MAX at full difficulty (frantic)
+  const SPAWN_BASE  = 2400;   // ms between spawns at the start
+  const SPAWN_MIN   = 550;    // ms between spawns at full difficulty
+  const ITEMS_BASE  = 5;      // max items on screen at the start
+  const ITEMS_MAX   = 10;     // max items on screen at full difficulty
 
   // ============ State ============
   const state = {
@@ -1254,9 +1259,14 @@
   }
 
   // ---- difficulty ramp (0 at start, ~1 after 90s) ----
-  function difficulty() { return Math.min(1, state.elapsed / 90000); }
-  function growTime()      { return GROW_TIME - difficulty() * 3500; }
+  // Ease-out curve so it speeds up quickly at first, then keeps creeping.
+  function difficulty() {
+    const x = Math.min(1, state.elapsed / RAMP_TIME);
+    return 1 - (1 - x) * (1 - x);
+  }
+  function growTime()      { return GROW_TIME  - difficulty() * (GROW_TIME  - GROW_MIN); }
   function spawnInterval() { return SPAWN_BASE - difficulty() * (SPAWN_BASE - SPAWN_MIN); }
+  function maxItems()      { return Math.round(ITEMS_BASE + difficulty() * (ITEMS_MAX - ITEMS_BASE)); }
 
   function styleItem(it) {
     const s = it.size;
@@ -1297,7 +1307,7 @@
   }
 
   function spawnItem() {
-    if (state.items.length >= MAX_ITEMS) return;
+    if (state.items.length >= maxItems()) return;
     const data = drawData();
     const el = document.createElement('div');
     el.className = 'gitem spawn';
