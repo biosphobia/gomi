@@ -546,6 +546,7 @@
         <div><b id="resCorrect">0</b><span id="resCorrectL">正解</span></div>
         <div><b id="resTime">0:00</b><span id="resTimeL">時間</span></div>
       </div>
+      <div class="hs-row" id="hsLine"></div>
       <div class="vs-result hidden" id="vsResult"></div>
       <div class="review-list hidden" id="reviewBox">
         <h4 id="reviewTitle">復習したいかな</h4>
@@ -1258,6 +1259,11 @@ window.GOOGLE_TTS_API_KEY = "";
     $('resCorrect').textContent = state.correct;
     const secs = Math.round((Date.now() - state.startTime) / 1000);
     $('resTime').textContent = Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
+
+    // persistent high score (most correct in one run) + grade
+    const hs = Grades.submit('kana', state.correct);
+    $('hsLine').innerHTML = Grades.badgeHtml('kana')
+      + (hs.isNewBest ? ` <span class="hs-new">${Grades.texts().newRecord}</span>` : '');
 
     const missed = Object.entries(state.mistakes).sort((a, b) => b[1] - a[1]);
     const box = $('reviewBox');

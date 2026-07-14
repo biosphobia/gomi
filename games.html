@@ -54,6 +54,11 @@
       <div class="vs-keypad"></div>
       <button class="btn btn-ghost vs-join" disabled>参加</button>
     </div>
+    <div class="hs-row">
+      <span class="hs-badge"></span>
+      <button type="button" class="hs-rewards-btn">🎁 <span class="hs-rewards-label">ごほうび</span></button>
+    </div>
+    <div class="hs-rewards hidden"></div>
   </section>
 
   <section class="game-setup hidden" id="kanaSetup" data-page="kana.html">
@@ -69,6 +74,11 @@
       <div class="vs-keypad"></div>
       <button class="btn btn-ghost vs-join" disabled>参加</button>
     </div>
+    <div class="hs-row">
+      <span class="hs-badge"></span>
+      <button type="button" class="hs-rewards-btn">🎁 <span class="hs-rewards-label">ごほうび</span></button>
+    </div>
+    <div class="hs-rewards hidden"></div>
   </section>
 
 </main>
@@ -120,7 +130,9 @@
       panel.querySelector('.vs-or').textContent = L.vsOr;
       panel.querySelector('.vs-join').textContent = L.vsJoinBtn;
     }
+    for (const fn of hsRefreshers) fn();
   }
+  const hsRefreshers = [];
   function refresh() { applySiteHeader('games'); apply(); }
   refresh();
   setupLangToggle(refresh);
@@ -129,8 +141,8 @@
   // Each game card toggles its panel; the panel launches the game page
   // with the chosen mode via URL params.
   const SETUPS = [
-    { card: 'gomiCard', panel: 'gomiSetup', hash: 'gomi', singleUrl: 'game.html?mode=single', page: 'game.html' },
-    { card: 'kanaCard', panel: 'kanaSetup', hash: 'kana', singleUrl: 'kana.html',             page: 'kana.html' },
+    { card: 'gomiCard', panel: 'gomiSetup', hash: 'gomi', singleUrl: 'game.html?mode=single', page: 'game.html', grade: 'gomi' },
+    { card: 'kanaCard', panel: 'kanaSetup', hash: 'kana', singleUrl: 'kana.html',             page: 'kana.html', grade: 'kana' },
   ];
   const panels = [];
 
@@ -189,6 +201,22 @@
       if (name && padCode.length === VS_CODE_LEN) {
         location.href = cfg.page + '?vs=join&code=' + padCode + '&name=' + encodeURIComponent(name);
       }
+    });
+
+    // ---- high score + rewards (compact, collapsed by default) ----
+    const hsBadge = q('.hs-badge');
+    const rewardsBox = q('.hs-rewards');
+    const refreshHs = () => {
+      hsBadge.innerHTML = Grades.badgeHtml(cfg.grade);
+      q('.hs-rewards-label').textContent = Grades.texts().rewards;
+      if (!rewardsBox.classList.contains('hidden')) Grades.renderRewards(rewardsBox, cfg.grade);
+    };
+    hsRefreshers.push(refreshHs);
+    refreshHs();
+    q('.hs-rewards-btn').addEventListener('click', () => {
+      const show = rewardsBox.classList.contains('hidden');
+      if (show) Grades.renderRewards(rewardsBox, cfg.grade);
+      rewardsBox.classList.toggle('hidden', !show);
     });
 
     const api = { open, close };

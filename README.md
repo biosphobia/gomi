@@ -148,6 +148,15 @@ project the chat uses):
   result screen shows **Win / Lose / Draw** with both scores. (Each
   board has its own random trash, so it's a fair score race rather than
   an identical board.)
+- **High scores & grades:** each game keeps your best single run in
+  localStorage (trash game: best score; kana quiz: most correct in one
+  run) and grades it **Bronze / Silver / Gold / 上手 (Jouzu)** —
+  thresholds 900/1,800/3,000/5,000 points and 20/50/100/150 correct.
+  The grade shows on the end/result screens and on each game's setup
+  panel on `games.html`, where a small 🎁 button expands the rewards
+  list: each grade unlocks a cosmetic (new maru/batsu sounds, images,
+  a theme, …) — all marked 準備中 for now. Logic lives in `common.js`
+  (`Grades`).
 - The **Kana Quiz has the same Versus system** (same games-page setup
   panel, picture codes, lobby): both players race through basic kana
   (both scripts, count mode, first to 20 correct) and the faster

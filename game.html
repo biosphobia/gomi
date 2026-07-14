@@ -541,6 +541,7 @@
     <div class="score-label" id="endScoreLabel">SCORE</div>
     <div class="score-big" id="finalScore">0</div>
     <div class="rank" id="rank"></div>
+    <div class="hs-row" id="hsLine"></div>
     <div class="end-stats">
       <div><span id="endLblCorrect"></span><b id="endCorrect">0</b></div>
       <div><span id="endLblWrong"></span><b id="endWrong">0</b></div>
@@ -1560,6 +1561,12 @@
     else rankKey = 'bronze';
     $('#rank').textContent       = L.end.ranks[rankKey];
     $('#endMessage').textContent = L.end.msgs[rankKey];
+
+    // persistent high score + grade (bronze/silver/gold/jouzu)
+    const hs = Grades.submit('gomi', state.score);
+    $('#hsLine').innerHTML = Grades.badgeHtml('gomi')
+      + (hs.isNewBest ? ` <span class="hs-new">${Grades.texts().newRecord}</span>` : '');
+
     renderResults(L);
     if (state.versus && versusHooks && versusHooks.onEnd) {
       versusHooks.onEnd({ score: state.score | 0, lives: 0, finished: true });

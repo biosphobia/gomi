@@ -358,6 +358,75 @@ body {
 .vs-key.vs-key-del { font-size: 20px; color: var(--c-muted); padding: 0; }
 .btn[disabled] { opacity: 0.45; cursor: default; }
 
+/* ================ High scores + grades ================ */
+.grade-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border-radius: 999px;
+  padding: 1px 9px;
+  font-size: 11.5px;
+  font-weight: 800;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+.grade-bronze { color: #a3652c; background: #faf1e6; }
+.grade-silver { color: #66727d; background: #f1f4f7; }
+.grade-gold   { color: #ad7d08; background: #fdf6e0; }
+.grade-jouzu  { color: #b0399f; background: #fdeefa; }
+
+.hs-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--c-muted);
+  margin: 4px 0;
+}
+.hs-row b { color: var(--c-text); }
+.hs-new { color: var(--c-red); font-weight: 800; }
+
+.hs-rewards-btn {
+  background: none;
+  border: none;
+  color: var(--c-muted);
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.hs-rewards-btn:hover { background: var(--c-bg); color: var(--c-text); }
+
+.hs-rewards { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 320px; }
+.reward-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  background: #fff;
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+.reward-row .grade-chip { flex-shrink: 0; }
+.reward-row .reward-req { color: var(--c-muted); font-weight: 700; flex-shrink: 0; min-width: 40px; }
+.reward-row .reward-name { flex: 1; text-align: left; }
+.reward-row .reward-soon {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--c-muted);
+  background: var(--c-bg);
+  border: 1px solid var(--c-line);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+.reward-row.locked { opacity: 0.55; }
+
 /* ================ Versus lobby (game.html + kana.html) ================ */
 .vs-code-show {
   background: #fff;

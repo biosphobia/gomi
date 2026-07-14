@@ -352,7 +352,107 @@
     };
   }
 
+  // ============================================================
+  // High scores + grades (bronze / silver / gold / jouzu).
+  // Best single-run result per game, kept in localStorage.
+  // Reaching a grade unlocks cosmetics (maru/batsu sounds, images,
+  // …) — all still 準備中, so the rewards list is display-only.
+  //   gomi: best final score        kana: most correct in one run
+  // ============================================================
+  const GRADE_KEYS = ['bronze', 'silver', 'gold', 'jouzu'];
+  const GRADE_ICONS = { bronze: '🥉', silver: '🥈', gold: '🥇', jouzu: '👑' };
+  const GRADE_THRESHOLDS = {
+    gomi: [900, 1800, 3000, 5000],
+    kana: [20, 50, 100, 150],
+  };
+
+  const GRADES_I18N = {
+    ja: { highScore: 'ハイスコア', newRecord: '🎉 新記録！', rewards: 'ごほうび', soon: '準備中',
+      grades: { bronze: 'ブロンズ', silver: 'シルバー', gold: 'ゴールド', jouzu: '上手' },
+      rewardNames: { bronze: '◯✕のあたらしい音', silver: '◯✕のあたらしい絵', gold: 'スペシャルテーマ', jouzu: 'ひみつのごほうび' } },
+    en: { highScore: 'High score', newRecord: '🎉 New record!', rewards: 'Rewards', soon: 'Coming soon',
+      grades: { bronze: 'Bronze', silver: 'Silver', gold: 'Gold', jouzu: 'Jouzu' },
+      rewardNames: { bronze: 'New maru/batsu sounds', silver: 'New maru/batsu images', gold: 'Special theme', jouzu: 'Secret reward' } },
+    zh: { highScore: '最高分', newRecord: '🎉 新纪录！', rewards: '奖励', soon: '敬请期待',
+      grades: { bronze: '铜牌', silver: '银牌', gold: '金牌', jouzu: '上手' },
+      rewardNames: { bronze: '新的◯✕音效', silver: '新的◯✕图片', gold: '特别主题', jouzu: '神秘奖励' } },
+    ko: { highScore: '최고 기록', newRecord: '🎉 신기록!', rewards: '보상', soon: '준비 중',
+      grades: { bronze: '브론즈', silver: '실버', gold: '골드', jouzu: 'Jouzu' },
+      rewardNames: { bronze: '새로운 ◯✕ 효과음', silver: '새로운 ◯✕ 이미지', gold: '스페셜 테마', jouzu: '비밀 보상' } },
+    my: { highScore: 'အမြင့်ဆုံးမှတ်', newRecord: '🎉 စံချိန်သစ်!', rewards: 'ဆုလာဘ်', soon: 'ပြင်ဆင်ဆဲ',
+      grades: { bronze: 'ကြေးတံဆိပ်', silver: 'ငွေတံဆိပ်', gold: 'ရွှေတံဆိပ်', jouzu: 'Jouzu' },
+      rewardNames: { bronze: '◯✕ အသံအသစ်', silver: '◯✕ ပုံအသစ်', gold: 'အထူးအပြင်အဆင်', jouzu: 'လျှို့ဝှက်ဆု' } },
+    vi: { highScore: 'Điểm cao nhất', newRecord: '🎉 Kỷ lục mới!', rewards: 'Phần thưởng', soon: 'Sắp có',
+      grades: { bronze: 'Đồng', silver: 'Bạc', gold: 'Vàng', jouzu: 'Jouzu' },
+      rewardNames: { bronze: 'Âm thanh ◯✕ mới', silver: 'Hình ◯✕ mới', gold: 'Chủ đề đặc biệt', jouzu: 'Phần thưởng bí mật' } },
+  };
+
+  function gradesTexts() { return GRADES_I18N[getLang()] || GRADES_I18N.ja; }
+
+  function gradeFor(game, score) {
+    const th = GRADE_THRESHOLDS[game] || [];
+    let grade = null;
+    for (let i = 0; i < th.length; i++) if (score >= th[i]) grade = GRADE_KEYS[i];
+    return grade;
+  }
+
+  function gradesGet(game) {
+    let best = 0;
+    try { best = parseInt(localStorage.getItem('osaka_hiscore_' + game), 10) || 0; } catch (_) {}
+    return { best, grade: gradeFor(game, best) };
+  }
+
+  function gradesSubmit(game, score) {
+    const prev = gradesGet(game);
+    const s = Math.max(0, score | 0);
+    const isNewBest = s > prev.best;
+    const best = isNewBest ? s : prev.best;
+    if (isNewBest) {
+      try { localStorage.setItem('osaka_hiscore_' + game, String(best)); } catch (_) {}
+    }
+    const grade = gradeFor(game, best);
+    return { best, grade, isNewBest, isNewGrade: isNewBest && grade !== prev.grade };
+  }
+
+  // "ハイスコア: 3,200 🥇 ゴールド" (or "ハイスコア: —" before any run)
+  function gradeBadgeHtml(game) {
+    const t = gradesTexts();
+    const { best, grade } = gradesGet(game);
+    if (!best) return `${t.highScore}: <b>—</b>`;
+    const g = grade
+      ? ` <span class="grade-chip grade-${grade}">${GRADE_ICONS[grade]} ${t.grades[grade]}</span>`
+      : '';
+    return `${t.highScore}: <b>${best.toLocaleString()}</b>${g}`;
+  }
+
+  // Compact rewards list: one cosmetic slot per grade, unlocked by the
+  // player's current grade, everything tagged 準備中 for now.
+  function renderRewards(container, game) {
+    const t = gradesTexts();
+    const { grade } = gradesGet(game);
+    const reached = grade ? GRADE_KEYS.indexOf(grade) : -1;
+    const th = GRADE_THRESHOLDS[game] || [];
+    container.innerHTML = GRADE_KEYS.map((key, i) => {
+      const unlocked = i <= reached;
+      return `<div class="reward-row${unlocked ? '' : ' locked'}">
+        <span class="grade-chip grade-${key}">${GRADE_ICONS[key]} ${t.grades[key]}</span>
+        <span class="reward-req">${(th[i] || 0).toLocaleString()}</span>
+        <span class="reward-name">${unlocked ? '' : '🔒 '}${t.rewardNames[key]}</span>
+        <span class="reward-soon">${t.soon}</span>
+      </div>`;
+    }).join('');
+  }
+
+  const Grades = {
+    get: gradesGet,
+    submit: gradesSubmit,
+    badgeHtml: gradeBadgeHtml,
+    renderRewards,
+    texts: gradesTexts,
+  };
+
   // ---------- Public API ----------
+  window.Grades = Grades;
   window.LANGS = LANGS;
   window.getLang = getLang;
   window.setLang = setLang;
