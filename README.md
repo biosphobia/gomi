@@ -1,4 +1,4 @@
-# 🏯 Osaka Support
+# 🏯 エールお助け隊
 
 A small support site for foreigners living in Osaka. Four tools in one
 static site:

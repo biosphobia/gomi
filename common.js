@@ -1,5 +1,5 @@
 /* ============================================================
-   Osaka Support — shared client JS
+   エールお助け隊 — shared client JS
    Exposes globals: LANGS, getLang, setLang, applySiteHeader,
    setupLangToggle, VideoDB.
    ============================================================ */
@@ -33,12 +33,12 @@
 
   // ---------- Site-wide header strings ----------
   const SITE_I18N = {
-    ja: { brand: '大阪サポート', navHome: 'ホーム', navDaily: '生活', navGames: 'ゲーム', navEju: 'EJU' },
-    en: { brand: 'Osaka Support', navHome: 'Home', navDaily: 'Daily Life', navGames: 'Games', navEju: 'EJU' },
-    zh: { brand: '大阪支援',     navHome: '首页', navDaily: '日常生活', navGames: '游戏', navEju: 'EJU' },
-    ko: { brand: '오사카 서포트', navHome: '홈',   navDaily: '생활', navGames: '게임', navEju: 'EJU' },
-    my: { brand: 'အိုဆာကာ အကူအညီ', navHome: 'ပင်မ', navDaily: 'နေ့စဉ်ဘဝ', navGames: 'ဂိမ်းများ', navEju: 'EJU' },
-    vi: { brand: 'Hỗ trợ Osaka',   navHome: 'Trang chủ', navDaily: 'Đời sống', navGames: 'Trò chơi', navEju: 'EJU' },
+    ja: { brand: 'エールお助け隊', navHome: 'ホーム', navDaily: '生活', navGames: 'ゲーム', navEju: 'EJU' },
+    en: { brand: 'エールお助け隊', navHome: 'Home', navDaily: 'Daily Life', navGames: 'Games', navEju: 'EJU' },
+    zh: { brand: 'エールお助け隊',     navHome: '首页', navDaily: '日常生活', navGames: '游戏', navEju: 'EJU' },
+    ko: { brand: 'エールお助け隊', navHome: '홈',   navDaily: '생활', navGames: '게임', navEju: 'EJU' },
+    my: { brand: 'エールお助け隊', navHome: 'ပင်မ', navDaily: 'နေ့စဉ်ဘဝ', navGames: 'ဂိမ်းများ', navEju: 'EJU' },
+    vi: { brand: 'エールお助け隊',   navHome: 'Trang chủ', navDaily: 'Đời sống', navGames: 'Trò chơi', navEju: 'EJU' },
   };
 
   // ---------- Header rendering ----------
