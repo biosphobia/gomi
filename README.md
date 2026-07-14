@@ -38,15 +38,15 @@ persists across pages.
 
 ```
 .
-├── index.html        home — 3 category cards (Daily Life / Games / EJU)
+├── index.html        home — category cards (Daily Life / Games)
 ├── daily.html        Daily Life hub → Videos + Contact, emergency info, tips
 ├── games.html        Games hub → Trash game + Kana quiz
-├── eju.html          EJU placeholder ("coming soon")
 ├── game.html         trash-sorting game
 ├── kana.html         hiragana/katakana quiz (optional Google TTS audio)
 ├── videos.html       per-language video library
 ├── contact.html      anonymous chat (Firebase)
 ├── images/
+│   ├── code/         versus picture-code icons (takoyaki, castle, umeda, tsutenkaku)
 │   └── logo.svg      site logo (editable SVG — see "Branding" below)
 ├── styles.css        shared site styles + theme colors (the :root block)
 ├── common.js         LANGS, header/nav rendering, VideoDB, reaction popups
@@ -59,8 +59,8 @@ is loaded as ES modules from the Google CDN at runtime.
 
 ### Navigation
 
-The header is the same on every page: a logo + four top-level tabs —
-**Home**, **Daily Life**, **Games**, **EJU**. Daily Life and Games are hub
+The header is the same on every page: a logo + three top-level tabs —
+**Home**, **Daily Life**, **Games**. Daily Life and Games are hub
 pages that link to the actual tools; the individual tool pages (videos,
 contact, game, kana) highlight their parent tab.
 
@@ -133,8 +133,10 @@ works with no setup. Versus is a quick 1-v-1 score race backed by
 Firebase (the same project the chat uses):
 
 - One player taps **Versus**, enters a username, and **creates a
-  lobby** — they get a 4-character code. The other player enters their
-  name and **joins** with that code.
+  lobby** — they get a picture code: a sequence of 4 Osaka images
+  (takoyaki / Osaka Castle / Umeda Sky Building / Tsutenkaku, from
+  `images/code/`). The other player enters their name and taps the same
+  pictures in order on a keypad to **join**.
 - The host taps **Start**; both play their own board at the same time.
   A small HUD shows the opponent's live **score** and **lives**.
 - When a player's lives run out their run ends; once both are done the

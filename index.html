@@ -80,7 +80,6 @@
     <a href="index.html" class="nav-link" data-page="home"  data-nav="home">ホーム</a>
     <a href="daily.html" class="nav-link" data-page="daily" data-nav="daily">生活</a>
     <a href="games.html" class="nav-link" data-page="games" data-nav="games">ゲーム</a>
-    <a href="eju.html"   class="nav-link" data-page="eju"   data-nav="eju">EJU</a>
   </nav>
   <button class="site-lang-toggle" type="button">🌐 日本語</button>
 </header>
@@ -102,12 +101,6 @@
       <h3 id="catGamesT">ゲーム</h3>
       <p id="catGamesD">ごみ分別ゲームとかなクイズで楽しく学ぼう。</p>
     </a>
-    <a href="eju.html" class="cat-card soon">
-      <div class="cat-icon">📚</div>
-      <h3 id="catEjuT">EJU</h3>
-      <p id="catEjuD">日本留学試験の対策。近日公開。</p>
-      <span class="cat-badge" id="catEjuBadge">準備中</span>
-    </a>
   </section>
 
 </main>
@@ -119,28 +112,22 @@
   const HOME_I18N = {
     ja: { heroTitle:'大阪で暮らす皆さんへ', heroLead:'大阪での生活に役立つガイドとツールをまとめました。',
       catDailyT:'生活', catDailyD:'動画ガイドと、匿名の相談チャット。',
-      catGamesT:'ゲーム', catGamesD:'ごみ分別ゲームとかなクイズで楽しく学ぼう。',
-      catEjuT:'EJU', catEjuD:'日本留学試験の対策。近日公開。', catEjuBadge:'準備中' },
+      catGamesT:'ゲーム', catGamesD:'ごみ分別ゲームとかなクイズで楽しく学ぼう。' },
     en: { heroTitle:'Welcome to life in Osaka', heroLead:'Guides and tools to help with daily life in Osaka.',
       catDailyT:'Daily Life', catDailyD:'Video guides and an anonymous help chat.',
-      catGamesT:'Games', catGamesD:'Learn through the trash-sorting game and kana quiz.',
-      catEjuT:'EJU', catEjuD:'Exam prep for the EJU. Coming soon.', catEjuBadge:'Coming soon' },
+      catGamesT:'Games', catGamesD:'Learn through the trash-sorting game and kana quiz.' },
     zh: { heroTitle:'欢迎在大阪生活', heroLead:'为在大阪生活的人士整理的实用指南和工具。',
       catDailyT:'日常生活', catDailyD:'视频指南与匿名咨询聊天。',
-      catGamesT:'游戏', catGamesD:'通过垃圾分类游戏和假名测验快乐学习。',
-      catEjuT:'EJU', catEjuD:'日本留学考试备考。即将推出。', catEjuBadge:'敬请期待' },
+      catGamesT:'游戏', catGamesD:'通过垃圾分类游戏和假名测验快乐学习。' },
     ko: { heroTitle:'오사카에서의 생활을 응원합니다', heroLead:'오사카 생활에 도움이 되는 가이드와 도구 모음입니다.',
       catDailyT:'생활', catDailyD:'동영상 가이드와 익명 상담 채팅.',
-      catGamesT:'게임', catGamesD:'쓰레기 분리 게임과 가나 퀴즈로 즐겁게 배우기.',
-      catEjuT:'EJU', catEjuD:'일본 유학 시험 대비. 곧 공개.', catEjuBadge:'준비 중' },
+      catGamesT:'게임', catGamesD:'쓰레기 분리 게임과 가나 퀴즈로 즐겁게 배우기.' },
     my: { heroTitle:'အိုဆာကာတွင် နေထိုင်ကြသူများအတွက်', heroLead:'အိုဆာကာတွင် နေထိုင်ရာ၌ အသုံးဝင်သော လမ်းညွှန်များနှင့် ကိရိယာများ။',
       catDailyT:'နေ့စဉ်ဘဝ', catDailyD:'ဗီဒီယိုလမ်းညွှန်နှင့် အမည်ဝှက်အကူအညီ ချက်တင်။',
-      catGamesT:'ဂိမ်းများ', catGamesD:'အမှိုက်ခွဲခြားဂိမ်းနှင့် ကာနာပဟေဠိဖြင့် ပျော်ရွှင်စွာ လေ့လာပါ။',
-      catEjuT:'EJU', catEjuD:'EJU စာမေးပွဲ ပြင်ဆင်ရေး။ မကြာမီ ထွက်ရှိမည်။', catEjuBadge:'ပြင်ဆင်ဆဲ' },
+      catGamesT:'ဂိမ်းများ', catGamesD:'အမှိုက်ခွဲခြားဂိမ်းနှင့် ကာနာပဟေဠိဖြင့် ပျော်ရွှင်စွာ လေ့လာပါ။' },
     vi: { heroTitle:'Chào mừng đến với cuộc sống ở Osaka', heroLead:'Các hướng dẫn và công cụ giúp ích cho cuộc sống ở Osaka.',
       catDailyT:'Đời sống', catDailyD:'Video hướng dẫn và chat hỗ trợ ẩn danh.',
-      catGamesT:'Trò chơi', catGamesD:'Học qua trò chơi phân loại rác và trắc nghiệm kana.',
-      catEjuT:'EJU', catEjuD:'Ôn thi EJU. Sắp ra mắt.', catEjuBadge:'Sắp có' },
+      catGamesT:'Trò chơi', catGamesD:'Học qua trò chơi phân loại rác và trắc nghiệm kana.' },
   };
   function applyHome() {
     const L = HOME_I18N[getLang()] || HOME_I18N.ja;

@@ -33,12 +33,12 @@
 
   // ---------- Site-wide header strings ----------
   const SITE_I18N = {
-    ja: { brand: 'エールお助け隊', navHome: 'ホーム', navDaily: '生活', navGames: 'ゲーム', navEju: 'EJU' },
-    en: { brand: 'エールお助け隊', navHome: 'Home', navDaily: 'Daily Life', navGames: 'Games', navEju: 'EJU' },
-    zh: { brand: 'エールお助け隊',     navHome: '首页', navDaily: '日常生活', navGames: '游戏', navEju: 'EJU' },
-    ko: { brand: 'エールお助け隊', navHome: '홈',   navDaily: '생활', navGames: '게임', navEju: 'EJU' },
-    my: { brand: 'エールお助け隊', navHome: 'ပင်မ', navDaily: 'နေ့စဉ်ဘဝ', navGames: 'ဂိမ်းများ', navEju: 'EJU' },
-    vi: { brand: 'エールお助け隊',   navHome: 'Trang chủ', navDaily: 'Đời sống', navGames: 'Trò chơi', navEju: 'EJU' },
+    ja: { brand: 'エールお助け隊', navHome: 'ホーム', navDaily: '生活', navGames: 'ゲーム' },
+    en: { brand: 'エールお助け隊', navHome: 'Home', navDaily: 'Daily Life', navGames: 'Games' },
+    zh: { brand: 'エールお助け隊',     navHome: '首页', navDaily: '日常生活', navGames: '游戏' },
+    ko: { brand: 'エールお助け隊', navHome: '홈',   navDaily: '생활', navGames: '게임' },
+    my: { brand: 'エールお助け隊', navHome: 'ပင်မ', navDaily: 'နေ့စဉ်ဘဝ', navGames: 'ဂိမ်းများ' },
+    vi: { brand: 'エールお助け隊',   navHome: 'Trang chủ', navDaily: 'Đời sống', navGames: 'Trò chơi' },
   };
 
   // ---------- Header rendering ----------
