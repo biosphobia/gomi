@@ -40,9 +40,6 @@
     </a>
   </section>
 
-  <p class="muted center" id="footerNote" style="margin-top:24px;font-size:11px;">
-    本サイトは個人の参考用です。公式情報は大阪市公式サイトをご確認ください。
-  </p>
 </main>
 
 <script src="common.js"></script>
@@ -52,28 +49,22 @@
   const I18N = {
     ja: { pageTitle:'🎮 ゲーム', pageLead:'遊びながら日本での生活と日本語を学ぼう。',
       cardGameT:'大阪市ごみ分別ゲーム', cardGameD:'大阪市の分別ルールをゲームで学ぼう。100種類のごみを正しい箱に分けよう。',
-      cardKanaT:'かなクイズ', cardKanaD:'ひらがな・カタカナを練習しよう。出題範囲を自由に選べます。',
-      footerNote:'本サイトは個人の参考用です。公式情報は大阪市公式サイトをご確認ください。' },
+      cardKanaT:'かなクイズ', cardKanaD:'ひらがな・カタカナを練習しよう。出題範囲を自由に選べます。' },
     en: { pageTitle:'🎮 Games', pageLead:'Learn about life in Japan and Japanese while you play.',
       cardGameT:'Trash Sorting Game', cardGameD:'Learn Osaka’s sorting rules through play — 100 items, three bins.',
-      cardKanaT:'Kana Quiz', cardKanaD:'Practice hiragana & katakana. Choose exactly what to drill.',
-      footerNote:'This site is for personal reference. Please check the Osaka City official site for current rules.' },
+      cardKanaT:'Kana Quiz', cardKanaD:'Practice hiragana & katakana. Choose exactly what to drill.' },
     zh: { pageTitle:'🎮 游戏', pageLead:'边玩边学日本生活与日语。',
       cardGameT:'大阪垃圾分类游戏', cardGameD:'通过游戏学习大阪的分类规则 —— 100 种垃圾，3 个垃圾桶。',
-      cardKanaT:'假名测验', cardKanaD:'练习平假名和片假名，可自由选择测验范围。',
-      footerNote:'本网站仅供个人参考。请以大阪市官方网站信息为准。' },
+      cardKanaT:'假名测验', cardKanaD:'练习平假名和片假名，可自由选择测验范围。' },
     ko: { pageTitle:'🎮 게임', pageLead:'놀면서 일본 생활과 일본어를 배워요.',
       cardGameT:'오사카 쓰레기 분리 게임', cardGameD:'게임으로 오사카의 분리수거 규칙을 배워보세요. 100가지 쓰레기, 3개의 통.',
-      cardKanaT:'가나 퀴즈', cardKanaD:'히라가나·가타카나를 연습하세요. 출제 범위를 자유롭게 선택.',
-      footerNote:'본 사이트는 개인 참고용입니다. 공식 정보는 오사카시 공식 사이트를 확인하세요.' },
+      cardKanaT:'가나 퀴즈', cardKanaD:'히라가나·가타카나를 연습하세요. 출제 범위를 자유롭게 선택.' },
     my: { pageTitle:'🎮 ဂိမ်းများ', pageLead:'ကစားရင်း ဂျပန်ဘဝနှင့် ဂျပန်စာ လေ့လာပါ။',
       cardGameT:'အိုဆာကာ အမှိုက်ခွဲခြားဂိမ်း', cardGameD:'ဂိမ်းဖြင့် ခွဲခြားရေးစည်းမျဉ်းကို လေ့လာပါ။ အမှိုက် ၁၀၀ မျိုး၊ အမှိုက်ပုံး ၃ ခု။',
-      cardKanaT:'ကာနာ ပဟေဠိ', cardKanaD:'ဟိရဂန၊ ကတခန လေ့ကျင့်ပါ။ မေးခွန်းအပိုင်းအခြားကို လွတ်လပ်စွာ ရွေးပါ။',
-      footerNote:'ဤဆိုက်သည် ကိုယ်ပိုင်အကိုးအကားအတွက်သာ။ တရားဝင်အချက်အလက်များကို အိုဆာကာမြို့တရားဝင်ဆိုက်တွင် ကြည့်ပါ။' },
+      cardKanaT:'ကာနာ ပဟေဠိ', cardKanaD:'ဟိရဂန၊ ကတခန လေ့ကျင့်ပါ။ မေးခွန်းအပိုင်းအခြားကို လွတ်လပ်စွာ ရွေးပါ။' },
     vi: { pageTitle:'🎮 Trò chơi', pageLead:'Vừa chơi vừa học về cuộc sống ở Nhật và tiếng Nhật.',
       cardGameT:'Trò chơi phân loại rác', cardGameD:'Học quy tắc phân loại của Osaka qua trò chơi — 100 món, 3 thùng.',
-      cardKanaT:'Trắc nghiệm Kana', cardKanaD:'Luyện hiragana & katakana. Chọn chính xác phần muốn ôn.',
-      footerNote:'Trang web này chỉ để tham khảo cá nhân. Vui lòng xem trang chính thức của thành phố Osaka.' },
+      cardKanaT:'Trắc nghiệm Kana', cardKanaD:'Luyện hiragana & katakana. Chọn chính xác phần muốn ôn.' },
   };
   function apply() {
     const L = I18N[getLang()] || I18N.ja;
