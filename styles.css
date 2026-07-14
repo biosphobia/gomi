@@ -291,6 +291,73 @@ body {
   box-shadow: none;
 }
 
+/* ================ Game setup panel (games.html) ================ */
+.game-setup {
+  margin-top: 14px;
+  padding: 18px 16px;
+  background: var(--c-panel);
+  border: 1px solid var(--c-line);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: setupIn 0.25s ease;
+}
+@keyframes setupIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+.game-setup .mode-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.game-setup .mode-btn { min-width: 130px; }
+.game-setup .mode-btn.active { outline: 2.5px solid var(--c-accent); outline-offset: 2px; }
+.game-setup .vs-setup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 300px;
+}
+.game-setup .vs-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--c-line);
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  text-align: center;
+  background: #fff;
+}
+.game-setup .vs-input:focus { outline: 2px solid var(--c-accent); }
+.game-setup .vs-or { font-size: 12px; color: var(--c-muted); }
+.vs-code-slots { display: flex; gap: 7px; }
+.vs-code-slot {
+  width: 46px; height: 46px;
+  border: 1.5px dashed var(--c-line);
+  border-radius: 12px;
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--c-line); font-size: 18px;
+}
+.vs-code-slot.filled { border-style: solid; border-color: var(--c-accent); }
+.vs-code-slot img { width: 38px; height: 38px; object-fit: contain; }
+.vs-keypad { display: flex; gap: 8px; align-items: center; }
+.vs-key {
+  width: 54px; height: 54px;
+  border: 1px solid var(--c-line);
+  border-radius: 13px;
+  background: #fff;
+  cursor: pointer;
+  padding: 6px;
+  transition: transform 0.07s ease, border-color 0.07s ease;
+}
+.vs-key:hover { border-color: var(--c-accent); }
+.vs-key:active { transform: scale(0.9); }
+.vs-key img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+.vs-key.vs-key-del { font-size: 20px; color: var(--c-muted); padding: 0; }
+.btn[disabled] { opacity: 0.45; cursor: default; }
+
 /* ================ Language pills (in-page) ================ */
 .lang-pills {
   display: flex;

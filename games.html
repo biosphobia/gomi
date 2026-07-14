@@ -27,7 +27,7 @@
   <p class="lead" id="pageLead">遊びながら日本での生活と日本語を学ぼう。</p>
 
   <section class="feature-grid">
-    <a href="game.html" class="feature-card">
+    <a href="game.html" class="feature-card" id="gomiCard">
       <div class="feature-icon">🗑️</div>
       <h3 id="cardGameT">大阪市ごみ分別ゲーム</h3>
       <p  id="cardGameD">大阪市の分別ルールをゲームで学ぼう。100種類のごみを正しい箱に分けよう。</p>
@@ -39,6 +39,22 @@
     </a>
   </section>
 
+  <!-- Gomi-game setup: mode + versus lobby options, expanded when the card is clicked -->
+  <section class="game-setup hidden" id="gomiSetup">
+    <div class="mode-row">
+      <button class="btn mode-btn" id="setupSingleBtn">ひとりで</button>
+      <button class="btn btn-ghost mode-btn" id="setupVersusBtn">たいせん（2人）</button>
+    </div>
+    <div class="vs-setup hidden" id="vsSetup">
+      <input class="vs-input" id="vsName" type="text" maxlength="16" placeholder="ユーザー名" autocomplete="off" />
+      <button class="btn" id="vsCreateBtn">ロビーを作成</button>
+      <div class="vs-or" id="vsOr">または</div>
+      <div class="vs-code-slots" id="vsSlots"></div>
+      <div class="vs-keypad" id="vsPad"></div>
+      <button class="btn btn-ghost" id="vsJoinBtn" disabled>参加</button>
+    </div>
+  </section>
+
 </main>
 
 <script src="common.js"></script>
@@ -48,30 +64,97 @@
   const I18N = {
     ja: { pageTitle:'🎮 ゲーム', pageLead:'遊びながら日本での生活と日本語を学ぼう。',
       cardGameT:'大阪市ごみ分別ゲーム', cardGameD:'大阪市の分別ルールをゲームで学ぼう。100種類のごみを正しい箱に分けよう。',
-      cardKanaT:'かなクイズ', cardKanaD:'ひらがな・カタカナを練習しよう。出題範囲を自由に選べます。' },
+      cardKanaT:'かなクイズ', cardKanaD:'ひらがな・カタカナを練習しよう。出題範囲を自由に選べます。',
+      setupSingleBtn:'ひとりで', setupVersusBtn:'たいせん（2人）', vsNamePh:'ユーザー名',
+      vsCreateBtn:'ロビーを作成', vsOr:'または、絵の合言葉で参加', vsJoinBtn:'参加' },
     en: { pageTitle:'🎮 Games', pageLead:'Learn about life in Japan and Japanese while you play.',
       cardGameT:'Trash Sorting Game', cardGameD:'Learn Osaka’s sorting rules through play — 100 items, three bins.',
-      cardKanaT:'Kana Quiz', cardKanaD:'Practice hiragana & katakana. Choose exactly what to drill.' },
+      cardKanaT:'Kana Quiz', cardKanaD:'Practice hiragana & katakana. Choose exactly what to drill.',
+      setupSingleBtn:'Single', setupVersusBtn:'Versus (2P)', vsNamePh:'Username',
+      vsCreateBtn:'Create lobby', vsOr:'or join with the picture code', vsJoinBtn:'Join' },
     zh: { pageTitle:'🎮 游戏', pageLead:'边玩边学日本生活与日语。',
       cardGameT:'大阪垃圾分类游戏', cardGameD:'通过游戏学习大阪的分类规则 —— 100 种垃圾，3 个垃圾桶。',
-      cardKanaT:'假名测验', cardKanaD:'练习平假名和片假名，可自由选择测验范围。' },
+      cardKanaT:'假名测验', cardKanaD:'练习平假名和片假名，可自由选择测验范围。',
+      setupSingleBtn:'单人', setupVersusBtn:'对战（2人）', vsNamePh:'用户名',
+      vsCreateBtn:'创建房间', vsOr:'或用图片口令加入', vsJoinBtn:'加入' },
     ko: { pageTitle:'🎮 게임', pageLead:'놀면서 일본 생활과 일본어를 배워요.',
       cardGameT:'오사카 쓰레기 분리 게임', cardGameD:'게임으로 오사카의 분리수거 규칙을 배워보세요. 100가지 쓰레기, 3개의 통.',
-      cardKanaT:'가나 퀴즈', cardKanaD:'히라가나·가타카나를 연습하세요. 출제 범위를 자유롭게 선택.' },
+      cardKanaT:'가나 퀴즈', cardKanaD:'히라가나·가타카나를 연습하세요. 출제 범위를 자유롭게 선택.',
+      setupSingleBtn:'혼자', setupVersusBtn:'대전(2인)', vsNamePh:'사용자명',
+      vsCreateBtn:'로비 만들기', vsOr:'또는 그림 코드로 참가', vsJoinBtn:'참가' },
     my: { pageTitle:'🎮 ဂိမ်းများ', pageLead:'ကစားရင်း ဂျပန်ဘဝနှင့် ဂျပန်စာ လေ့လာပါ။',
       cardGameT:'အိုဆာကာ အမှိုက်ခွဲခြားဂိမ်း', cardGameD:'ဂိမ်းဖြင့် ခွဲခြားရေးစည်းမျဉ်းကို လေ့လာပါ။ အမှိုက် ၁၀၀ မျိုး၊ အမှိုက်ပုံး ၃ ခု။',
-      cardKanaT:'ကာနာ ပဟေဠိ', cardKanaD:'ဟိရဂန၊ ကတခန လေ့ကျင့်ပါ။ မေးခွန်းအပိုင်းအခြားကို လွတ်လပ်စွာ ရွေးပါ။' },
+      cardKanaT:'ကာနာ ပဟေဠိ', cardKanaD:'ဟိရဂန၊ ကတခန လေ့ကျင့်ပါ။ မေးခွန်းအပိုင်းအခြားကို လွတ်လပ်စွာ ရွေးပါ။',
+      setupSingleBtn:'တစ်ဦးတည်း', setupVersusBtn:'ပြိုင်ပွဲ (၂ဦး)', vsNamePh:'အသုံးပြုသူအမည်',
+      vsCreateBtn:'လော်ဘီဖန်တီးပါ', vsOr:'သို့မဟုတ် ပုံကုဒ်ဖြင့် ဝင်ပါ', vsJoinBtn:'ဝင်ရန်' },
     vi: { pageTitle:'🎮 Trò chơi', pageLead:'Vừa chơi vừa học về cuộc sống ở Nhật và tiếng Nhật.',
       cardGameT:'Trò chơi phân loại rác', cardGameD:'Học quy tắc phân loại của Osaka qua trò chơi — 100 món, 3 thùng.',
-      cardKanaT:'Trắc nghiệm Kana', cardKanaD:'Luyện hiragana & katakana. Chọn chính xác phần muốn ôn.' },
+      cardKanaT:'Trắc nghiệm Kana', cardKanaD:'Luyện hiragana & katakana. Chọn chính xác phần muốn ôn.',
+      setupSingleBtn:'Một mình', setupVersusBtn:'Đối kháng (2P)', vsNamePh:'Tên người dùng',
+      vsCreateBtn:'Tạo phòng', vsOr:'hoặc tham gia bằng mã hình', vsJoinBtn:'Tham gia' },
   };
   function apply() {
     const L = I18N[getLang()] || I18N.ja;
     for (const k in L) { const el = document.getElementById(k); if (el) el.textContent = L[k]; }
+    document.getElementById('vsName').placeholder = L.vsNamePh;
   }
   function refresh() { applySiteHeader('games'); apply(); }
   refresh();
   setupLangToggle(refresh);
+
+  // ---- Gomi-game setup panel ----
+  const $ = (id) => document.getElementById(id);
+  let padCode = '';
+  const pad = buildVsKeypad($('vsPad'), $('vsSlots'), (code) => {
+    padCode = code;
+    $('vsJoinBtn').disabled = code.length !== VS_CODE_LEN;
+  });
+
+  function openSetup(withVersus) {
+    $('gomiSetup').classList.remove('hidden');
+    if (withVersus) openVersus();
+    $('gomiSetup').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function openVersus() {
+    $('vsSetup').classList.remove('hidden');
+    $('setupVersusBtn').classList.add('active');
+  }
+  function closeVersus() {
+    $('vsSetup').classList.add('hidden');
+    $('setupVersusBtn').classList.remove('active');
+    pad.reset();
+  }
+
+  $('gomiCard').addEventListener('click', (e) => {
+    e.preventDefault();
+    if ($('gomiSetup').classList.contains('hidden')) openSetup(false);
+    else { $('gomiSetup').classList.add('hidden'); closeVersus(); }
+  });
+  $('setupSingleBtn').addEventListener('click', () => { location.href = 'game.html?mode=single'; });
+  $('setupVersusBtn').addEventListener('click', () => {
+    if ($('vsSetup').classList.contains('hidden')) openVersus();
+    else closeVersus();
+  });
+
+  function getVsName() {
+    const name = ($('vsName').value || '').trim().slice(0, 16);
+    if (!name) { $('vsName').focus(); return null; }
+    return name;
+  }
+  $('vsCreateBtn').addEventListener('click', () => {
+    const name = getVsName();
+    if (name) location.href = 'game.html?vs=create&name=' + encodeURIComponent(name);
+  });
+  $('vsJoinBtn').addEventListener('click', () => {
+    const name = getVsName();
+    if (name && padCode.length === VS_CODE_LEN) {
+      location.href = 'game.html?vs=join&code=' + padCode + '&name=' + encodeURIComponent(name);
+    }
+  });
+
+  // game.html sends players back here with #gomi-vs (lobby exit / rematch)
+  if (location.hash === '#gomi-vs') openSetup(true);
+  else if (location.hash === '#gomi') openSetup(false);
 })();
 </script>
 </body>

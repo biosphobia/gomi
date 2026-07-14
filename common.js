@@ -284,6 +284,74 @@
     }, 1000);
   }
 
+  // ============================================================
+  // Versus picture-code (shared by the games-page setup panel and
+  // the game-page lobby). A lobby code is a sequence of VS_CODE_LEN
+  // Osaka pictures; each picture maps to a letter so Firestore doc
+  // ids stay plain strings (e.g. "TCUK").
+  // ============================================================
+  const VS_SYMBOLS = [
+    { key: 'T', img: 'images/code/takoyaki.svg',   alt: 'たこ焼き' },
+    { key: 'C', img: 'images/code/castle.svg',     alt: '大阪城' },
+    { key: 'U', img: 'images/code/umeda.svg',      alt: '梅田スカイビル' },
+    { key: 'K', img: 'images/code/tsutenkaku.svg', alt: '通天閣' },
+  ];
+  const VS_CODE_LEN = 4;
+  const vsSymbolByKey = (k) => VS_SYMBOLS.find(s => s.key === k);
+
+  function vsCodeImgsHtml(code) {
+    return String(code || '').split('').map(ch => {
+      const sym = vsSymbolByKey(ch);
+      return sym ? `<img src="${sym.img}" alt="${sym.alt}" />` : '';
+    }).join('');
+  }
+
+  // Builds a picture keypad into padEl and its entry display into
+  // slotsEl. onChange(code) fires on every change. Returns
+  // { value(), reset() }.
+  function buildVsKeypad(padEl, slotsEl, onChange) {
+    let entry = [];
+    function render() {
+      slotsEl.innerHTML = '';
+      for (let i = 0; i < VS_CODE_LEN; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'vs-code-slot' + (entry[i] ? ' filled' : '');
+        if (entry[i]) {
+          const sym = vsSymbolByKey(entry[i]);
+          cell.innerHTML = `<img src="${sym.img}" alt="${sym.alt}" />`;
+        } else {
+          cell.textContent = '·';
+        }
+        slotsEl.appendChild(cell);
+      }
+      if (onChange) onChange(entry.join(''));
+    }
+    padEl.innerHTML = '';
+    for (const sym of VS_SYMBOLS) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'vs-key';
+      b.innerHTML = `<img src="${sym.img}" alt="${sym.alt}" />`;
+      b.addEventListener('click', () => {
+        if (entry.length >= VS_CODE_LEN) return;
+        entry.push(sym.key);
+        render();
+      });
+      padEl.appendChild(b);
+    }
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'vs-key vs-key-del';
+    del.textContent = '⌫';
+    del.addEventListener('click', () => { entry.pop(); render(); });
+    padEl.appendChild(del);
+    render();
+    return {
+      value: () => entry.join(''),
+      reset: () => { entry = []; render(); },
+    };
+  }
+
   // ---------- Public API ----------
   window.LANGS = LANGS;
   window.getLang = getLang;
@@ -291,6 +359,10 @@
   window.applySiteHeader = applySiteHeader;
   window.setupLangToggle = setupLangToggle;
   window.VideoDB = VideoDB;
+  window.VS_SYMBOLS = VS_SYMBOLS;
+  window.VS_CODE_LEN = VS_CODE_LEN;
+  window.vsCodeImgsHtml = vsCodeImgsHtml;
+  window.buildVsKeypad = buildVsKeypad;
   window.REACTION_IMAGES = REACTION_IMAGES;
   window.playReactionSound = playReactionSound;
   window.showReaction = showReaction;

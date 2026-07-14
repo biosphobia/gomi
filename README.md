@@ -128,11 +128,15 @@ Mechanic:
 
 ### Single-player vs Versus
 
-The start screen offers **Single** and **Versus (2P)**. Single-player
-works with no setup. Versus is a quick 1-v-1 score race backed by
-Firebase (the same project the chat uses):
+There is no start screen: clicking the game card on `games.html`
+expands a setup panel right there with **Single** and **Versus (2P)**,
+and `game.html` launches straight into the chosen mode via URL params
+(`?mode=single`, `?vs=create|join&name=…&code=…`; a bare visit
+redirects back to the games page). Single-player works with no setup.
+Versus is a quick 1-v-1 score race backed by Firebase (the same
+project the chat uses):
 
-- One player taps **Versus**, enters a username, and **creates a
+- One player picks **Versus**, enters a username, and **creates a
   lobby** — they get a picture code: a sequence of 4 Osaka images
   (takoyaki / Osaka Castle / Umeda Sky Building / Tsutenkaku, from
   `images/code/`). The other player enters their name and taps the same

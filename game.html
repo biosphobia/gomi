@@ -308,68 +308,9 @@
   }
   .overlay.hidden { display: none; }
 
-  .lang-bar {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 18px;
-  }
-  .lang-btn {
-    background: var(--c-panel);
-    border: 1px solid var(--c-line);
-    border-radius: 999px;
-    padding: 6px 14px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--c-text);
-    font-family: inherit;
-    transition: all 0.15s ease;
-  }
-  .lang-btn:hover { background: #f5f0e7; }
-  .lang-btn.active {
-    background: var(--c-accent);
-    color: white;
-    border-color: var(--c-accent);
-  }
-
   .overlay h1 { font-size: 24px; margin-bottom: 6px; line-height: 1.3; }
   .overlay h2 { font-size: 22px; margin-bottom: 10px; line-height: 1.3; }
   .overlay .lead { font-size: 13px; color: #555; margin-bottom: 14px; max-width: 440px; line-height: 1.6; }
-  .rules {
-    background: var(--c-panel);
-    padding: 14px 16px;
-    border-radius: var(--radius);
-    margin-bottom: 16px;
-    text-align: left;
-    max-width: 440px;
-    box-shadow: var(--shadow-sm);
-    width: 100%;
-    border: 1px solid var(--c-line);
-  }
-  .rules h3 {
-    font-size: 13px;
-    margin-bottom: 8px;
-    color: #444;
-    border-bottom: 1px solid var(--c-line);
-    padding-bottom: 6px;
-  }
-  .rules ul { list-style: none; padding: 0; font-size: 12px; }
-  .rules li { padding: 5px 0; line-height: 1.5; }
-  .rules li .tag {
-    display: inline-block;
-    color: white;
-    font-weight: 700;
-    padding: 1px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    margin-right: 4px;
-  }
-  .rules li .tag.burnable { background: var(--c-burnable); }
-  .rules li .tag.recycle  { background: var(--c-recycle); }
-  .rules li .tag.plastic  { background: var(--c-plastic); }
-
   .btn {
     background: var(--c-accent);
     color: white;
@@ -384,6 +325,12 @@
     transition: transform 0.1s ease, box-shadow 0.1s ease;
   }
   .btn:active { transform: translateY(2px); box-shadow: 0 2px 4px rgba(31, 157, 77, 0.3); }
+  .btn.btn-ghost {
+    background: var(--c-panel);
+    color: var(--c-text);
+    border: 1px solid var(--c-line);
+    box-shadow: none;
+  }
 
   .score-big {
     font-size: 52px;
@@ -482,76 +429,9 @@
     .play-area::before { width: 180px; height: 180px; }
     .title { font-size: 13px; }
     .stat-value { font-size: 16px; }
-    .lang-btn { font-size: 12px; padding: 5px 10px; }
   }
 
   /* ===== Versus / multiplayer ===== */
-  .mode-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-  .mode-btn { min-width: 140px; padding: 13px 22px; font-size: 15px; }
-  .mode-btn.active {
-    outline: 2.5px solid var(--c-accent);
-    outline-offset: 2px;
-  }
-  #vsSection {
-    width: 100%;
-    max-width: 340px;
-    margin-top: 16px;
-    padding: 18px 16px;
-    background: var(--c-panel);
-    border: 1px solid var(--c-line);
-    border-radius: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    animation: vsSlideIn 0.28s ease;
-  }
-  @keyframes vsSlideIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to   { opacity: 1; transform: none; }
-  }
-  .vs-lead { font-size: 12.5px; color: var(--c-muted); margin: 0 0 12px; line-height: 1.5; }
-  .vs-input {
-    width: 100%;
-    max-width: 280px;
-    padding: 11px 14px;
-    border: 1px solid var(--c-line);
-    border-radius: 12px;
-    font-size: 15px;
-    font-family: inherit;
-    text-align: center;
-    margin-bottom: 12px;
-    background: #fff;
-  }
-  .vs-input:focus { outline: 2px solid var(--c-accent); }
-  #vsHome { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 280px; }
-  .vs-or { font-size: 12px; color: var(--c-muted); }
-  /* picture-code entry (keypad) */
-  .vs-join-pad { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
-  .vs-code-slots { display: flex; gap: 7px; }
-  .vs-code-slot {
-    width: 46px; height: 46px;
-    border: 1.5px dashed var(--c-line);
-    border-radius: 12px;
-    background: #fff;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--c-line); font-size: 18px;
-  }
-  .vs-code-slot.filled { border-style: solid; border-color: var(--c-accent); }
-  .vs-code-slot img { width: 38px; height: 38px; object-fit: contain; }
-  .vs-keypad { display: flex; gap: 8px; align-items: center; }
-  .vs-key {
-    width: 54px; height: 54px;
-    border: 1px solid var(--c-line);
-    border-radius: 13px;
-    background: #fff;
-    cursor: pointer;
-    padding: 6px;
-    transition: transform 0.07s ease, border-color 0.07s ease;
-  }
-  .vs-key:hover { border-color: var(--c-accent); }
-  .vs-key:active { transform: scale(0.9); }
-  .vs-key img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
-  .vs-key.vs-key-del { font-size: 20px; color: var(--c-muted); padding: 0; }
   .vs-code-show {
     background: #fff;
     border: 1px solid var(--c-line);
@@ -683,53 +563,21 @@
     </div>
   </section>
 
-  <!-- Start overlay -->
-  <div class="overlay" id="startOverlay">
-    <div class="lang-bar" id="langBar"></div>
-    <h1 id="startTitle">🗑️ 大阪市ごみ分別ゲーム</h1>
-    <p class="lead" id="startLead"></p>
-    <div class="rules">
-      <h3 id="rulesTitle"></h3>
-      <ul id="rulesList"></ul>
-    </div>
-    <p class="lead" id="startChallenge"></p>
-    <div class="mode-row">
-      <button class="btn mode-btn" id="startSingleBtn">ひとりで</button>
-      <button class="btn btn-ghost mode-btn" id="startVersusBtn">たいせん（2人）</button>
-    </div>
-
-    <!-- Versus setup — revealed in place under the mode buttons -->
-    <div id="vsSection" class="hidden">
-      <p class="vs-lead" id="vsLead">ユーザー名を入れて、ロビーを作るか絵の合言葉で参加しよう。</p>
-
-      <input class="vs-input" id="vsName" type="text" maxlength="16" placeholder="ユーザー名" autocomplete="off" />
-
-      <div id="vsHome">
-        <button class="btn" id="vsCreateBtn">ロビーを作成</button>
-        <div class="vs-or" id="vsOr">または</div>
-        <div class="vs-join-pad">
-          <div class="vs-code-slots" id="vsCodeSlots"></div>
-          <div class="vs-keypad" id="vsKeypad"></div>
-          <button class="btn btn-ghost" id="vsJoinBtn" disabled>参加</button>
-        </div>
+  <!-- Versus lobby overlay — players arrive here from the games page -->
+  <div class="overlay hidden" id="lobbyOverlay">
+    <h2 id="vsTitle">🆚 たいせん</h2>
+    <div id="vsLobby">
+      <div class="vs-code-show">
+        <span id="vsCodeLabel">合言葉</span>
+        <div class="vs-code-imgs" id="vsCodeShow"></div>
       </div>
-
-      <div id="vsLobby" class="hidden">
-        <div class="vs-code-show">
-          <span id="vsCodeLabel">合言葉</span>
-          <div class="vs-code-imgs" id="vsCodeShow"></div>
-        </div>
-        <div class="vs-players" id="vsPlayers"></div>
-        <button class="btn hidden" id="vsStartBtn">スタート</button>
-        <p class="vs-waiting" id="vsWaiting"></p>
-        <button class="btn btn-ghost" id="vsBackBtn">← もどる</button>
-      </div>
-
-      <p class="vs-status" id="vsStatus"></p>
-      <p class="footer-note hidden" id="vsUnavailable"></p>
+      <div class="vs-players" id="vsPlayers"></div>
+      <button class="btn hidden" id="vsStartBtn">スタート</button>
+      <p class="vs-waiting" id="vsWaiting"></p>
     </div>
-
-    <p class="footer-note" id="startNote"></p>
+    <p class="vs-status" id="vsStatus"></p>
+    <button class="btn btn-ghost" id="vsBackBtn">← もどる</button>
+    <p class="footer-note hidden" id="vsUnavailable"></p>
   </div>
 
   <!-- End overlay -->
@@ -1332,16 +1180,6 @@
   const ITEMS_BASE  = 5;      // max items on screen at the start
   const ITEMS_MAX   = 10;     // max items on screen at full difficulty
 
-  // Start-screen mode button labels [single, versus] per language.
-  const MODE_LABELS = {
-    ja: ['ひとりで', 'たいせん（2人）'],
-    en: ['Single', 'Versus (2P)'],
-    zh: ['单人', '对战（2人）'],
-    ko: ['혼자', '대전(2인)'],
-    my: ['တစ်ဦးတည်း', 'ပြိုင်ပွဲ (၂ဦး)'],
-    vi: ['Một mình', 'Đối kháng (2P)'],
-  };
-
   // ============ State ============
   const state = {
     lang: 'ja',
@@ -1400,23 +1238,6 @@
       $('#binSub_'  + k).innerHTML = L.bin[k].sub;
     }
 
-    $('#startTitle').textContent     = L.title;
-    $('#startLead').textContent      = L.start.lead;
-    $('#rulesTitle').textContent     = L.start.rulesTitle;
-    $('#startChallenge').textContent = L.start.challenge;
-    const ml = MODE_LABELS[state.lang] || MODE_LABELS.ja;
-    $('#startSingleBtn').textContent = ml[0];
-    $('#startVersusBtn').textContent = ml[1];
-    $('#startNote').textContent      = L.start.note;
-
-    const rulesList = $('#rulesList');
-    rulesList.innerHTML = '';
-    for (const r of L.start.rules) {
-      const li = document.createElement('li');
-      li.innerHTML = `<span class="tag ${r.tagKey}">${r.tagText}</span> ${r.body}`;
-      rulesList.appendChild(li);
-    }
-
     $('#endScoreLabel').textContent = L.end.scoreLabel;
     $('#endLblCorrect').textContent = L.end.correct + ' ';
     $('#endLblWrong').textContent   = L.end.wrong + ' ';
@@ -1431,33 +1252,11 @@
     if (state.streak >= 2) streakEl.textContent = L.streak(state.streak);
   }
 
-  function buildLangBar() {
-    const bar = $('#langBar');
-    bar.innerHTML = '';
-    for (const lang of LANGS) {
-      const b = document.createElement('button');
-      b.className = 'lang-btn' + (state.lang === lang.code ? ' active' : '');
-      b.type = 'button';
-      b.dataset.lang = lang.code;
-      b.textContent = lang.name;
-      if (lang.code === 'my') b.classList.add('lang-my');
-      b.addEventListener('click', () => setLang(lang.code));
-      bar.appendChild(b);
-    }
-  }
-
   function setLang(code) {
     if (!I18N[code]) return;
     state.lang = code;
     try { localStorage.setItem('osaka_gomi_lang', code); } catch (_) {}
-    buildLangBar();
     applyLang();
-  }
-
-  function cycleLang() {
-    const idx = LANGS.findIndex(l => l.code === state.lang);
-    const next = LANGS[(idx + 1) % LANGS.length];
-    setLang(next.code);
   }
 
   // ============ Game logic ============
@@ -1864,7 +1663,7 @@
     bag = [];
 
     feedbackEl.classList.remove('show');
-    $('#startOverlay').classList.add('hidden');
+    $('#lobbyOverlay').classList.add('hidden');
     $('#endOverlay').classList.add('hidden');
     $('#oppHud').classList.toggle('hidden', !state.versus);
     hintEl.style.opacity = '1';
@@ -1910,16 +1709,8 @@
       el.classList.toggle('hidden', !line);
     },
     isRunning() { return state.running; },
-    quitToMenu() {
-      if (state.running) { state.running = false; cancelAnimationFrame(state.rafId); clearItems(); }
-      state.versus = false; versusHooks = null;
-      renderOpponent(null);
-      $('#endOverlay').classList.add('hidden');
-      $('#startOverlay').classList.remove('hidden');
-    },
   };
 
-  $('#startSingleBtn').addEventListener('click', () => window.GAME.startSingle());
   $('#restartBtn').addEventListener('click', () => {
     if (state.versus && versusHooks && versusHooks.onRestart) versusHooks.onRestart();
     else window.GAME.startSingle();
@@ -1931,7 +1722,6 @@
       const saved = localStorage.getItem('osaka_gomi_lang');
       if (saved && I18N[saved] && saved !== state.lang) {
         state.lang = saved;
-        buildLangBar();
         applyLang();
       }
     } catch (_) {}
@@ -1945,8 +1735,14 @@
     const saved = localStorage.getItem('osaka_gomi_lang');
     if (saved && I18N[saved]) state.lang = saved;
   } catch (_) {}
-  buildLangBar();
   applyLang();
+
+  // Mode comes from the games page: game.html?mode=single starts at once;
+  // ?vs=create/join is handled by the lobby module. A bare visit goes back
+  // to the games page, where the setup lives.
+  const qp = new URLSearchParams(location.search);
+  if (qp.get('mode') === 'single') window.GAME.startSingle();
+  else if (!qp.get('vs')) location.replace('games.html#gomi');
 })();
 </script>
 
@@ -1986,43 +1782,37 @@ const CONFIGURED = isReal(cfg.apiKey) && isReal(cfg.projectId) && isReal(cfg.aut
 
 // ---- i18n (versus UI) ----
 const VS = {
-  ja: { lead:'ユーザー名を入れて、ロビーを作るか、絵の合言葉を押して参加しよう。', name:'ユーザー名',
-    create:'ロビーを作成', or:'または', join:'参加', codeLabel:'合言葉', start:'スタート',
+  ja: { title:'🆚 たいせん', codeLabel:'合言葉', start:'スタート',
     waitHost:'ホストの開始を待っています…', back:'← もどる', host:'ホスト', guest:'ゲスト', empty:'（空き）',
     you:'あなた', opp:'あいて', unavailable:'※ 対戦にはFirebaseの設定が必要です。シングルプレイは設定なしで遊べます。',
     errName:'ユーザー名を入れてください。', errFull:'このロビーは満員です。', errNotFound:'ロビーが見つかりません。',
     errGeneric:'接続に失敗しました。', connecting:'接続中…', waitOpp:'相手の結果を待っています…',
     win:'🏆 勝ち！', lose:'😢 負け…', draw:'🤝 引き分け', rematch:'ロビーへ' },
-  en: { lead:'Enter a username, then create a lobby or tap the picture code to join.', name:'Username',
-    create:'Create lobby', or:'or', join:'Join', codeLabel:'Code', start:'Start',
+  en: { title:'🆚 Versus', codeLabel:'Code', start:'Start',
     waitHost:'Waiting for the host to start…', back:'← Back', host:'Host', guest:'Guest', empty:'(empty)',
     you:'You', opp:'Opp', unavailable:'※ Versus needs Firebase configured. Single-player works without it.',
     errName:'Please enter a username.', errFull:'That lobby is full.', errNotFound:'Lobby not found.',
     errGeneric:'Connection failed.', connecting:'Connecting…', waitOpp:'Waiting for your opponent to finish…',
     win:'🏆 You win!', lose:'😢 You lose…', draw:'🤝 Draw', rematch:'Back to lobby' },
-  zh: { lead:'输入用户名，创建房间或按图片口令加入。', name:'用户名',
-    create:'创建房间', or:'或', join:'加入', codeLabel:'口令', start:'开始',
+  zh: { title:'🆚 对战', codeLabel:'口令', start:'开始',
     waitHost:'等待房主开始…', back:'← 返回', host:'房主', guest:'客人', empty:'（空）',
     you:'你', opp:'对手', unavailable:'※ 对战需要配置 Firebase。单人模式无需配置即可游玩。',
     errName:'请输入用户名。', errFull:'房间已满。', errNotFound:'找不到房间。',
     errGeneric:'连接失败。', connecting:'连接中…', waitOpp:'等待对手完成…',
     win:'🏆 你赢了！', lose:'😢 你输了…', draw:'🤝 平局', rematch:'返回房间' },
-  ko: { lead:'사용자명을 입력하고 로비를 만들거나 그림 코드를 눌러 참가하세요.', name:'사용자명',
-    create:'로비 만들기', or:'또는', join:'참가', codeLabel:'코드', start:'시작',
+  ko: { title:'🆚 대전', codeLabel:'코드', start:'시작',
     waitHost:'호스트의 시작을 기다리는 중…', back:'← 뒤로', host:'호스트', guest:'게스트', empty:'(빈자리)',
     you:'나', opp:'상대', unavailable:'※ 대전에는 Firebase 설정이 필요합니다. 싱글플레이는 설정 없이 가능합니다.',
     errName:'사용자명을 입력하세요.', errFull:'로비가 가득 찼습니다.', errNotFound:'로비를 찾을 수 없습니다.',
     errGeneric:'연결에 실패했습니다.', connecting:'연결 중…', waitOpp:'상대가 끝나기를 기다리는 중…',
     win:'🏆 승리!', lose:'😢 패배…', draw:'🤝 무승부', rematch:'로비로' },
-  my: { lead:'အသုံးပြုသူအမည်ထည့်ပြီး လော်ဘီဖန်တီးပါ သို့မဟုတ် ပုံကုဒ်ကိုနှိပ်၍ ဝင်ပါ။', name:'အသုံးပြုသူအမည်',
-    create:'လော်ဘီဖန်တီးပါ', or:'သို့မဟုတ်', join:'ဝင်ရန်', codeLabel:'ကုဒ်', start:'စတင်ပါ',
+  my: { title:'🆚 ပြိုင်ပွဲ', codeLabel:'ကုဒ်', start:'စတင်ပါ',
     waitHost:'ဟို့စ်စတင်ရန် စောင့်နေသည်…', back:'← နောက်သို့', host:'ဟို့စ်', guest:'ဧည့်သည်', empty:'(လွတ်)',
     you:'သင်', opp:'ပြိုင်ဘက်', unavailable:'※ ပြိုင်ပွဲအတွက် Firebase လိုအပ်သည်။ တစ်ဦးတည်းကစားရန် မလိုပါ။',
     errName:'အသုံးပြုသူအမည် ထည့်ပါ။', errFull:'လော်ဘီပြည့်နေပါပြီ။', errNotFound:'လော်ဘီ မတွေ့ပါ။',
     errGeneric:'ချိတ်ဆက်မှု မအောင်မြင်ပါ။', connecting:'ချိတ်ဆက်နေသည်…', waitOpp:'ပြိုင်ဘက်ပြီးဆုံးရန် စောင့်နေသည်…',
     win:'🏆 အနိုင်ရ!', lose:'😢 ရှုံးသွားသည်…', draw:'🤝 သရေ', rematch:'လော်ဘီသို့' },
-  vi: { lead:'Nhập tên, rồi tạo phòng hoặc bấm mã hình để tham gia.', name:'Tên người dùng',
-    create:'Tạo phòng', or:'hoặc', join:'Tham gia', codeLabel:'Mã', start:'Bắt đầu',
+  vi: { title:'🆚 Đối kháng', codeLabel:'Mã', start:'Bắt đầu',
     waitHost:'Đang chờ chủ phòng bắt đầu…', back:'← Quay lại', host:'Chủ phòng', guest:'Khách', empty:'(trống)',
     you:'Bạn', opp:'Đối thủ', unavailable:'※ Đối kháng cần cấu hình Firebase. Chơi một mình không cần cấu hình.',
     errName:'Vui lòng nhập tên.', errFull:'Phòng đã đầy.', errNotFound:'Không tìm thấy phòng.',
@@ -2059,124 +1849,43 @@ function initFirebase() {
   return fbReady;
 }
 
-// ---- Picture code ----
-// Lobby codes are sequences of 4 Osaka pictures. Each picture maps to a
-// letter so the Firestore doc id stays a plain string (e.g. "TCUK").
-const SYMBOLS = [
-  { key: 'T', img: 'images/code/takoyaki.svg',   alt: 'たこ焼き' },
-  { key: 'C', img: 'images/code/castle.svg',     alt: '大阪城' },
-  { key: 'U', img: 'images/code/umeda.svg',      alt: '梅田スカイビル' },
-  { key: 'K', img: 'images/code/tsutenkaku.svg', alt: '通天閣' },
-];
-const CODE_LEN = 4;
-const symbolByKey = (k) => SYMBOLS.find(s => s.key === k);
-function codeImgsHtml(code) {
-  return String(code || '').split('').map(ch => {
-    const sym = symbolByKey(ch);
-    return sym ? `<img src="${sym.img}" alt="${sym.alt}" />` : '';
-  }).join('');
-}
-
 // ---- Lobby state ----
+// Picture-code helpers (VS_SYMBOLS, VS_CODE_LEN, vsCodeImgsHtml) come
+// from common.js.
 let lobbyCode = null, mySlot = null, oppSlot = null, unsub = null;
 let started = false, myEnded = false, lastSnap = null;
-let padEntry = []; // picture-keypad presses (symbol keys, max CODE_LEN)
 
 function setStatus(msg, warn) {
   const el = $('vsStatus');
   el.textContent = msg || '';
   el.classList.toggle('warn', !!warn);
 }
-function showHome() {
-  $('vsHome').classList.remove('hidden');
-  $('vsLobby').classList.add('hidden');
-  resetPad();
-}
-function showLobbyView() {
-  $('vsHome').classList.add('hidden');
-  $('vsLobby').classList.remove('hidden');
-}
-
-// ---- Picture keypad ----
-function buildKeypad() {
-  const pad = $('vsKeypad');
-  pad.innerHTML = '';
-  for (const sym of SYMBOLS) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'vs-key';
-    b.innerHTML = `<img src="${sym.img}" alt="${sym.alt}" />`;
-    b.addEventListener('click', () => {
-      if (padEntry.length >= CODE_LEN) return;
-      padEntry.push(sym.key);
-      renderPad();
-    });
-    pad.appendChild(b);
-  }
-  const del = document.createElement('button');
-  del.type = 'button';
-  del.className = 'vs-key vs-key-del';
-  del.textContent = '⌫';
-  del.addEventListener('click', () => { padEntry.pop(); renderPad(); });
-  pad.appendChild(del);
-  renderPad();
-}
-function renderPad() {
-  const slots = $('vsCodeSlots');
-  slots.innerHTML = '';
-  for (let i = 0; i < CODE_LEN; i++) {
-    const cell = document.createElement('div');
-    cell.className = 'vs-code-slot' + (padEntry[i] ? ' filled' : '');
-    if (padEntry[i]) {
-      const sym = symbolByKey(padEntry[i]);
-      cell.innerHTML = `<img src="${sym.img}" alt="${sym.alt}" />`;
-    } else {
-      cell.textContent = '·';
-    }
-    slots.appendChild(cell);
-  }
-  $('vsJoinBtn').disabled = !CONFIGURED || padEntry.length !== CODE_LEN;
-}
-function resetPad() {
-  padEntry = [];
-  renderPad();
-}
-
 function applyVsLang() {
   const t = L();
-  $('vsLead').textContent = t.lead;
-  $('vsName').placeholder = t.name;
-  $('vsCreateBtn').textContent = t.create;
-  $('vsOr').textContent = t.or;
-  $('vsJoinBtn').textContent = t.join;
+  $('vsTitle').textContent = t.title;
   $('vsCodeLabel').textContent = t.codeLabel;
   $('vsStartBtn').textContent = t.start;
   $('vsBackBtn').textContent = t.back;
   $('vsUnavailable').textContent = t.unavailable;
 }
 
-// The versus setup lives inside the start overlay: picking「たいせん」
-// expands it in place under the mode buttons.
-function openVersusSection() {
+function openLobbyOverlay() {
   applyVsLang();
-  $('vsSection').classList.remove('hidden');
-  $('startVersusBtn').classList.add('active');
+  $('endOverlay').classList.add('hidden');
+  $('lobbyOverlay').classList.remove('hidden');
   setStatus('');
-  showHome();
-  if (!CONFIGURED) {
-    $('vsUnavailable').classList.remove('hidden');
-    $('vsCreateBtn').disabled = true;
-    $('vsJoinBtn').disabled = true;
-  } else {
-    $('vsUnavailable').classList.add('hidden');
-    $('vsCreateBtn').disabled = false;
-    ensureAuth();
-  }
+  $('vsLobby').classList.toggle('hidden', !CONFIGURED);
+  $('vsUnavailable').classList.toggle('hidden', CONFIGURED);
 }
-function closeVersusSection() {
-  leaveLobby();
-  $('vsSection').classList.add('hidden');
-  $('startVersusBtn').classList.remove('active');
+
+// Leave the lobby, then return to the setup panel on the games page.
+// Waits briefly so the Firestore delete/update can flush first.
+function backToGamesPage() {
+  const go = () => location.replace('games.html#gomi-vs');
+  Promise.race([
+    leaveLobby(),
+    new Promise((r) => setTimeout(r, 800)),
+  ]).then(go, go);
 }
 
 async function ensureAuth() {
@@ -2188,11 +1897,8 @@ async function ensureAuth() {
 
 function genCode() {
   let s = '';
-  for (let i = 0; i < CODE_LEN; i++) s += SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)].key;
+  for (let i = 0; i < VS_CODE_LEN; i++) s += VS_SYMBOLS[Math.floor(Math.random() * VS_SYMBOLS.length)].key;
   return s;
-}
-function getName() {
-  return ($('vsName').value || '').trim().slice(0, 16);
 }
 
 const hooks = {
@@ -2214,11 +1920,7 @@ const hooks = {
     }
     evaluate(lastSnap);
   },
-  onRestart() {
-    leaveLobby();
-    window.GAME.quitToMenu();
-    openVersusSection();
-  },
+  onRestart() { backToGamesPage(); },
 };
 
 function subscribe() {
@@ -2236,8 +1938,7 @@ function subscribe() {
 }
 
 function renderLobby(d) {
-  showLobbyView();
-  $('vsCodeShow').innerHTML = codeImgsHtml(d.code);
+  $('vsCodeShow').innerHTML = vsCodeImgsHtml(d.code);
   const t = L();
   const row = (slot, roleLabel) => {
     const p = d[slot];
@@ -2279,9 +1980,7 @@ function evaluate(d) {
   window.GAME.setVersusResult(outcome, t[outcome], sub);
 }
 
-async function createLobby() {
-  const name = getName();
-  if (!name) { setStatus(L().errName, true); return; }
+async function createLobby(name) {
   if (!(await ensureAuth())) return;
   setStatus(L().connecting);
   let code = genCode();
@@ -2303,11 +2002,10 @@ async function createLobby() {
   } catch (e) { console.warn(e); setStatus(L().errGeneric, true); }
 }
 
-async function joinLobby() {
-  const name = getName();
-  if (!name) { setStatus(L().errName, true); return; }
-  const code = padEntry.join('');
-  if (code.length !== CODE_LEN) { setStatus(L().errNotFound, true); return; }
+async function joinLobby(name, code) {
+  if (code.length !== VS_CODE_LEN || code.split('').some(ch => !VS_SYMBOLS.some(sy => sy.key === ch))) {
+    setStatus(L().errNotFound, true); return;
+  }
   if (!(await ensureAuth())) return;
   setStatus(L().connecting);
   try {
@@ -2345,26 +2043,35 @@ function escapeHtml(s) {
 }
 
 // ---- Wire UI ----
-buildKeypad();
-$('startVersusBtn').addEventListener('click', () => {
-  if ($('vsSection').classList.contains('hidden')) openVersusSection();
-  else closeVersusSection();
-});
-// picking single-player collapses the versus setup (and leaves any lobby)
-$('startSingleBtn').addEventListener('click', closeVersusSection);
-$('vsCreateBtn').addEventListener('click', createLobby);
-$('vsJoinBtn').addEventListener('click', joinLobby);
 $('vsStartBtn').addEventListener('click', startMatch);
-$('vsBackBtn').addEventListener('click', () => {
-  leaveLobby();
-  setStatus('');
-  showHome();
-});
+$('vsBackBtn').addEventListener('click', backToGamesPage);
 window.addEventListener('beforeunload', () => { leaveLobby(); });
 
 // keep versus labels in sync with the site language toggle
 const _origSync = window.__gameSyncLang;
 window.__gameSyncLang = () => { if (_origSync) _origSync(); applyVsLang(); };
+
+// ---- Boot: versus intent arrives via URL from the games page ----
+// game.html?vs=create&name=X  → create a lobby and wait
+// game.html?vs=join&code=TCUK&name=X → join that lobby
+{
+  const qp = new URLSearchParams(location.search);
+  const vs = qp.get('vs');
+  if (vs === 'create' || vs === 'join') {
+    const name = (qp.get('name') || '').trim().slice(0, 16);
+    const code = (qp.get('code') || '').toUpperCase().slice(0, VS_CODE_LEN);
+    if (!name) {
+      location.replace('games.html#gomi-vs');
+    } else {
+      openLobbyOverlay();
+      if (CONFIGURED) {
+        setStatus(L().connecting);
+        if (vs === 'create') createLobby(name);
+        else joinLobby(name, code);
+      }
+    }
+  }
+}
 </script>
 </body>
 </html>
