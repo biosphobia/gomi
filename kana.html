@@ -649,7 +649,7 @@ window.GOOGLE_TTS_API_KEY = "";
       modeTitle:'モード',
       modeMasterName:'マスターモード', modeMasterDesc:'選んだ全てのかなを1回ずつ正解するまで続きます。',
       modeCountName:'カウントモード', modeCountDesc:'指定した数だけ正解したら終了します。',
-      start:'スタート',
+      start:'スタート', createLobby:'ロビーを作成',
       selSummary:(n)=>`出題範囲: ${n} 問`,
       needSelection:'かなを1つ以上選んでください。',
       quit:'やめる', check:'こたえる', next:'つぎへ', tts:'音声',
@@ -672,7 +672,7 @@ window.GOOGLE_TTS_API_KEY = "";
       modeTitle:'Mode',
       modeMasterName:'Master mode', modeMasterDesc:'Continue until every selected kana is answered correctly at least once.',
       modeCountName:'Count mode', modeCountDesc:'Finish after a set number of correct answers.',
-      start:'Start',
+      start:'Start', createLobby:'Create lobby',
       selSummary:(n)=>`${n} kana in the quiz pool`,
       needSelection:'Select at least one kana.',
       quit:'Quit', check:'Check', next:'Next', tts:'Audio',
@@ -695,7 +695,7 @@ window.GOOGLE_TTS_API_KEY = "";
       modeTitle:'模式',
       modeMasterName:'掌握模式', modeMasterDesc:'每个所选假名都至少答对一次才结束。',
       modeCountName:'计数模式', modeCountDesc:'答对指定数量后结束。',
-      start:'开始',
+      start:'开始', createLobby:'创建房间',
       selSummary:(n)=>`题库共 ${n} 个假名`,
       needSelection:'请至少选择一个假名。',
       quit:'退出', check:'确认', next:'下一个', tts:'语音',
@@ -718,7 +718,7 @@ window.GOOGLE_TTS_API_KEY = "";
       modeTitle:'모드',
       modeMasterName:'마스터 모드', modeMasterDesc:'선택한 모든 가나를 한 번씩 맞힐 때까지 계속합니다.',
       modeCountName:'카운트 모드', modeCountDesc:'지정한 개수만큼 맞히면 종료합니다.',
-      start:'시작',
+      start:'시작', createLobby:'로비 만들기',
       selSummary:(n)=>`출제 범위 ${n}개`,
       needSelection:'가나를 하나 이상 선택하세요.',
       quit:'그만', check:'확인', next:'다음', tts:'음성',
@@ -741,7 +741,7 @@ window.GOOGLE_TTS_API_KEY = "";
       modeTitle:'မုဒ်',
       modeMasterName:'ကျွမ်းကျင်မုဒ်', modeMasterDesc:'ရွေးထားသော ကာနာအားလုံးကို တစ်ကြိမ်စီ မှန်အောင် ဆက်လုပ်ရသည်။',
       modeCountName:'အရေအတွက်မုဒ်', modeCountDesc:'သတ်မှတ်ထားသော အရေအတွက် မှန်ပြီးနောက် ပြီးဆုံးသည်။',
-      start:'စတင်ပါ',
+      start:'စတင်ပါ', createLobby:'လော်ဘီဖန်တီးပါ',
       selSummary:(n)=>`မေးခွန်း ${n} ခု`,
       needSelection:'ကာနာ အနည်းဆုံး တစ်ခု ရွေးပါ။',
       quit:'ရပ်ပါ', check:'စစ်ဆေး', next:'နောက်တစ်ခု', tts:'အသံ',
@@ -764,7 +764,7 @@ window.GOOGLE_TTS_API_KEY = "";
       modeTitle:'Chế độ',
       modeMasterName:'Chế độ thành thạo', modeMasterDesc:'Tiếp tục đến khi mỗi kana đã chọn được trả lời đúng ít nhất một lần.',
       modeCountName:'Chế độ đếm', modeCountDesc:'Kết thúc sau số câu đúng định trước.',
-      start:'Bắt đầu',
+      start:'Bắt đầu', createLobby:'Tạo phòng',
       selSummary:(n)=>`${n} kana trong bộ đề`,
       needSelection:'Hãy chọn ít nhất một kana.',
       quit:'Thoát', check:'Kiểm tra', next:'Tiếp', tts:'Âm thanh',
@@ -1222,7 +1222,10 @@ window.GOOGLE_TTS_API_KEY = "";
     $('statWrong').textContent = state.wrong;
     $('statStreak').textContent = state.streak;
     if (state.versus && versusHooks) {
-      versusHooks.onStats({ correct: state.correct, wrong: state.wrong });
+      const done = state.mode === 'master'
+        ? state.pool.length - (state.remaining ? state.remaining.size : 0)
+        : Math.min(state.correct, state.count);
+      versusHooks.onStats({ correct: state.correct, wrong: state.wrong, done });
     }
   }
 
@@ -1310,7 +1313,7 @@ window.GOOGLE_TTS_API_KEY = "";
     $('modeMasterDesc').textContent = Li.modeMasterDesc;
     $('modeCountName').textContent = Li.modeCountName;
     $('modeCountDesc').textContent = Li.modeCountDesc;
-    $('startBtn').textContent = Li.start;
+    $('startBtn').textContent = vsCreatePending ? Li.createLobby : Li.start;
     $('quitL').textContent = Li.quit;
     $('catDakutenL').textContent = Li.groupDakuten;
     $('catComboL').textContent = Li.groupCombo;
@@ -1349,7 +1352,15 @@ window.GOOGLE_TTS_API_KEY = "";
   $('catCombo').addEventListener('click', () => toggleGroupById('combo'));
   $('modeMasterCard').addEventListener('click', () => setMode('master'));
   $('modeCountCard').addEventListener('click', () => setMode('count'));
-  $('startBtn').addEventListener('click', startQuiz);
+  $('startBtn').addEventListener('click', () => {
+    if (vsCreatePending && window.__kanaVsApi) {
+      if (!buildPool().length) { alert(L().needSelection); return; }
+      $('viewSetup').classList.add('hidden');
+      window.__kanaVsApi.createNow({ settings: currentSettings() });
+      return;
+    }
+    startQuiz();
+  });
 
   $('nextBtn').addEventListener('click', submitAnswer);
   $('quizInput').addEventListener('keydown', (e) => {
@@ -1381,24 +1392,49 @@ window.GOOGLE_TTS_API_KEY = "";
   }
 
   /* ===========================================================
-     Versus (2P) — driven by vs-lobby.js
+     Versus (2P) — driven by vs-lobby.js.
+     The HOST configures the quiz exactly like single-player; the
+     settings ride along on the lobby doc so both race the same quiz.
      =========================================================== */
+  function vsGoal() {
+    return state.mode === 'master' ? state.pool.length : state.count;
+  }
+
+  function currentSettings() {
+    return {
+      mode: state.mode,
+      count: state.count,
+      h: [...state.selected.h],
+      k: [...state.selected.k],
+    };
+  }
+  function applySettings(st) {
+    if (!st || !((st.h && st.h.length) || (st.k && st.k.length))) {
+      // older lobby or missing settings — fall back to a basic race
+      presetBasic();
+      setMode('count');
+      state.count = 20;
+      return;
+    }
+    state.selected.h = new Set(st.h || []);
+    state.selected.k = new Set(st.k || []);
+    setMode(st.mode === 'master' ? 'master' : 'count');
+    if (state.mode === 'count') state.count = (st.count | 0) || 20;
+  }
+
   function renderOppHud(opp) {
     const hud = $('oppHud');
     if (!state.versus || !opp) { hud.classList.add('hidden'); return; }
     hud.classList.remove('hidden');
     $('oppName').textContent = opp.name || '—';
-    $('oppStat').textContent = opp.finished ? '🏁' : (opp.correct | 0) + '/' + VS_GOAL;
+    $('oppStat').textContent = opp.finished ? '🏁' : (opp.done | 0) + '/' + vsGoal();
   }
 
   window.GAME = {
-    startVersus(hooks) {
+    startVersus(hooks, lobbyDoc) {
       state.versus = true;
       versusHooks = hooks;
-      // fixed fair rules: basic kana only, both scripts, race to VS_GOAL
-      presetBasic();
-      setMode('count');
-      state.count = VS_GOAL;
+      applySettings(lobbyDoc && lobbyDoc.settings);
       renderOppHud(null);
       startQuiz();
     },
@@ -1411,8 +1447,12 @@ window.GOOGLE_TTS_API_KEY = "";
     },
   };
 
-  // Arriving with ?vs=… means the lobby takes over from the setup view.
-  if (new URLSearchParams(location.search).get('vs')) {
+  // ?vs=join: the lobby takes over from the setup view right away.
+  // ?vs=create: the HOST keeps the setup view to pick the quiz options;
+  // the start button becomes「ロビーを作成」and creates the lobby.
+  const vsParam = new URLSearchParams(location.search).get('vs');
+  const vsCreatePending = vsParam === 'create';
+  if (vsParam === 'join') {
     $('viewSetup').classList.add('hidden');
   }
 
@@ -1453,10 +1493,11 @@ window.OSAKA_FIREBASE_CONFIG = window.OSAKA_FIREBASE_CONFIG || {
     const secs = Math.round((ms | 0) / 1000);
     return Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
   };
-  VsLobby.boot({
+  window.__kanaVsApi = VsLobby.boot({
     game: 'kana',
     returnUrl: 'games.html#kana-vs',
-    initialStats: () => ({ correct: 0, wrong: 0, elapsed: 0 }),
+    deferCreate: true,
+    initialStats: () => ({ correct: 0, wrong: 0, done: 0, elapsed: 0 }),
     // both race to the same goal; the faster finisher wins
     compare: (me, opp) =>
       (me.elapsed | 0) < (opp.elapsed | 0) ? 'win' :

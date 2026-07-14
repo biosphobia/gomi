@@ -158,9 +158,11 @@ project the chat uses):
   a theme, …) — all marked 準備中 for now. Logic lives in `common.js`
   (`Grades`).
 - The **Kana Quiz has the same Versus system** (same games-page setup
-  panel, picture codes, lobby): both players race through basic kana
-  (both scripts, count mode, first to 20 correct) and the faster
-  finisher wins. Both games share one Firestore collection; a `game`
+  panel, picture codes, lobby). The **host picks the quiz options
+  exactly like single-player** (kana selection, master/count mode,
+  count) before the lobby is created; the settings ride along on the
+  lobby doc, both players race the same quiz, and the faster finisher
+  wins. Both games share one Firestore collection; a `game`
   tag on each lobby doc keeps their codes apart. The shared lobby
   logic lives in `vs-lobby.js`.
 - Versus needs Firebase configured (`FIREBASE_*` env vars) **and** the

@@ -21,7 +21,16 @@
      initialStats: () => per-player stat fields (reset each match)
      compare:      (me, opp) => 'win' | 'lose' | 'draw'
      resultSub:    (me, opp, t) => score-line string for the result
+     deferCreate:  if true, ?vs=create does NOT create the lobby right
+                   away - the page shows its own setup UI first, then
+                   calls the returned api.createNow(extraDoc), whose
+                   fields (e.g. quiz settings) are merged into the
+                   lobby doc so the guest can read them
    }
+
+   boot() returns { createNow(extraDoc) } (only useful with
+   deferCreate). GAME.startVersus(hooks, lobbyDoc) receives the lobby
+   doc, so pages can apply host-chosen settings from it.
 
    The hooks object passed to GAME.startVersus:
      onStats(patch)  — merge stat fields into my player doc
@@ -218,7 +227,7 @@
       hooks.onStats(Object.assign({ finished: false }, config.initialStats()));
       window.GAME.setVersusResult('', '');
       $('lobbyOverlay').classList.add('hidden');
-      window.GAME.startVersus(hooks);
+      window.GAME.startVersus(hooks, lastSnap);
     }
 
     function evaluate(d) {
@@ -233,7 +242,7 @@
       window.GAME.setVersusResult(outcome, t[outcome], config.resultSub(me, opp, t));
     }
 
-    async function createLobby(name) {
+    async function createLobby(name, extraDoc) {
       if (!(await ensureAuth())) return;
       setStatus(L().connecting);
       let code = genCode();
@@ -244,11 +253,11 @@
           if (!ex.exists()) break;
           code = genCode();
         }
-        await setDoc(doc(db, 'lobbies', code), {
+        await setDoc(doc(db, 'lobbies', code), Object.assign({
           code, game: config.game, status: 'waiting', host: uid, createdAt: serverTimestamp(),
           p1: Object.assign({ uid, name, finished: false }, config.initialStats()),
           p2: null,
-        });
+        }, extraDoc || {}));
         lobbyCode = code; mySlot = 'p1'; oppSlot = 'p2'; started = false; myEnded = false;
         setStatus('');
         subscribe();
@@ -303,6 +312,20 @@
     window.__gameSyncLang = () => { if (_origSync) _origSync(); applyVsLang(); };
 
     // ---- Boot: versus intent arrives via URL from the games page ----
+    const api = {
+      // With deferCreate the page calls this once its setup is done;
+      // extraDoc (e.g. { settings: ... }) is merged into the lobby doc.
+      createNow(extraDoc) {
+        if (!pendingCreateName) return;
+        openLobbyOverlay();
+        if (CONFIGURED) {
+          setStatus(L().connecting);
+          createLobby(pendingCreateName, extraDoc);
+        }
+      },
+    };
+    let pendingCreateName = null;
+
     const qp = new URLSearchParams(location.search);
     const vs = qp.get('vs');
     if (vs === 'create' || vs === 'join') {
@@ -310,6 +333,8 @@
       const code = (qp.get('code') || '').toUpperCase().slice(0, VS_CODE_LEN);
       if (!name) {
         location.replace(config.returnUrl);
+      } else if (vs === 'create' && config.deferCreate) {
+        pendingCreateName = name;   // page shows its setup, then createNow()
       } else {
         openLobbyOverlay();
         if (CONFIGURED) {
@@ -318,9 +343,8 @@
           else joinLobby(name, code);
         }
       }
-      return true; // versus flow active
     }
-    return false;
+    return api;
   }
 
   window.VsLobby = { boot };
