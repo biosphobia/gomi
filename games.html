@@ -52,7 +52,6 @@
       <div class="vs-or"></div>
       <div class="vs-code-slots"></div>
       <div class="vs-keypad"></div>
-      <button class="btn btn-ghost vs-join" disabled>参加</button>
     </div>
     <div class="hs-row">
       <span class="hs-badge"></span>
@@ -72,7 +71,6 @@
       <div class="vs-or"></div>
       <div class="vs-code-slots"></div>
       <div class="vs-keypad"></div>
-      <button class="btn btn-ghost vs-join" disabled>参加</button>
     </div>
     <div class="hs-row">
       <span class="hs-badge"></span>
@@ -126,13 +124,14 @@
       panel.querySelector('.setup-single').textContent = L.setupSingleBtn;
       panel.querySelector('.setup-versus').textContent = L.setupVersusBtn;
       panel.querySelector('.vs-name').placeholder = L.vsNamePh;
-      panel.querySelector('.vs-create').textContent = L.vsCreateBtn;
       panel.querySelector('.vs-or').textContent = L.vsOr;
-      panel.querySelector('.vs-join').textContent = L.vsJoinBtn;
     }
     for (const fn of hsRefreshers) fn();
+    for (const fn of actionRefreshers) fn();
   }
   const hsRefreshers = [];
+  const actionRefreshers = [];
+  const curL = () => I18N[getLang()] || I18N.ja;
   function refresh() { applySiteHeader('games'); apply(); }
   refresh();
   setupLangToggle(refresh);
@@ -151,12 +150,26 @@
     const panel = document.getElementById(cfg.panel);
     const q = (sel) => panel.querySelector(sel);
     const vsBox = q('.vs-setup');
-    const joinBtn = q('.vs-join');
+    const actionBtn = q('.vs-create');
 
+    // One button: create lobby while the keypad is empty; as soon as
+    // pictures are entered it becomes Join — grayed until all 4 are in,
+    // and back to Create when the entry is cleared.
     let padCode = '';
+    const refreshAction = () => {
+      const L = curL();
+      if (padCode.length === 0) {
+        actionBtn.textContent = L.vsCreateBtn;
+        actionBtn.disabled = false;
+      } else {
+        actionBtn.textContent = L.vsJoinBtn;
+        actionBtn.disabled = padCode.length !== VS_CODE_LEN;
+      }
+    };
+    actionRefreshers.push(refreshAction);
     const pad = buildVsKeypad(q('.vs-keypad'), q('.vs-code-slots'), (code) => {
       padCode = code;
-      joinBtn.disabled = code.length !== VS_CODE_LEN;
+      refreshAction();
     });
 
     const openVersus = () => {
@@ -192,13 +205,12 @@
       if (!name) { q('.vs-name').focus(); return null; }
       return name;
     };
-    q('.vs-create').addEventListener('click', () => {
+    actionBtn.addEventListener('click', () => {
       const name = getVsName();
-      if (name) location.href = cfg.page + '?vs=create&name=' + encodeURIComponent(name);
-    });
-    joinBtn.addEventListener('click', () => {
-      const name = getVsName();
-      if (name && padCode.length === VS_CODE_LEN) {
+      if (!name) return;
+      if (padCode.length === 0) {
+        location.href = cfg.page + '?vs=create&name=' + encodeURIComponent(name);
+      } else if (padCode.length === VS_CODE_LEN) {
         location.href = cfg.page + '?vs=join&code=' + padCode + '&name=' + encodeURIComponent(name);
       }
     });
