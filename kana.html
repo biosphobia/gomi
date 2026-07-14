@@ -407,6 +407,37 @@
   .review-chip .rc-kana { font-size: 16px; }
   .review-chip .rc-n { font-size: 11px; color: #c62828; font-weight: 700; }
   .result-actions { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+
+  /* ---- Versus (2P) ---- */
+  .lobby-card {
+    max-width: 420px;
+    margin: 30px auto 0;
+    padding: 24px 18px;
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .lobby-card h2 { font-size: 20px; margin-bottom: 14px; }
+  .kv-opp {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--c-panel);
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 13px;
+    margin: 10px auto 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .kv-opp b { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kv-opp .kv-opp-stat { color: var(--c-muted); font-weight: 700; }
+  .kv-opp-row { text-align: center; }
 </style>
 </head>
 <body>
@@ -483,6 +514,8 @@
       </div>
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
+      <div class="kv-opp-row"><div class="kv-opp hidden" id="oppHud">🆚 <b id="oppName">—</b> <span class="kv-opp-stat" id="oppStat">0</span></div></div>
+
       <div class="quiz-card">
         <div class="quiz-script-label" id="quizScriptLabel"></div>
         <div class="quiz-kana" id="quizKana">あ</div>
@@ -513,6 +546,7 @@
         <div><b id="resCorrect">0</b><span id="resCorrectL">正解</span></div>
         <div><b id="resTime">0:00</b><span id="resTimeL">時間</span></div>
       </div>
+      <div class="vs-result hidden" id="vsResult"></div>
       <div class="review-list hidden" id="reviewBox">
         <h4 id="reviewTitle">復習したいかな</h4>
         <div id="reviewChips"></div>
@@ -522,6 +556,23 @@
         <button class="btn btn-ghost" type="button" id="backSetupBtn">設定にもどる</button>
       </div>
     </div>
+  </section>
+
+  <!-- ===== Versus lobby (players arrive from the games page) ===== -->
+  <section id="lobbyOverlay" class="lobby-card hidden">
+    <h2 id="vsTitle">🆚 たいせん</h2>
+    <div id="vsLobby">
+      <div class="vs-code-show">
+        <span id="vsCodeLabel">合言葉</span>
+        <div class="vs-code-imgs" id="vsCodeShow"></div>
+      </div>
+      <div class="vs-players" id="vsPlayers"></div>
+      <button class="btn hidden" id="vsStartBtn">スタート</button>
+      <p class="vs-waiting" id="vsWaiting"></p>
+    </div>
+    <p class="vs-status" id="vsStatus"></p>
+    <button class="btn btn-ghost" id="vsBackBtn">← もどる</button>
+    <p class="vs-waiting hidden" id="vsUnavailable"></p>
   </section>
 
 </main>
@@ -810,7 +861,10 @@ window.GOOGLE_TTS_API_KEY = "";
     awaitingNext: false,
     finished: false,
     ttsOn: false,
+    versus: false,
   };
+  const VS_GOAL = 20;      // versus: first to 20 correct (faster time wins)
+  let versusHooks = null;
   try { state.ttsOn = localStorage.getItem('kana_tts') === '1'; } catch (_) {}
 
   const $ = (id) => document.getElementById(id);
@@ -1166,6 +1220,9 @@ window.GOOGLE_TTS_API_KEY = "";
     $('statCorrect').textContent = state.correct;
     $('statWrong').textContent = state.wrong;
     $('statStreak').textContent = state.streak;
+    if (state.versus && versusHooks) {
+      versusHooks.onStats({ correct: state.correct, wrong: state.wrong });
+    }
   }
 
   function updateProgress() {
@@ -1184,6 +1241,15 @@ window.GOOGLE_TTS_API_KEY = "";
 
   function finishQuiz() {
     state.finished = true;
+    if (state.versus && versusHooks) {
+      versusHooks.onEnd({
+        correct: state.correct,
+        wrong: state.wrong,
+        elapsed: Date.now() - state.startTime,
+        finished: true,
+      });
+    }
+    $('backSetupBtn').classList.toggle('hidden', state.versus);
     showView('viewResults');
     const Li = L();
     const acc = state.answered ? Math.round(state.correct / state.answered * 100) : 0;
@@ -1288,8 +1354,15 @@ window.GOOGLE_TTS_API_KEY = "";
     try { localStorage.setItem('kana_tts', state.ttsOn ? '1' : '0'); } catch (_) {}
     updateTtsButton();
   });
-  $('quitBtn').addEventListener('click', () => { state.finished = true; showView('viewSetup'); });
-  $('againBtn').addEventListener('click', startQuiz);
+  $('quitBtn').addEventListener('click', () => {
+    state.finished = true;
+    if (state.versus && versusHooks) { versusHooks.onRestart(); return; }
+    showView('viewSetup');
+  });
+  $('againBtn').addEventListener('click', () => {
+    if (state.versus && versusHooks) { versusHooks.onRestart(); return; }
+    startQuiz();
+  });
   $('backSetupBtn').addEventListener('click', () => showView('viewSetup'));
 
   /* ===========================================================
@@ -1301,6 +1374,42 @@ window.GOOGLE_TTS_API_KEY = "";
     state.selected.k.add(c.h);
   }
 
+  /* ===========================================================
+     Versus (2P) — driven by vs-lobby.js
+     =========================================================== */
+  function renderOppHud(opp) {
+    const hud = $('oppHud');
+    if (!state.versus || !opp) { hud.classList.add('hidden'); return; }
+    hud.classList.remove('hidden');
+    $('oppName').textContent = opp.name || '—';
+    $('oppStat').textContent = opp.finished ? '🏁' : (opp.correct | 0) + '/' + VS_GOAL;
+  }
+
+  window.GAME = {
+    startVersus(hooks) {
+      state.versus = true;
+      versusHooks = hooks;
+      // fixed fair rules: basic kana only, both scripts, race to VS_GOAL
+      presetBasic();
+      setMode('count');
+      state.count = VS_GOAL;
+      renderOppHud(null);
+      startQuiz();
+    },
+    reportOpponent(opp) { renderOppHud(opp); },
+    setVersusResult(outcome, line, sub) {
+      const el = $('vsResult');
+      el.className = 'vs-result ' + (outcome || '');
+      el.innerHTML = line ? (line + (sub ? `<span class="vs-sub">${sub}</span>` : '')) : '';
+      el.classList.toggle('hidden', !line);
+    },
+  };
+
+  // Arriving with ?vs=… means the lobby takes over from the setup view.
+  if (new URLSearchParams(location.search).get('vs')) {
+    $('viewSetup').classList.add('hidden');
+  }
+
   applySiteHeader('games');
   setupLangToggle(() => { applySiteHeader('games'); applyI18n(); });
 
@@ -1310,6 +1419,44 @@ window.GOOGLE_TTS_API_KEY = "";
   updateTtsButton();
   applyI18n();
   refreshCounts();
+})();
+</script>
+
+<!--
+  Firebase config for the Versus lobby. The @@…@@ placeholders are
+  rewritten by Render's buildCommand (see render.yaml). Left as @@…@@
+  on local dev, in which case Versus shows a "setup needed" notice and
+  single-player still works.
+-->
+<script>
+window.OSAKA_FIREBASE_CONFIG = window.OSAKA_FIREBASE_CONFIG || {
+  apiKey:            "@@FIREBASE_API_KEY@@",
+  authDomain:        "@@FIREBASE_AUTH_DOMAIN@@",
+  projectId:         "@@FIREBASE_PROJECT_ID@@",
+  storageBucket:     "@@FIREBASE_STORAGE_BUCKET@@",
+  messagingSenderId: "@@FIREBASE_MESSAGING_SENDER_ID@@",
+  appId:             "@@FIREBASE_APP_ID@@"
+};
+</script>
+
+<!-- Multiplayer (Versus) lobby — shared module (vs-lobby.js) -->
+<script src="vs-lobby.js"></script>
+<script>
+(() => {
+  const fmt = (ms) => {
+    const secs = Math.round((ms | 0) / 1000);
+    return Math.floor(secs / 60) + ':' + String(secs % 60).padStart(2, '0');
+  };
+  VsLobby.boot({
+    game: 'kana',
+    returnUrl: 'games.html#kana-vs',
+    initialStats: () => ({ correct: 0, wrong: 0, elapsed: 0 }),
+    // both race to the same goal; the faster finisher wins
+    compare: (me, opp) =>
+      (me.elapsed | 0) < (opp.elapsed | 0) ? 'win' :
+      (me.elapsed | 0) > (opp.elapsed | 0) ? 'lose' : 'draw',
+    resultSub: (me, opp, t) => `${t.you} ${fmt(me.elapsed)} — ${fmt(opp.elapsed)} ${t.opp}`,
+  });
 })();
 </script>
 </body>

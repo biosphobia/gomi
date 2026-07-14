@@ -32,26 +32,42 @@
       <h3 id="cardGameT">大阪市ごみ分別ゲーム</h3>
       <p  id="cardGameD">大阪市の分別ルールをゲームで学ぼう。100種類のごみを正しい箱に分けよう。</p>
     </a>
-    <a href="kana.html" class="feature-card">
+    <a href="kana.html" class="feature-card" id="kanaCard">
       <div class="feature-icon">📝</div>
       <h3 id="cardKanaT">かなクイズ</h3>
       <p  id="cardKanaD">ひらがな・カタカナを練習しよう。出題範囲を自由に選べます。</p>
     </a>
   </section>
 
-  <!-- Gomi-game setup: mode + versus lobby options, expanded when the card is clicked -->
-  <section class="game-setup hidden" id="gomiSetup">
+  <!-- Per-game setup: mode + versus lobby options, expanded when a card
+       is clicked. Same markup for both games; wired up in the script. -->
+  <section class="game-setup hidden" id="gomiSetup" data-page="game.html">
     <div class="mode-row">
-      <button class="btn mode-btn" id="setupSingleBtn">ひとりで</button>
-      <button class="btn btn-ghost mode-btn" id="setupVersusBtn">たいせん（2人）</button>
+      <button class="btn mode-btn setup-single">ひとりで</button>
+      <button class="btn btn-ghost mode-btn setup-versus">たいせん（2人）</button>
     </div>
-    <div class="vs-setup hidden" id="vsSetup">
-      <input class="vs-input" id="vsName" type="text" maxlength="16" placeholder="ユーザー名" autocomplete="off" />
-      <button class="btn" id="vsCreateBtn">ロビーを作成</button>
-      <div class="vs-or" id="vsOr">または</div>
-      <div class="vs-code-slots" id="vsSlots"></div>
-      <div class="vs-keypad" id="vsPad"></div>
-      <button class="btn btn-ghost" id="vsJoinBtn" disabled>参加</button>
+    <div class="vs-setup hidden">
+      <input class="vs-input vs-name" type="text" maxlength="16" placeholder="ユーザー名" autocomplete="off" />
+      <button class="btn vs-create">ロビーを作成</button>
+      <div class="vs-or"></div>
+      <div class="vs-code-slots"></div>
+      <div class="vs-keypad"></div>
+      <button class="btn btn-ghost vs-join" disabled>参加</button>
+    </div>
+  </section>
+
+  <section class="game-setup hidden" id="kanaSetup" data-page="kana.html">
+    <div class="mode-row">
+      <button class="btn mode-btn setup-single">ひとりで</button>
+      <button class="btn btn-ghost mode-btn setup-versus">たいせん（2人）</button>
+    </div>
+    <div class="vs-setup hidden">
+      <input class="vs-input vs-name" type="text" maxlength="16" placeholder="ユーザー名" autocomplete="off" />
+      <button class="btn vs-create">ロビーを作成</button>
+      <div class="vs-or"></div>
+      <div class="vs-code-slots"></div>
+      <div class="vs-keypad"></div>
+      <button class="btn btn-ghost vs-join" disabled>参加</button>
     </div>
   </section>
 
@@ -96,65 +112,94 @@
   function apply() {
     const L = I18N[getLang()] || I18N.ja;
     for (const k in L) { const el = document.getElementById(k); if (el) el.textContent = L[k]; }
-    document.getElementById('vsName').placeholder = L.vsNamePh;
+    for (const panel of document.querySelectorAll('.game-setup')) {
+      panel.querySelector('.setup-single').textContent = L.setupSingleBtn;
+      panel.querySelector('.setup-versus').textContent = L.setupVersusBtn;
+      panel.querySelector('.vs-name').placeholder = L.vsNamePh;
+      panel.querySelector('.vs-create').textContent = L.vsCreateBtn;
+      panel.querySelector('.vs-or').textContent = L.vsOr;
+      panel.querySelector('.vs-join').textContent = L.vsJoinBtn;
+    }
   }
   function refresh() { applySiteHeader('games'); apply(); }
   refresh();
   setupLangToggle(refresh);
 
-  // ---- Gomi-game setup panel ----
-  const $ = (id) => document.getElementById(id);
-  let padCode = '';
-  const pad = buildVsKeypad($('vsPad'), $('vsSlots'), (code) => {
-    padCode = code;
-    $('vsJoinBtn').disabled = code.length !== VS_CODE_LEN;
-  });
+  // ---- Per-game setup panels ----
+  // Each game card toggles its panel; the panel launches the game page
+  // with the chosen mode via URL params.
+  const SETUPS = [
+    { card: 'gomiCard', panel: 'gomiSetup', hash: 'gomi', singleUrl: 'game.html?mode=single', page: 'game.html' },
+    { card: 'kanaCard', panel: 'kanaSetup', hash: 'kana', singleUrl: 'kana.html',             page: 'kana.html' },
+  ];
+  const panels = [];
 
-  function openSetup(withVersus) {
-    $('gomiSetup').classList.remove('hidden');
-    if (withVersus) openVersus();
-    $('gomiSetup').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-  function openVersus() {
-    $('vsSetup').classList.remove('hidden');
-    $('setupVersusBtn').classList.add('active');
-  }
-  function closeVersus() {
-    $('vsSetup').classList.add('hidden');
-    $('setupVersusBtn').classList.remove('active');
-    pad.reset();
+  function wireSetup(cfg) {
+    const card = document.getElementById(cfg.card);
+    const panel = document.getElementById(cfg.panel);
+    const q = (sel) => panel.querySelector(sel);
+    const vsBox = q('.vs-setup');
+    const joinBtn = q('.vs-join');
+
+    let padCode = '';
+    const pad = buildVsKeypad(q('.vs-keypad'), q('.vs-code-slots'), (code) => {
+      padCode = code;
+      joinBtn.disabled = code.length !== VS_CODE_LEN;
+    });
+
+    const openVersus = () => {
+      vsBox.classList.remove('hidden');
+      q('.setup-versus').classList.add('active');
+    };
+    const closeVersus = () => {
+      vsBox.classList.add('hidden');
+      q('.setup-versus').classList.remove('active');
+      pad.reset();
+    };
+    const open = (withVersus) => {
+      for (const p of panels) if (p !== api) p.close();   // one panel at a time
+      panel.classList.remove('hidden');
+      if (withVersus) openVersus();
+      panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+    const close = () => { panel.classList.add('hidden'); closeVersus(); };
+
+    card.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (panel.classList.contains('hidden')) open(false);
+      else close();
+    });
+    q('.setup-single').addEventListener('click', () => { location.href = cfg.singleUrl; });
+    q('.setup-versus').addEventListener('click', () => {
+      if (vsBox.classList.contains('hidden')) openVersus();
+      else closeVersus();
+    });
+
+    const getVsName = () => {
+      const name = (q('.vs-name').value || '').trim().slice(0, 16);
+      if (!name) { q('.vs-name').focus(); return null; }
+      return name;
+    };
+    q('.vs-create').addEventListener('click', () => {
+      const name = getVsName();
+      if (name) location.href = cfg.page + '?vs=create&name=' + encodeURIComponent(name);
+    });
+    joinBtn.addEventListener('click', () => {
+      const name = getVsName();
+      if (name && padCode.length === VS_CODE_LEN) {
+        location.href = cfg.page + '?vs=join&code=' + padCode + '&name=' + encodeURIComponent(name);
+      }
+    });
+
+    const api = { open, close };
+    panels.push(api);
+
+    // the game pages send players back with #<game>-vs (lobby exit / rematch)
+    if (location.hash === '#' + cfg.hash + '-vs') open(true);
+    else if (location.hash === '#' + cfg.hash) open(false);
   }
 
-  $('gomiCard').addEventListener('click', (e) => {
-    e.preventDefault();
-    if ($('gomiSetup').classList.contains('hidden')) openSetup(false);
-    else { $('gomiSetup').classList.add('hidden'); closeVersus(); }
-  });
-  $('setupSingleBtn').addEventListener('click', () => { location.href = 'game.html?mode=single'; });
-  $('setupVersusBtn').addEventListener('click', () => {
-    if ($('vsSetup').classList.contains('hidden')) openVersus();
-    else closeVersus();
-  });
-
-  function getVsName() {
-    const name = ($('vsName').value || '').trim().slice(0, 16);
-    if (!name) { $('vsName').focus(); return null; }
-    return name;
-  }
-  $('vsCreateBtn').addEventListener('click', () => {
-    const name = getVsName();
-    if (name) location.href = 'game.html?vs=create&name=' + encodeURIComponent(name);
-  });
-  $('vsJoinBtn').addEventListener('click', () => {
-    const name = getVsName();
-    if (name && padCode.length === VS_CODE_LEN) {
-      location.href = 'game.html?vs=join&code=' + padCode + '&name=' + encodeURIComponent(name);
-    }
-  });
-
-  // game.html sends players back here with #gomi-vs (lobby exit / rematch)
-  if (location.hash === '#gomi-vs') openSetup(true);
-  else if (location.hash === '#gomi') openSetup(false);
+  for (const cfg of SETUPS) wireSetup(cfg);
 })();
 </script>
 </body>

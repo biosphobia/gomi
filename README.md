@@ -49,6 +49,7 @@ persists across pages.
 │   ├── code/         versus picture-code icons (takoyaki, castle, umeda, tsutenkaku)
 │   └── logo.svg      site logo (editable SVG — see "Branding" below)
 ├── styles.css        shared site styles + theme colors (the :root block)
+├── vs-lobby.js       shared 2-player lobby (Firebase) for game.html + kana.html
 ├── common.js         LANGS, header/nav rendering, VideoDB, reaction popups
 ├── render.yaml       Render Blueprint — declares env vars, build command, headers
 └── README.md         this file
@@ -126,7 +127,7 @@ Mechanic:
 - The left/right edges of the play area are kept clear so the
   maru/batsu reaction popups have room.
 
-### Single-player vs Versus
+### Single-player vs Versus (both games)
 
 There is no start screen: clicking the game card on `games.html`
 expands a setup panel right there with **Single** and **Versus (2P)**,
@@ -147,11 +148,17 @@ project the chat uses):
   result screen shows **Win / Lose / Draw** with both scores. (Each
   board has its own random trash, so it's a fair score race rather than
   an identical board.)
+- The **Kana Quiz has the same Versus system** (same games-page setup
+  panel, picture codes, lobby): both players race through basic kana
+  (both scripts, count mode, first to 20 correct) and the faster
+  finisher wins. Both games share one Firestore collection; a `game`
+  tag on each lobby doc keeps their codes apart. The shared lobby
+  logic lives in `vs-lobby.js`.
 - Versus needs Firebase configured (`FIREBASE_*` env vars) **and** the
   `lobbies` Firestore rule above. Without it, the Versus screen shows a
   "setup needed" notice and single-player still works. The Firebase
-  config is injected into `game.html` at build time, exactly like
-  `contact.html`.
+  config is injected into `game.html` and `kana.html` at build time,
+  exactly like `contact.html`.
 
 All 100 items are based on the 大阪市環境局 (Osaka City Environmental
 Bureau) household sorting guide. Tips share 17 reason keys

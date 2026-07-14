@@ -358,6 +358,52 @@ body {
 .vs-key.vs-key-del { font-size: 20px; color: var(--c-muted); padding: 0; }
 .btn[disabled] { opacity: 0.45; cursor: default; }
 
+/* ================ Versus lobby (game.html + kana.html) ================ */
+.vs-code-show {
+  background: #fff;
+  border: 1px solid var(--c-line);
+  border-radius: 12px;
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--c-muted);
+  text-align: center;
+}
+.vs-code-imgs { display: flex; gap: 7px; justify-content: center; margin-top: 7px; }
+.vs-code-imgs img {
+  width: 46px; height: 46px;
+  object-fit: contain;
+  background: var(--c-panel);
+  border: 1.5px solid var(--c-accent);
+  border-radius: 12px;
+  padding: 4px;
+}
+.vs-players { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; width: 100%; max-width: 280px; }
+.vs-player {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 9px 14px; border-radius: 999px;
+  background: var(--c-panel); border: 1px solid var(--c-line);
+  font-size: 14px; font-weight: 700;
+}
+.vs-player .tag { font-size: 10px; font-weight: 700; color: var(--c-muted); }
+.vs-player.ready { border-color: var(--c-accent); background: var(--c-accent-soft); }
+.vs-player.empty { color: var(--c-muted); font-weight: 500; font-style: italic; }
+.vs-waiting { font-size: 13px; color: var(--c-muted); }
+.vs-status { font-size: 12px; min-height: 16px; }
+.vs-status.warn { color: var(--c-red); }
+#vsLobby { display: flex; flex-direction: column; align-items: center; width: 100%; }
+#vsBackBtn { margin-top: 12px; }
+
+.vs-result {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 4px 0 8px;
+}
+.vs-result.win  { color: var(--c-accent); }
+.vs-result.lose { color: var(--c-red); }
+.vs-result.draw { color: var(--c-muted); }
+.vs-result .vs-sub { display: block; font-size: 12px; font-weight: 600; color: var(--c-muted); margin-top: 2px; }
+
 /* ================ Language pills (in-page) ================ */
 .lang-pills {
   display: flex;
