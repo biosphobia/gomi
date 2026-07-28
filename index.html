@@ -101,6 +101,11 @@
       <h3 id="catGamesT">ゲーム</h3>
       <p id="catGamesD">ごみ分別ゲームとかなクイズで楽しく学ぼう。</p>
     </a>
+    <a href="https://ejuhelp.onrender.com/" class="cat-card">
+      <div class="cat-icon">🎓</div>
+      <h3 id="catEjuT">EJU</h3>
+      <p id="catEjuD">日本留学試験（EJU）の学習サイトへ。</p>
+    </a>
   </section>
 
   <!-- Scan-to-open QR (encodes this site's own URL at runtime) -->
@@ -121,27 +126,33 @@
     ja: { heroTitle:'大阪で暮らす皆さんへ', heroLead:'大阪での生活に役立つガイドとツールをまとめました。',
       catDailyT:'生活', catDailyD:'動画ガイドと、匿名の相談チャット。',
       catGamesT:'ゲーム', catGamesD:'ごみ分別ゲームとかなクイズで楽しく学ぼう。',
-      qrLabel:'QRコードでこのサイトをひらく・シェア' },
+      qrLabel:'QRコードでこのサイトをひらく・シェア',
+      catEjuT:'EJU', catEjuD:'日本留学試験（EJU）の学習サイトへ。' },
     en: { heroTitle:'Welcome to life in Osaka', heroLead:'Guides and tools to help with daily life in Osaka.',
       catDailyT:'Daily Life', catDailyD:'Video guides and an anonymous help chat.',
       catGamesT:'Games', catGamesD:'Learn through the trash-sorting game and kana quiz.',
-      qrLabel:'Scan to open or share this site' },
+      qrLabel:'Scan to open or share this site',
+      catEjuT:'EJU', catEjuD:'Study site for the EJU (Examination for Japanese University Admission).' },
     zh: { heroTitle:'欢迎在大阪生活', heroLead:'为在大阪生活的人士整理的实用指南和工具。',
       catDailyT:'日常生活', catDailyD:'视频指南与匿名咨询聊天。',
       catGamesT:'游戏', catGamesD:'通过垃圾分类游戏和假名测验快乐学习。',
-      qrLabel:'扫码打开或分享本网站' },
+      qrLabel:'扫码打开或分享本网站',
+      catEjuT:'EJU', catEjuD:'前往日本留学考试（EJU）学习网站。' },
     ko: { heroTitle:'오사카에서의 생활을 응원합니다', heroLead:'오사카 생활에 도움이 되는 가이드와 도구 모음입니다.',
       catDailyT:'생활', catDailyD:'동영상 가이드와 익명 상담 채팅.',
       catGamesT:'게임', catGamesD:'쓰레기 분리 게임과 가나 퀴즈로 즐겁게 배우기.',
-      qrLabel:'QR코드로 이 사이트 열기·공유' },
+      qrLabel:'QR코드로 이 사이트 열기·공유',
+      catEjuT:'EJU', catEjuD:'일본 유학 시험(EJU) 학습 사이트로 이동.' },
     my: { heroTitle:'အိုဆာကာတွင် နေထိုင်ကြသူများအတွက်', heroLead:'အိုဆာကာတွင် နေထိုင်ရာ၌ အသုံးဝင်သော လမ်းညွှန်များနှင့် ကိရိယာများ။',
       catDailyT:'နေ့စဉ်ဘဝ', catDailyD:'ဗီဒီယိုလမ်းညွှန်နှင့် အမည်ဝှက်အကူအညီ ချက်တင်။',
       catGamesT:'ဂိမ်းများ', catGamesD:'အမှိုက်ခွဲခြားဂိမ်းနှင့် ကာနာပဟေဠိဖြင့် ပျော်ရွှင်စွာ လေ့လာပါ။',
-      qrLabel:'ဤဆိုက်ကိုဖွင့်ရန်/မျှဝေရန် QR ကုဒ်ကို စကင်ဖတ်ပါ' },
+      qrLabel:'ဤဆိုက်ကိုဖွင့်ရန်/မျှဝေရန် QR ကုဒ်ကို စကင်ဖတ်ပါ',
+      catEjuT:'EJU', catEjuD:'EJU (ဂျပန်တက္ကသိုလ်ဝင်ခွင့်စာမေးပွဲ) လေ့လာရေးဆိုက်သို့။' },
     vi: { heroTitle:'Chào mừng đến với cuộc sống ở Osaka', heroLead:'Các hướng dẫn và công cụ giúp ích cho cuộc sống ở Osaka.',
       catDailyT:'Đời sống', catDailyD:'Video hướng dẫn và chat hỗ trợ ẩn danh.',
       catGamesT:'Trò chơi', catGamesD:'Học qua trò chơi phân loại rác và trắc nghiệm kana.',
-      qrLabel:'Quét mã QR để mở hoặc chia sẻ trang này' },
+      qrLabel:'Quét mã QR để mở hoặc chia sẻ trang này',
+      catEjuT:'EJU', catEjuD:'Đến trang học luyện thi EJU (kỳ thi du học Nhật Bản).' },
   };
   function applyHome() {
     const L = HOME_I18N[getLang()] || HOME_I18N.ja;

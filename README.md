@@ -8,7 +8,11 @@ static site:
 - **📝 Kana Quiz** — hiragana/katakana drill with per-row and per-kana
   selection, two finishing modes, and optional Google TTS audio.
 - **🎬 Animation Videos** — per-language video library; uploads stored
-  locally in the browser (IndexedDB).
+  locally in the browser (IndexedDB). *Temporarily disabled:* the Daily
+  Life card shows 準備中 and `videos.html` redirects to `daily.html`
+  (remove that redirect + re-link the card to bring it back).
+- **🎓 EJU** — home-page category card linking out to the EJU study
+  site at <https://ejuhelp.onrender.com/>.
 - **💬 Anonymous Chat** — visitors message the site creator privately
   with photos. Backed by Firebase Auth + Firestore; translation via
   Google Cloud Translation.
@@ -42,12 +46,12 @@ persists across pages.
 
 ```
 .
-├── index.html        home — category cards (Daily Life / Games)
+├── index.html        home — category cards (Daily Life / Games / EJU→external)
 ├── daily.html        Daily Life hub → Videos + Contact, emergency info, tips
 ├── games.html        Games hub → Trash game + Kana quiz
 ├── game.html         trash-sorting game
 ├── kana.html         hiragana/katakana quiz (optional Google TTS audio)
-├── videos.html       per-language video library
+├── videos.html       per-language video library (temporarily disabled → redirects)
 ├── contact.html      anonymous chat (Firebase)
 ├── images/
 │   ├── code/         versus picture-code icons (takoyaki, castle, umeda, tsutenkaku)

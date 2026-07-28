@@ -27,11 +27,14 @@
   <p class="lead" id="pageLead">大阪での生活に役立つ動画ガイドと、匿名の相談チャット。</p>
 
   <section class="feature-grid">
-    <a href="videos.html" class="feature-card">
+    <!-- Videos temporarily disabled — restore the <a href="videos.html">
+         wrapper (and remove the redirect in videos.html) to re-enable. -->
+    <div class="feature-card disabled">
       <div class="feature-icon">🎬</div>
       <h3 id="cardVideosT">アニメーション動画</h3>
       <p  id="cardVideosD">言語別に解説アニメーション動画を視聴できます。</p>
-    </a>
+      <span class="soon-badge" id="soonBadge">準備中</span>
+    </div>
     <a href="contact.html" class="feature-card">
       <div class="feature-icon">💬</div>
       <h3 id="cardContactT">相談チャット</h3>
@@ -66,32 +69,32 @@
   'use strict';
   const I18N = {
     ja: { pageTitle:'🌸 生活', pageLead:'大阪での生活に役立つ動画ガイドと、匿名の相談チャット。',
-      cardVideosT:'アニメーション動画', cardVideosD:'言語別に解説アニメーション動画を視聴できます。',
+      soonBadge:'準備中', cardVideosT:'アニメーション動画', cardVideosD:'言語別に解説アニメーション動画を視聴できます。',
       cardContactT:'相談チャット', cardContactD:'日本での生活の困りごとを匿名で相談できます。',
       infoTitle:'🚨 緊急連絡先 / Emergency', info110:'警察（けいさつ）', info119:'救急・消防', infoOsaka:'大阪国際交流センター・外国人相談',
       tipsTitle:'📌 大阪での生活のヒント', tip1:'ごみは決められた曜日に、地域のルールに従って出します。', tip2:'交通系ICカード（ICOCA / PiTaPa）が便利です。', tip3:'国民健康保険への加入は市役所で手続きできます。', tip4:'在留カードは常に携帯しましょう。' },
     en: { pageTitle:'🌸 Daily Life', pageLead:'Video guides for life in Osaka, plus an anonymous help chat.',
-      cardVideosT:'Animation Videos', cardVideosD:'Watch explanation videos organized by language.',
+      soonBadge:'Coming soon', cardVideosT:'Animation Videos', cardVideosD:'Watch explanation videos organized by language.',
       cardContactT:'Contact', cardContactD:'Message us anonymously about life in Japan.',
       infoTitle:'🚨 Emergency contacts', info110:'Police', info119:'Ambulance / Fire', infoOsaka:'Osaka International House — foreign resident hotline',
       tipsTitle:'📌 Living tips', tip1:'Put out trash on the scheduled day per your district’s rules.', tip2:'IC transit cards (ICOCA / PiTaPa) make getting around easier.', tip3:'Sign up for National Health Insurance at the ward office.', tip4:'Always carry your Residence Card (在留カード).' },
     zh: { pageTitle:'🌸 日常生活', pageLead:'大阪生活的视频指南，以及匿名咨询聊天。',
-      cardVideosT:'动画视频', cardVideosD:'按语言观看解说动画视频。',
+      soonBadge:'敬请期待', cardVideosT:'动画视频', cardVideosD:'按语言观看解说动画视频。',
       cardContactT:'咨询', cardContactD:'就在日本生活的困难匿名向我们咨询。',
       infoTitle:'🚨 紧急联系电话', info110:'警察', info119:'救护车 / 消防', infoOsaka:'大阪国际交流中心・外国人咨询',
       tipsTitle:'📌 生活小贴士', tip1:'请按所在地区的规则在指定日期投放垃圾。', tip2:'交通 IC 卡 (ICOCA / PiTaPa) 出行非常方便。', tip3:'可以在区役所办理国民健康保险。', tip4:'请随身携带在留卡。' },
     ko: { pageTitle:'🌸 생활', pageLead:'오사카 생활 동영상 가이드와 익명 상담 채팅.',
-      cardVideosT:'애니메이션 동영상', cardVideosD:'언어별 설명 동영상을 시청할 수 있습니다.',
+      soonBadge:'준비 중', cardVideosT:'애니메이션 동영상', cardVideosD:'언어별 설명 동영상을 시청할 수 있습니다.',
       cardContactT:'상담', cardContactD:'일본 생활의 어려움을 익명으로 상담하세요.',
       infoTitle:'🚨 긴급 연락처', info110:'경찰', info119:'구급・소방', infoOsaka:'오사카 국제교류센터・외국인 상담',
       tipsTitle:'📌 생활 팁', tip1:'쓰레기는 지역 규칙에 따라 지정된 요일에 배출하세요.', tip2:'교통 IC 카드(ICOCA / PiTaPa)가 매우 편리합니다.', tip3:'국민건강보험 가입은 구청에서 신청할 수 있습니다.', tip4:'재류 카드는 항상 휴대하세요.' },
     my: { pageTitle:'🌸 နေ့စဉ်ဘဝ', pageLead:'အိုဆာကာဘဝအတွက် ဗီဒီယိုလမ်းညွှန်နှင့် အမည်ဝှက်အကူအညီ ချက်တင်။',
-      cardVideosT:'အန်နီမေးရှင်း ဗီဒီယို', cardVideosD:'ဘာသာစကားအလိုက် ရှင်းပြ ဗီဒီယိုများ ကြည့်ရှုနိုင်သည်။',
+      soonBadge:'ပြင်ဆင်ဆဲ', cardVideosT:'အန်နီမေးရှင်း ဗီဒီယို', cardVideosD:'ဘာသာစကားအလိုက် ရှင်းပြ ဗီဒီယိုများ ကြည့်ရှုနိုင်သည်။',
       cardContactT:'ဆက်သွယ်ရန်', cardContactD:'ဂျပန်ဘဝအခက်အခဲများကို အမည်ဝှက်ဖြင့် ဆက်သွယ်ပါ။',
       infoTitle:'🚨 အရေးပေါ်ဆက်သွယ်ရန်', info110:'ရဲ', info119:'အရေးပေါ်/မီးသတ်', infoOsaka:'အိုဆာကာ နိုင်ငံတကာစင်တာ၊ နိုင်ငံခြားသား အကြံပေး',
       tipsTitle:'📌 နေထိုင်ရေး အကြံပေးချက်များ', tip1:'အမှိုက်ကို သတ်မှတ်ထားသောနေ့တွင်သာ ထုတ်ပါ။', tip2:'ပို့ဆောင်ရေး IC ကတ် (ICOCA / PiTaPa) အဆင်ပြေသည်။', tip3:'ကျန်းမာရေးအာမခံကို ခရိုင်ရုံးတွင် လျှောက်နိုင်သည်။', tip4:'နေထိုင်ခွင့်ကတ်ကို အမြဲဆောင်ထားပါ။' },
     vi: { pageTitle:'🌸 Đời sống', pageLead:'Video hướng dẫn cuộc sống ở Osaka và chat hỗ trợ ẩn danh.',
-      cardVideosT:'Video hoạt hình', cardVideosD:'Xem video giải thích theo từng ngôn ngữ.',
+      soonBadge:'Sắp có', cardVideosT:'Video hoạt hình', cardVideosD:'Xem video giải thích theo từng ngôn ngữ.',
       cardContactT:'Liên hệ', cardContactD:'Nhắn cho chúng tôi ẩn danh về cuộc sống ở Nhật.',
       infoTitle:'🚨 Liên hệ khẩn cấp', info110:'Cảnh sát', info119:'Cấp cứu / Cứu hỏa', infoOsaka:'Trung tâm quốc tế Osaka — đường dây cho người nước ngoài',
       tipsTitle:'📌 Mẹo sinh sống', tip1:'Đổ rác đúng ngày quy định theo khu vực của bạn.', tip2:'Thẻ IC giao thông (ICOCA / PiTaPa) rất tiện lợi.', tip3:'Đăng ký bảo hiểm y tế quốc dân tại văn phòng quận.', tip4:'Luôn mang theo Thẻ cư trú (在留カード).' },
