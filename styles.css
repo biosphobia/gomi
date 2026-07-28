@@ -358,6 +358,28 @@ body {
 .vs-key.vs-key-del { font-size: 20px; color: var(--c-muted); padding: 0; }
 .btn[disabled] { opacity: 0.45; cursor: default; }
 
+/* ================ Scan-to-open QR (home page) ================ */
+.qr-card {
+  margin-top: 26px;
+  padding: 20px 16px;
+  background: var(--c-panel);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.qr-box svg {
+  display: block;
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+}
+.qr-label { font-size: 13px; font-weight: 700; }
+.qr-url { font-size: 11px; color: var(--c-muted); word-break: break-all; }
+
 /* ================ High scores + grades ================ */
 .grade-chip {
   display: inline-flex;

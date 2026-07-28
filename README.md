@@ -13,6 +13,10 @@ static site:
   with photos. Backed by Firebase Auth + Firestore; translation via
   Google Cloud Translation.
 
+The home page also shows a **scan-to-open QR code** generated at
+runtime from the site's own URL (`qr.js`, no external service), so it
+always points at whatever domain the site is deployed on.
+
 Site UI is available in **Japanese / English / 中文 / 한국어 / မြန်မာ /
 Tiếng Việt**. The language picker lives in the header and the choice
 persists across pages.
@@ -48,6 +52,7 @@ persists across pages.
 ├── images/
 │   ├── code/         versus picture-code icons (takoyaki, castle, umeda, tsutenkaku)
 │   └── logo.svg      site logo (editable SVG — see "Branding" below)
+├── qr.js             tiny dependency-free QR encoder (home-page share QR)
 ├── styles.css        shared site styles + theme colors (the :root block)
 ├── vs-lobby.js       shared 2-player lobby (Firebase) for game.html + kana.html
 ├── common.js         LANGS, header/nav rendering, VideoDB, reaction popups
